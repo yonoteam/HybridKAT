@@ -1,0 +1,466 @@
+\documentclass[envcountsames]{llncs}
+
+\usepackage{isabelle,isabellesym}
+\usepackage{graphicx}
+\usepackage{amsmath} 
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{amscd}
+\usepackage{latexsym}
+\usepackage{mathrsfs}
+\usepackage{stmaryrd}
+\usepackage{mathpartir} % inferrules
+%\usepackage{enumerate}
+\usepackage{hyperref}
+\usepackage{color}
+\usepackage{tikz}
+\usepackage{tikz-cd}
+\usepackage[colorinlistoftodos]{todonotes}
+
+\newcommand{\IF}[3]{\mathbf{if}\ #1\ \mathbf{then}\ #2\ \mathbf{else}\ #3}
+\newcommand{\WHILE}[2]{\mathbf{while}\ #1\ \mathbf{do}\ #2}
+\newcommand{\WHILEI}[3]{\mathbf{while}\ #1\ \mathbf{inv}\ #2\ \mathbf{do}\ #3}
+\newcommand{\sskip}{\mathit{skip}}
+\newcommand{\MKA}{\mathsf{MKA}}
+\newcommand{\KAT}{\mathsf{KAT}}
+\newcommand{\rKAT}{\mathsf{rKAT}}
+\newcommand{\PDL}{\mathsf{PDL}}
+\newcommand{\dL}{\mathsf{d}\mathcal{L}}
+\newcommand{\flow}{\varphi}
+\newcommand{\orbit}{\gamma^\varphi}
+\newcommand{\lipschitz}{\ell}
+\newcommand{\Pow}{\mathcal{P}}
+\newcommand{\id}{\mathit{id}}
+\newcommand{\Id}{\mathit{Id}}
+\newcommand{\reals}{\mathbb{R}}
+\newcommand{\bools}{\mathbb{B}}
+\newcommand{\true}{\top}
+\newcommand{\dLprog}{\Pi}
+\newcommand{\ad}{\mathit{ad}}
+\newcommand{\ar}{\mathit{ar}}
+\newcommand{\wlp}{\mathit{wlp}}
+\newcommand{\Set}{\mathbf{Set}}
+\newcommand{\Rel}{\mathbf{Rel}}
+\newcommand{\Sols}{\mathop{\mathsf{Sols}}}
+\newcommand{\sta}{\mathsf{Sta}}
+\newcommand{\rel}{\mathsf{Rel}}
+\newcommand{\inv}{\mathsf{Inv}}
+
+%\newcommand{\guards}[4]{(#1\circ #2)[#3,#4]}
+\newcommand{\guards}[3]{#1\mathrel{\triangleright_#3} #2}
+\newcommand{\gorbit}[1]{\gamma^#1_G}
+\newcommand{\dinvar}[2]{( #1\hbox{ }\mathsf{invariant}\hbox{ }#2)}
+%
+
+\definecolor{scolor}{rgb}{1,0.5,0.5}
+\definecolor{jcolor}{cmyk}{1,0,1,0}
+\definecolor{gcolor}{cmyk}{1,0,0,0}
+
+
+\newcommand\notein[3]{\todo[inline,linecolor=orange!80!black,backgroundcolor=#2!20]{#1: #3}%yellow!50 
+}
+\newcommand{\sfin}[1]{\notein{{\bf SF}}{scolor}{#1}}
+\newcommand{\jin}[1]{\notein{{\bf JHM}}{jcolor}{#1}}
+\newcommand{\gin}[1]{\notein{{\bf GS}}{gcolor}{#1}}
+
+\urlstyle{rm}
+\isabellestyle{it}
+
+\begin{document}
+
+\title{Hoare Logics and Refinement Calculi\\ for Hybrid Systems Verification} \titlerunning{Hoare Logics and Refinement Calculi for Hybrid Systems Verification}
+
+\author{Simon Foster$^1$ \and Jonathan Juli\'an Huerta y Munive$^2$ \and Georg Struth$^2$} \authorrunning{Foster, Huerta y Munive and Struth}
+
+\institute{University of York, UK \and University of Sheffield, UK}
+
+\maketitle
+
+\begin{abstract} 
+  We present new Hoare logics and refinement calculi for the
+  verification of hybrid programs in the style of differential dynamic
+  logic.
+\end{abstract}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\section{Introduction}\label{sec:introduction}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Kleene Algebra with Tests}\label{sec:kat} 
+
+A \emph{Kleene algebra} is a structure $(K,+,\cdot,0,1,^\ast)$, where
+$(S,+,\cdot,0,1)$ is a semiring with idempotent addition and the
+Kleene star $(-)^\ast:K\to K$ satisfies, for all
+$\alpha,\beta,\gamma\in K$, the axioms
+\begin{align*} 
+1+\alpha\cdot\alpha^\ast &\le \alpha^\ast, \qquad
+  \gamma+\alpha\cdot
+                                          \beta\le \beta\rightarrow \alpha^\ast \cdot \gamma\le \beta,\\
+  1+\alpha^\ast\cdot\alpha &\le \alpha^\ast, \qquad \gamma+\beta\cdot
+                             \alpha\le \beta\rightarrow \gamma\cdot
+                             \alpha^\ast \le \beta.
+\end{align*}
+In these axioms, the ordering $\le$ on $K$ defined by
+$x\le y\leftrightarrow x+y=y$---idempotent semirings are a forteriori
+semilattices. We often write $\alpha\beta$ instead of
+$\alpha\cdot\beta$.
+
+A \emph{Kleene algebra with tests}~\cite{Kozen97} ($\KAT$) is a structure
+$(K,B,+,\cdot,0,1,^\ast,\neg)$ where $(B,+,\cdot,0,1,\neg)$ is a
+boolean algebra with join $+$, meet $\cdot$, complementation $\neg$,
+least element $0$ and greatest element $1$, $B\subseteq K$, and
+$(K,+,\cdot,0,1,^\ast)$ is a Kleene algebra. We henceforth write
+$p,q,r,\dots$ for elements of $B$. 
+
+Elements of $K$ represent programs; those of $B$ tests, assertions or
+propositions.  The operation $\cdot$ models the sequential composition
+of programs, $+$ their nondeterministic choice, $^\ast$ their finite
+unbounded iteration. Program $0$ aborts and $1$ skips.  Tests are
+meant to hold in some states of a program and fail in others;
+$p\alpha$ ($\alpha p$) restricts the execution of program $\alpha$ in
+its input (output) to those states where test $p$ holds.
+
+Binary relations of type $\Pow\, (X\times X)$ form
+$\KAT$s~\cite{Kozen97} when $\cdot$ is interpreted as relational
+composition, $+$ as relational union, $^\ast$ as reflexive-transitive
+closure and the elements of $B$ as subidentities---relations below the
+relational unit. This grounds $\KAT$ within standard relational
+imperative program semantics. Yet we prefer the isomorphic
+representation as nondeterministic functions or \emph{state
+  transformers} of type $X\to \Pow\, X$.  Composition is then
+interpreted as Kleisli composition
+\begin{equation*} 
+(f\circ_K g)\, x = \bigcup\{g\, y\mid y \in f\ x \}, 
+\end{equation*} 
+$0$ as $\lambda x.\ 0$ and $1$ as $\eta_X = \{-\}$.  Stars
+$f^{\ast}\, x = \bigcup_{i\in\mathbb{N}} f^i\, x$ are defined with
+  respect to Kleisli composition: $f^{0} = \eta_X$ and
+  $f^{(i+1)} = f \circ_K f^{n}$. The boolean algebra of tests has
+  carrier set $B_X=\{f:X\to \Pow\, X \mid f\subseteq \eta_X\}$ and complementation
+  \begin{equation*} 
+    \overline{f}\, x =
+  \begin{cases}
+    \eta_X\, x, & \text{ if } f\, x = \emptyset,\\
+\emptyset, & \text{ otherwise}.
+  \end{cases}
+\end{equation*}
+
+\begin{proposition}\label{P:kleisli-ka}
+$\sta\, X = ((\Pow\, X)^X,B_x,\cup,\circ_K,\lambda x.\
+  \emptyset, \eta_X,(-)^{\ast},\overline{(-)})$
+  forms a $\KAT$, the \emph{full state transformer $\KAT$} over the
+  set $X$.
+\end{proposition}
+A \emph{state transformer $\KAT$} over $X$ is any subalgebra of
+$\sta\, X$. 
+
+We have already formalised Kleene algebras with and without tests at
+type classes in Isabelle~\cite{afp:ka,afp:kat}.  As Isabelle's type
+classes allow only one type parameter, we are using a non-standard
+approach that expands an Kleene algebra $K$ by an \emph{antitest}
+function $n:K\to K$ from which a \emph{test} function $t:K\to K$ can
+be defined as $t=n^2$. Then
+$K_t = \{\alpha \mid t\, \alpha = \alpha\}$ forms a boolean algebra in
+which $n$ acts as test complementation. It can be used in place of the
+boolean algebra $B$.  A formalisation of the relational model of
+$\KAT$ can be found in~\cite{afp:kat}, that of the state transformer
+model is a contribution to this article.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Propositional Hoare Logic and Invariants}\label{sec:hl-invariants}
+
+It is well known that $\KAT$ provides an algebraic semantics for while
+programs,
+\begin{align*}
+  \IF{p}{\alpha}{\beta} = p\cdot \alpha + \bar p \cdot
+  \beta\qquad\text{ and }\qquad
+\WHILE{p}{\alpha} = (p\cdot \alpha)^\ast \cdot \bar p,
+\end{align*}
+captures validity of Hoare triples in
+a partial correctness semantics,
+\begin{equation*}
+  \{p\}\, \alpha\, \{q\} \leftrightarrow p\alpha\neg q = 0,
+\end{equation*}
+or equivalently by $p\alpha\le \alpha q$ or $p\alpha = p\alpha q$, and
+allows deriving the rules of \emph{propositional Hoare
+  logic}~\cite{Kozen00}---disregarding assignments---which we use for
+verification condition generation:
+\begin{align}
+  &\{p\}\, \sskip\, \{p\}, \label{eq:h-skip}\tag{h-skip}\\
+  p\le p' \land \{p'\}\, \alpha\, \{q'\} \land q'\le q\ \rightarrow\ &
+                                                                       \{p\}\,
+                                                                       \alpha\,
+                                                                       \{q\},\label{eq:h-cons}\tag{h-cons}\\
+  \{p\}\, \alpha\, \{r\} \land \{r\}\, \beta\, \{q\}\ \rightarrow\
+  &\{p\}\, \alpha\beta\, \{q\},\label{eq:h-seq}\tag{h-seq}\\
+  \{tp\}\, \alpha\, \{q\}\land \{\neg tp\}\, \beta\, \{q\}\
+  \rightarrow\ & \{p\}\, \IF{t}{\alpha}{\beta}\, \{q\},\label{eq:h-cond}\tag{h-cond}\\
+  \{tp\}\, \alpha\, \{p\}\ \rightarrow\ & \{p\}\, \WHILE{t}{\alpha}\, \{\neg tp\}.\label{eq:h-while}\tag{h-while}
+\end{align}
+Specific rules for commands with invariant assertions
+$\alpha\ \mathbf{inv}\ i$ can easily be derived (operationally,
+$\alpha\, \mathbf{inv}\, i = \alpha$).  We define an \emph{invariant}
+of an element $\alpha\in K$ as an element $i\in B$ that satisfies
+\begin{equation*}
+  \{i\}\, \alpha\, \{i\}.
+\end{equation*}
+Then, with $\mathbf{loop}\, \alpha$ as syntactic sugar for $\alpha^\ast$,
+\begin{align}
+  p\le i \land \{i\}\, \alpha\, \{i\}\land i\le q\ \rightarrow\
+  &\{p\}\, \alpha\, \{q\},\label{eq:h-inv}\tag{h-inv}\\
+  p \le i \wedge \{it\}\, \alpha\, \{i\} \wedge \neg t p\le q\
+  \rightarrow \ & \{p\}\, \WHILEI{t}{i}{\alpha}\,  \{q\},\label{eq:h-while-inv}\tag{h-while-inv}\\
+   p\le i \land \{i\}\, \alpha\, \{i\}\land i\le q\ \rightarrow\ &
+                                                                   \{p\}\, \mathbf{loop}\, \alpha\,
+    \mathbf{inv}\, i\, \{q\}. \label{eq:h-loop-inv}\tag{h-loop-inv}
+\end{align}
+We use (\ref{eq:h-inv}), which is a special case of (\ref{eq:h-cons}),
+to reason about differential invariants for continuous evolutions of
+hybrid systems in Section~\ref{sec:hoare-inv}, \ref{sec:refine} and
+\ref{sec:from-flows}. Rule (\ref{eq:h-while-inv}) is standard for
+reasoning with invariants for while loops; (\ref{eq:h-loop-inv})
+specific for loops of hybrid programs---see
+Section~\ref{sec:sta-hybrid}.
+
+Generic rules for propositional Hoare logic in Isabelle have been
+derived for Kleene algebra in~\cite{afp:ka}; more specific ones for
+$\KAT$ in~\cite{afp:kat,afp:vericomp}. Basic Isabelle infrastructure for
+reasoning with general invariants has been generated for this
+article. 
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Predicate Transformer Semantics for Hybrid Programs}\label{sec:sta-hybrid}
+
+Hybrid programs of $\dL$~\cite{Platzer10} are defined by the syntax
+\begin{equation*}
+\mathcal{C}\ ::= \ x:=e \mid x' = f \, \&\, G \mid ?P\mid \mathcal{C};\mathcal{C}\mid \mathcal{C}+\mathcal{C}\mid \mathcal{C}^*
+\end{equation*}
+that adds \emph{evolution commands} $x' = f \, \&\, G$ to the language
+of $\KAT$---function $?(-)$ embeds tests explicitly into programs.
+Evolution commands introduce a time independent vector field $f$ for
+an autonomous system ordinary differential equations (ODEs) and a
+guard $G$, a predicate modelling boundary conditions or similar
+restrictions of temporal evolutions. Guards are also known as
+\emph{evolution domain restrictions}~\cite{DoyenFPP18}.
+
+Formally, vector fields are functions of type $S\to S$ on some open
+$S\subseteq \reals^n$ for some $n\in\mathbb{N}$---the state space of
+the hybrid program. We assume that program variables range from $0$ to
+$n-1$, or pick them from any set $V$ isomorphic to the finite ordinal
+$n$. Program states in $S$ can thus be identified with hybrid program
+stores modelled as functions from variables in $V$ to values in
+$\reals$, as usual.
+
+Geometrically, vector field $f$ assigns a vector to any point of
+$S$. A solution to the \emph{initial value problem} (IVP) for the pair
+$(f,s)$ and initial value $(0,s)\in T\times S$, where $T$ is an open
+interval in $\reals$ containing $0$, is then a function $X:T\to S$
+that satisfies $X'\, t = f\, (X\, t)$---an autonomous system of ODEs
+in vector form---and $X\, 0 = s$. $X$ is thus a curve in $S$ through
+$s$, parametrised in $T$ and tangential to $f$ at any point in $S$.
+If $X$ is uniquely defined, then it is called \emph{trajectory} or
+\emph{integral curve} of $f$ at $s$.
+
+\gin{We use $X$ for solutions and for carrier sets of state
+  transformers. Maybe we should write $S$ for the carrier sets.}
+
+For IVP $(f,s)$ with continuous vector field $f:S\to S$ and initial
+state $s\in S$ we define the set of solutions on
+$T$ as
+\begin{equation*}
+\Sols f\, T\, s = \{X \mid \forall t\in T.\  X'\, t = f\, (X\, t)\land X\, 0 = s\}.
+\end{equation*}
+Each solution $X$ is then continuously differentiable and thus
+$f\circ X$ integrable in $T$.  For $X\in \Sols\, f\, T\, s$ and
+$G:S\to\bools$, we further define the $G$-\emph{guarded orbit} of $X$
+along $T$ in $s$~\cite{MuniveS19} with the help of the function
+$\gamma^X_G:S\to \Pow\, S$ as \begin{equation*} \gamma^X_{G}\, s =
+  \bigcup\{\Pow\, X\, {\downarrow}t \mid t\in T\land \Pow\, X\,
+  {\downarrow}t\subseteq G\},
+\end{equation*}
+where ${\downarrow}t = \{t'\in T\mid t'\le t\}$, 
+ and the $G$-\emph{guarded orbital} of
+$f$ along $T$ in $s$~\cite{MuniveS19} via
+$\gamma^f_G:S\to \Pow\, S$ as
+\begin{equation*}
+  \gamma^f_G\ s = \bigcup\{\gamma^X_G\, s\mid X\in \Sols\, f\, T\, s\}.
+\end{equation*}
+Using preciates instead of sets, 
+\begin{equation*}
+\gamma^X_{G}\, s= \{X\, t\mid t\in T\land \forall \tau\in
+{\downarrow}t.\ G\, (X\, \tau)\}.
+\end{equation*}
+\gin{shall we only/always use predicates?}  Expanding definitions,
+$\gamma^f_G\, s = \{X\, t \mid X\in \Sols\, f\, T\, s \land t\in T
+\land \Pow\, X\, {\downarrow}t\subseteq G\}$.
+If $\top$ either denotes the predicate that holds of all states in $S$
+or the set $S$ itself, we simply write $\gamma^f$ instead of
+$\gamma^f_\top$.
+
+The function $\gamma^f_G$ is a state transformer. Hence we use it to
+define the semantics of the evolution command
+$x'= f\, \&\, G$~\cite{MuniveS19} for any continuous $f:S\to S$ and
+$G:S\to \bools$ simply as
+\begin{equation}
+{(x'= f\, \&\, G)} = \gamma^f_G.\label{eq:st-evl}\tag{st-evl}
+\end{equation}
+
+Defining the state transformer semantics of assignments is
+straightforward~\cite{MuniveS19}. First we define a state update
+function $f_a:V\to (S \to E) \to S\to S$ as
+\begin{equation*}
+f_a\, v\, e\, s = s[v\mapsto e\, s],
+\end{equation*}
+where $f[a\mapsto b]$ updates $f:A\to B$ by associating $a\in A$ with
+$b$ and every $y\neq a$ with $f\, y$.  The ``expression''
+${e:S\to \reals}$ is thus evaluated in state $s$ to $e\, s$.  Then we
+simply lift $f_a\, v\, e:S\to S$ to state transformer
+$v:= e:S \to \Pow\, S$ using $\eta_X$:
+\begin{equation}
+  (v:= e) = \{f_a\, v\, e\}.\label{eq:st-assgn}\tag{st-assgn}
+\end{equation}
+
+The development in this section has been formalised with
+Isabelle~\cite{afp:hybrid}, both for a state transformer and a
+relational semantics. An instance of the latter for particular vector
+fields with unique solutions forms the standard semantics of
+differential dynamic logic. Due to the connection to orbits or
+orbitals, he state transformer semantics is arguably conceptually
+simpler and more elegant.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\section{Flow-Based Hoare Logic for Hybrid
+  Programs}\label{sec:hoare-flow}
+
+The assignment axiom of Hoare logic needs little explanation. Our
+semantics allows us to derive a variant with update functions instead
+of substitutions:
+\begin{equation}
+\{\lambda s.\ P\, s[x\mapsto e\, s]\}\,  x:=e\, \{P\}. \label{eq:h-assgn}\tag{h-assgn}
+\end{equation}
+
+Next we derive a rule for evolution commands.
+
+\gin{adapt to lipschitz-continuous}
+
+We restrict our attention to Lipschitz-continuous vector fields for which
+unique solutions to IVPs are guaranteed by the Picard-Lindel\"of
+theorem.  Solutions then arise from \emph{(local)\ flows}
+$\flow:T\to S\to S$ and $X=\flow_s=\lambda t.\ \flow\, s\, t$ is the
+trajectory at $s$. We can then specialise $\gamma^f_G$ to
+\begin{equation*}
+  \gamma^f_{G,U} = \{\flow_s\, t\mid t\in U\land \forall\tau \in
+  {\downarrow}t.\ G\, (\flow_s\, t)\},
+\end{equation*}
+where $U\subseteq T$ is a time domain of interest, typically an interval
+$[0,t]$ for some $t\in T$, and accordingly (\ref{eq:st-evl}) to
+\begin{equation}
+  (x' = f\, \&\, G)= \gamma^f_{G,U}.\label{eq:st-evl-flow}\tag{st-evl-flow}
+\end{equation}
+This yields the Hoare-style inference rule
+\begin{equation}
+x=y. \label{eq:h-evl}\tag{h-evl}
+\end{equation}
+
+\gin{explain procedure from pt-paper and add example}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Invariant-Based Hoare Logic for Hybrid Programs}\label{sec:hoare-inv}
+
+\gin{do invariant calculus as in pt-paper and do example}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Refinement Calculi for Hybrid Programs}\label{sec:refine}
+
+A \emph{refinement Kleene algebra with tests}
+($\rKAT$)~\cite{ArmstrongGS16}  is a $\KAT$
+$(K,B)$ expanded by an operation $[-,-]:B\times B\to K$ that
+satisfies, for all $\alpha \in K$ and $p,q\in B$, 
+\begin{equation*}
+  \{p\}\, \alpha\, \{q\} \leftrightarrow \alpha\le [p,q].
+\end{equation*}
+The element $[p,q]$ of $K$ is called \emph{specification
+  statement}~\cite{Morgan94}. It satisfies the characteristic
+properties
+\begin{equation*}
+  \{p\}\, [p,q]\, \{q\}\qquad \text{ and }\qquad \{p\}\, \alpha\, \{q\} \rightarrow \alpha\le [p,q].
+\end{equation*}
+Hence $[p,q]$ is the greatest element of $K$ that satisfies the Hoare
+triple with precondition $p$ and postcondition $q$.  Indeed, in
+$\sta\, S$ and for $S\subseteq \reals^n$,
+\begin{equation*}
+  [P,Q] = \bigcup \left\{f:S\to \Pow\, S \mid \{P\}\, f\, \{Q\}\right\}.
+\end{equation*}
+
+The following refinement laws~\cite{Morgan94} are derivable in
+$\rKAT$~\cite{ArmstrongGS16}. 
+\begin{align}
+  1 &\le [p,p],\label{eq:r-skip}\tag{r-skip}\\
+[p',q'] &\le [p,q],\qquad \text{ if } p\le p'\text{ and } q'\le q,\label{eq:r-cons}\tag{r-cons}\\
+\alpha & \le [0,1],\\
+[1,0] &\le \alpha,\\
+[p,r]\cdot [r,q] &\le [p,q],\label{eq:r-seq}\tag{r-seq}\\
+\IF{t}{[tp,q]}{[\neg tp,q]} &\le [p,q],\label{eq:r-cond}\tag{r-cond}\\
+ \WHILE{t}{[tp,p]} &\le [p,\neg tp]. \label{eq:r-while}\tag{r-while}
+\end{align}
+
+For invariants and loops, we obtain
+\begin{align}
+  [i,i] &\le [p,q],\qquad \text{ if } p\le i \le q,\label{eq:r-inv}\tag{r-inv}\\
+\mathbf{loop} [i,i] &\le [i,i]. \label{eq:r-loop}\tag{r-loop}
+\end{align}
+
+\gin{check law for loops and for invariants.}
+
+Int $\sta\, S$, moreover, the following laws for assignments are
+derivable~\cite{ArmstrongGS16}.
+\begin{align*}
+ (x := e)  &\le  [\lambda s.\ P\, s[x\mapsto e\, s],P],\\
+(x:= e) \cdot [\lambda s.\ P\, s[x\mapsto e\, s],P] &\le [P,P],\\
+[P,\lambda s.\ P\, s[x\mapsto e\, s]]\cdot (x:=e) &\le [P,P].
+\end{align*}
+The second and third law are known as \emph{leading} and {following}
+law. They introduce an assignment before and after a block of code. 
+
+\gin{derive law for evolution statements ... from that of Hoare
+  logic.}
+
+\gin{do two examples; one for flows, one for invariants.}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Starting from Flows}\label{sec:from-flows}
+
+\gin{do components that use flows instead of vector fields in evolution commands}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Conclusion}\label{sec:conclusion}
+
+
+
+\bibliographystyle{abbrv}
+\bibliography{PredTrsnfVerif}
+
+
+
+
+
+
+
+\end{document}
