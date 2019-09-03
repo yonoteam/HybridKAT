@@ -325,7 +325,7 @@ ${e:S\to \reals}$ is thus evaluated in state $s$ to $e\, s$.  Then we
 simply lift $f_a\, v\, e:S\to S$ to state transformer
 $v:= e:S \to \Pow\, S$ using $\eta_X$:
 \begin{equation}
-  (v:= e) = \{f_a\, v\, e\}.\label{eq:st-assgn}\tag{st-assgn}
+  (v:= e) = \{\lambda s.\ f_a\, v\, e\, s\}.\label{eq:st-assgn}\tag{st-assgn}
 \end{equation}
 
 The development in this section has been formalised with
@@ -370,8 +370,12 @@ $[0,t]$ for some $t\in T$, and accordingly (\ref{eq:st-evl}) to
 \end{equation}
 This yields the Hoare-style inference rule
 \begin{equation}
-x=y. \label{eq:h-evl}\tag{h-evl}
+\{\lambda s.\forall t\in U.\ (\forall
+\tau\in {\downarrow}t.\ G\, (\flow_s\, \tau)) \rightarrow P\,
+(\flow_s\, t)\}\, x' = f\, \&\, G\, \{P\}. \label{eq:h-evl}\tag{h-evl}
 \end{equation}
+
+\gin{is this correct?}
 
 \gin{explain procedure from pt-paper and add example}
 
@@ -429,16 +433,21 @@ For invariants and loops, we obtain
 
 Int $\sta\, S$, moreover, the following laws for assignments are
 derivable~\cite{ArmstrongGS16}.
-\begin{align*}
- (x := e)  &\le  [\lambda s.\ P\, s[x\mapsto e\, s],P],\\
-(x:= e) \cdot [\lambda s.\ P\, s[x\mapsto e\, s],P] &\le [P,P],\\
-[P,\lambda s.\ P\, s[x\mapsto e\, s]]\cdot (x:=e) &\le [P,P].
-\end{align*}
+\begin{align}
+ (x := e)  &\le  [\lambda s.\ P\, s[x\mapsto e\, s],P],\label{eq:r-assgn}\tag{r-assgn}\\
+(x:= e) \cdot [\lambda s.\ P\, s[x\mapsto e\, s],P] &\le [P,P],\label{eq:r-assgn}\tag{r-assgnl}\\
+[P,\lambda s.\ P\, s[x\mapsto e\, s]]\cdot (x:=e) &\le [P,P]. \label{eq:r-assgn}\tag{r-assgnf}
+\end{align}
 The second and third law are known as \emph{leading} and {following}
 law. They introduce an assignment before and after a block of code. 
 
-\gin{derive law for evolution statements ... from that of Hoare
-  logic.}
+As refinement law for evolution commands we obtain
+\begin{equation}
+x' = f\, \&\, G \le [\lambda s.\forall t\in U.\ (\forall
+\tau\in {\downarrow}t.\ G\, (\flow_s\, \tau)),P]. \label{eq:r-evl}\tag{r-evl}
+\end{equation}
+
+\gin{is that correct? we also need to derive leading/following laws for evolution statements.}
 
 \gin{do two examples; one for flows, one for invariants.}
 
