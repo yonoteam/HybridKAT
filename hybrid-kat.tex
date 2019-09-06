@@ -104,7 +104,7 @@ $\alpha,\beta,\gamma\in K$, the axioms
                              \alpha\le \beta\rightarrow \gamma\cdot
                              \alpha^\ast \le \beta.
 \end{align*}
-In these axioms, the ordering $\le$ on $K$ defined by
+In these axioms, the ordering $\le$ on $K$ is defined by
 $x\le y\leftrightarrow x+y=y$---idempotent semirings are a forteriori
 semilattices. We often write $\alpha\beta$ instead of
 $\alpha\cdot\beta$.
@@ -139,7 +139,7 @@ interpreted as Kleisli composition
 $0$ as $\lambda x.\ 0$ and $1$ as $\eta_X = \{-\}$.  Stars
 $f^{\ast}\, x = \bigcup_{i\in\mathbb{N}} f^i\, x$ are defined with
   respect to Kleisli composition: $f^{0} = \eta_X$ and
-  $f^{(i+1)} = f \circ_K f^{n}$. The boolean algebra of tests has
+  $f^{n+1} = f \circ_K f^{n}$. The boolean algebra of tests has
   carrier set $B_X=\{f:X\to \Pow\, X \mid f\subseteq \eta_X\}$ and complementation
   \begin{equation*} 
     \overline{f}\, x =
@@ -150,7 +150,7 @@ $f^{\ast}\, x = \bigcup_{i\in\mathbb{N}} f^i\, x$ are defined with
 \end{equation*}
 
 \begin{proposition}\label{P:kleisli-ka}
-$\sta\, X = ((\Pow\, X)^X,B_x,\cup,\circ_K,\lambda x.\
+$\sta\, X = ((\Pow\, X)^X,B_X,\cup,\circ_K,\lambda x.\
   \emptyset, \eta_X,(-)^{\ast},\overline{(-)})$
   forms a $\KAT$, the \emph{full state transformer $\KAT$} over the
   set $X$.
@@ -161,7 +161,7 @@ $\sta\, X$.
 We have already formalised Kleene algebras with and without tests at
 type classes in Isabelle~\cite{afp:ka,afp:kat}.  As Isabelle's type
 classes allow only one type parameter, we are using a non-standard
-approach that expands an Kleene algebra $K$ by an \emph{antitest}
+approach that expands a Kleene algebra $K$ by an \emph{antitest}
 function $n:K\to K$ from which a \emph{test} function $t:K\to K$ can
 be defined as $t=n^2$. Then
 $K_t = \{\alpha \mid t\, \alpha = \alpha\}$ forms a boolean algebra in
@@ -204,7 +204,7 @@ verification condition generation:
   \{tp\}\, \alpha\, \{p\}\ \rightarrow\ & \{p\}\, \WHILE{t}{\alpha}\, \{\neg tp\}.\label{eq:h-while}\tag{h-while}
 \end{align}
 Specific rules for commands with invariant assertions
-$\alpha\ \mathbf{inv}\ i$ can easily be derived (operationally,
+$\alpha\ \mathbf{inv}\ i$ are easily derivable (operationally,
 $\alpha\, \mathbf{inv}\, i = \alpha$).  We define an \emph{invariant}
 of an element $\alpha\in K$ as an element $i\in B$ that satisfies
 \begin{equation*}
@@ -225,13 +225,13 @@ to reason about differential invariants for continuous evolutions of
 hybrid systems in Section~\ref{sec:hoare-inv}, \ref{sec:refine} and
 \ref{sec:from-flows}. Rule (\ref{eq:h-while-inv}) is standard for
 reasoning with invariants for while loops; (\ref{eq:h-loop-inv})
-specific for loops of hybrid programs---see
+specific to loops of hybrid programs---see
 Section~\ref{sec:sta-hybrid}.
 
 Generic rules for propositional Hoare logic in Isabelle have been
 derived for Kleene algebra in~\cite{afp:ka}; more specific ones for
 $\KAT$ in~\cite{afp:kat,afp:vericomp}. Basic Isabelle infrastructure for
-reasoning with general invariants has been generated for this
+reasoning with general invariants has been developed for this
 article. 
 
 
@@ -246,13 +246,14 @@ Hybrid programs of $\dL$~\cite{Platzer10} are defined by the syntax
 that adds \emph{evolution commands} $x' = f \, \&\, G$ to the language
 of $\KAT$---function $?(-)$ embeds tests explicitly into programs.
 Evolution commands introduce a time independent vector field $f$ for
-an autonomous system ordinary differential equations (ODEs) and a
-guard $G$, a predicate modelling boundary conditions or similar
-restrictions of temporal evolutions. Guards are also known as
-\emph{evolution domain restrictions}~\cite{DoyenFPP18}.
+an autonomous system of ordinary differential equations
+(ODEs)~\cite{Hirsch09,Teschl12} and a guard $G$, a predicate modelling
+boundary conditions or similar restrictions of temporal
+evolutions. Guards are also known as \emph{evolution domain
+  restrictions}~\cite{DoyenFPP18}.
 
-Formally, vector fields are functions of type $S\to S$ on some open
-$S\subseteq \reals^n$ for some $n\in\mathbb{N}$---the state space of
+Formally, vector fields are functions of type $S\to S$ on some open set
+$S\subseteq \reals^n$ and $n\in\mathbb{N}$---the state space of
 the hybrid program. We assume that program variables range from $0$ to
 $n-1$, or pick them from any set $V$ isomorphic to the finite ordinal
 $n$. Program states in $S$ can thus be identified with hybrid program
@@ -264,10 +265,11 @@ $S$. A solution to the \emph{initial value problem} (IVP) for the pair
 $(f,s)$ and initial value $(0,s)\in T\times S$, where $T$ is an open
 interval in $\reals$ containing $0$, is then a function $X:T\to S$
 that satisfies $X'\, t = f\, (X\, t)$---an autonomous system of ODEs
-in vector form---and $X\, 0 = s$. $X$ is thus a curve in $S$ through
-$s$, parametrised in $T$ and tangential to $f$ at any point in $S$.
-If $X$ is uniquely defined, then it is called \emph{trajectory} or
-\emph{integral curve} of $f$ at $s$.
+in vector form---and $X\, 0 = s$. Solution
+$X$ is thus a curve in $S$ through $s$, parametrised in $T$ and
+tangential to $f$ at any point in $S$; it is called \emph{trajectory}
+or \emph{integral curve} of $f$ at $s$ whenever it is uniquely
+defined ~\cite{Hirsch09,Teschl12}.
 
 \gin{We use $X$ for solutions and for carrier sets of state
   transformers. Maybe we should write $S$ for the carrier sets.}
@@ -282,7 +284,8 @@ Each solution $X$ is then continuously differentiable and thus
 $f\circ X$ integrable in $T$.  For $X\in \Sols\, f\, T\, s$ and
 $G:S\to\bools$, we further define the $G$-\emph{guarded orbit} of $X$
 along $T$ in $s$~\cite{MuniveS19} with the help of the function
-$\gamma^X_G:S\to \Pow\, S$ as \begin{equation*} \gamma^X_{G}\, s =
+$\gamma^X_G:S\to \Pow\, S$ as 
+\begin{equation*} \gamma^X_{G}\, s =
   \bigcup\{\Pow\, X\, {\downarrow}t \mid t\in T\land \Pow\, X\,
   {\downarrow}t\subseteq G\},
 \end{equation*}
@@ -298,7 +301,10 @@ Using preciates instead of sets,
 \gamma^X_{G}\, s= \{X\, t\mid t\in T\land \forall \tau\in
 {\downarrow}t.\ G\, (X\, \tau)\}.
 \end{equation*}
-\gin{shall we only/always use predicates?}  Expanding definitions,
+\gin{shall we only/always use predicates?} 
+
+In applications, ${\downarrow}t$ is typically an interval
+$[0,t]\in T$.  Expanding definitions,
 $\gamma^f_G\, s = \{X\, t \mid X\in \Sols\, f\, T\, s \land t\in T
 \land \Pow\, X\, {\downarrow}t\subseteq G\}$.
 If $\top$ either denotes the predicate that holds of all states in $S$
@@ -333,7 +339,7 @@ Isabelle~\cite{afp:hybrid}, both for a state transformer and a
 relational semantics. An instance of the latter for particular vector
 fields with unique solutions forms the standard semantics of
 differential dynamic logic. Due to the connection to orbits or
-orbitals, he state transformer semantics is arguably conceptually
+orbitals, the state transformer semantics is arguably conceptually
 simpler and more elegant.
 
 
@@ -350,15 +356,13 @@ of substitutions:
 \{\lambda s.\ P\, s[x\mapsto e\, s]\}\,  x:=e\, \{P\}. \label{eq:h-assgn}\tag{h-assgn}
 \end{equation}
 
-Next we derive a rule for evolution commands.
-
-\gin{adapt to lipschitz-continuous}
-
-We restrict our attention to Lipschitz-continuous vector fields for which
-unique solutions to IVPs are guaranteed by the Picard-Lindel\"of
-theorem.  Solutions then arise from \emph{(local)\ flows}
-$\flow:T\to S\to S$ and $X=\flow_s=\lambda t.\ \flow\, s\, t$ is the
-trajectory at $s$. We can then specialise $\gamma^f_G$ to
+Next we derive a rule for evolution commands.  We restrict our
+attention to Lipschitz-continuous vector fields for which unique
+solutions to IVPs are guaranteed by the Picard-Lindel\"of
+theorem~\cite{Hirsch09,Teschl12}.  Solutions then arise from
+\emph{(local)\ flows} $\flow:T\to S\to S$ and
+$X=\flow_s=\lambda t.\ \flow\, s\, t$ is the trajectory at $s$. We can
+then specialise $\gamma^f_G$~\cite{MuniveS19} to
 \begin{equation*}
   \gamma^f_{G,U} = \{\flow_s\, t\mid t\in U\land \forall\tau \in
   {\downarrow}t.\ G\, (\flow_s\, t)\},
@@ -423,7 +427,7 @@ $\rKAT$~\cite{ArmstrongGS16}.
  \WHILE{t}{[tp,p]} &\le [p,\neg tp]. \label{eq:r-while}\tag{r-while}
 \end{align}
 
-For invariants and loops, we obtain
+For invariants and loops, we obtain, in addition, 
 \begin{align}
   [i,i] &\le [p,q],\qquad \text{ if } p\le i \le q,\label{eq:r-inv}\tag{r-inv}\\
 \mathbf{loop} [i,i] &\le [i,i]. \label{eq:r-loop}\tag{r-loop}
@@ -431,14 +435,14 @@ For invariants and loops, we obtain
 
 \gin{check law for loops and for invariants.}
 
-Int $\sta\, S$, moreover, the following laws for assignments are
+In $\sta\, S$, moreover, the following assignments laws are
 derivable~\cite{ArmstrongGS16}.
 \begin{align}
  (x := e)  &\le  [\lambda s.\ P\, s[x\mapsto e\, s],P],\label{eq:r-assgn}\tag{r-assgn}\\
 (x:= e) \cdot [\lambda s.\ P\, s[x\mapsto e\, s],P] &\le [P,P],\label{eq:r-assgn}\tag{r-assgnl}\\
 [P,\lambda s.\ P\, s[x\mapsto e\, s]]\cdot (x:=e) &\le [P,P]. \label{eq:r-assgn}\tag{r-assgnf}
 \end{align}
-The second and third law are known as \emph{leading} and {following}
+The second and third law are known as \emph{leading} and \emph{following}
 law. They introduce an assignment before and after a block of code. 
 
 As refinement law for evolution commands we obtain
@@ -462,14 +466,9 @@ x' = f\, \&\, G \le [\lambda s.\forall t\in U.\ (\forall
 \section{Conclusion}\label{sec:conclusion}
 
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \bibliographystyle{abbrv}
 \bibliography{hybrid-kat.bib}
-
-
-
-
-
-
 
 \end{document}
