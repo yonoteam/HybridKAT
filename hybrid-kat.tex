@@ -83,7 +83,7 @@
 \end{abstract}
 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
 \section{Introduction}\label{sec:introduction}
@@ -121,7 +121,7 @@ of $\KAT$ is PSPACE complete, that of $\MKA$, which underlies $\dL$, is
 EXPTIME complete~\cite{MollerS06}. Weakest liberal preconditions,
 which are the working horses of $\dL$, cannot be expressed in $\KAT$~\cite{Struth16}.
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Kleene Algebra with Tests}\label{sec:kat} 
 
@@ -157,41 +157,41 @@ meant to hold in some states of a program and fail in others;
 $p\alpha$ ($\alpha p$) restricts the execution of program $\alpha$ in
 its input (output) to those states where test $p$ holds.
 
-Binary relations of type $\Pow\, (X\times X)$ form
+Binary relations of type $\Pow\, (S\times S)$ form
 $\KAT$s~\cite{Kozen97} when $\cdot$ is interpreted as relational
 composition, $+$ as relational union, $^\ast$ as reflexive-transitive
 closure and the elements of $B$ as subidentities---relations below the
 relational unit. This grounds $\KAT$ within standard relational
 imperative program semantics. Yet we prefer the isomorphic
 representation as nondeterministic functions or \emph{state
-  transformers} of type $X\to \Pow\, X$.  Composition $\cdot$ is then
+  transformers} of type $S\to \Pow\, S$.  Composition $\cdot$ is then
 interpreted as Kleisli composition
 \begin{equation*} 
 (f\circ_K g)\, x = \bigcup\{g\, y\mid y \in f\ x \}, 
 \end{equation*} 
-$0$ as $\lambda x.\ 0$ and $1$ as $\eta_X = \{-\}$.  Stars
+$0$ as $\lambda x.\ 0$ and $1$ as $\eta_S = \{-\}$.  Stars
 $f^{\ast}\, x = \bigcup_{i\in\mathbb{N}} f^i\, x$ are defined with
-  respect to Kleisli composition with $f^{0} = \eta_X$ and
+  respect to Kleisli composition with $f^{0} = \eta_S$ and
   $f^{n+1} = f \circ_K f^{n}$. The boolean algebra of tests has
-  carrier set $B_X=\{f:X\to \Pow\, X \mid f\le \eta_X\}$, where the
+  carrier set $B_S=\{f:S\to \Pow\, S \mid f\le \eta_S\}$, where the
   order on function has been extended pointwise,  and complementation
   is given by
   \begin{equation*} 
     \overline{f}\, x =
   \begin{cases}
-    \eta_X\, x, & \text{ if } f\, x = \emptyset,\\
+    \eta_S\, x, & \text{ if } f\, x = \emptyset,\\
 \emptyset, & \text{ otherwise}.
   \end{cases}
 \end{equation*}
 
 \begin{proposition}\label{P:kleisli-ka}
-$\sta\, X = ((\Pow\, X)^X,B_X,\cup,\circ_K,\lambda x.\
-  \emptyset, \eta_X,(-)^{\ast},\overline{(-)})$
+$\sta\, S = ((\Pow\, S)^S,B_S,\cup,\circ_K,\lambda x.\
+  \emptyset, \eta_S,(-)^{\ast},\overline{(-)})$
   forms a $\KAT$, the \emph{full state transformer $\KAT$} over the
-  set $X$.
+  set $S$.
 \end{proposition}
-A \emph{state transformer $\KAT$} over $X$ is any subalgebra of
-$\sta\, X$. 
+A \emph{state transformer $\KAT$} over $S$ is any subalgebra of
+$\sta\, S$. 
 
 We have already formalised Kleene algebras with and without tests at
 type classes in Isabelle~\cite{afp:ka,afp:kat}.  As Isabelle's type
@@ -205,7 +205,7 @@ the relational model of $\KAT$ can be found in~\cite{afp:kat}; that of
 the state transformer model is a contribution to this article.
 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Propositional Hoare Logic and Invariants}\label{sec:hl-invariants}
 
@@ -269,7 +269,7 @@ reasoning with general invariants has been developed for this
 article. 
 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Predicate Transformer Semantics for Hybrid Programs}\label{sec:sta-hybrid}
 
@@ -306,10 +306,6 @@ tangential to $f$ at any point in $S$; it is called \emph{trajectory}
 or \emph{integral curve} of $f$ at $s$ whenever it is uniquely
 defined ~\cite{Hirsch09,Teschl12}.
 
-\gin{We use $X$ for solutions and for carrier sets of state
-  transformers. Maybe we should write $S$ for the carrier sets. Or
-  rather $x$ for solutions?}
-
 For IVP $(f,s)$ with continuous vector field $f:S\to S$ and initial
 state $s\in S$ we define the set of solutions on
 $T$ as
@@ -321,27 +317,26 @@ $f\circ X$ integrable in $T$.  For $X\in \Sols\, f\, T\, s$ and
 $G:S\to\bools$, we further define the $G$-\emph{guarded orbit} of $X$
 along $T$ in $s$~\cite{MuniveS19} with the help of the state transformer
 $\gamma^X_G:S\to \Pow\, S$ as 
-\begin{equation*} \gamma^X_{G}\, s =
-  \bigcup\{\Pow\, X\, {\downarrow}t \mid t\in T\land \Pow\, X\,
-  {\downarrow}t\subseteq G\},
+%Using predicates instead of sets, 
+\begin{equation*}
+\gamma^X_{G}\, s= \{X\, t\mid t\in T\land \forall \tau\in
+{\downarrow}t.\ G\, (X\, \tau)\}.
 \end{equation*}
+%\begin{equation*} \gamma^X_{G}\, s =
+%  \bigcup\{\Pow\, X\, {\downarrow}t \mid t\in T\land \Pow\, X\,
+%  {\downarrow}t\subseteq G\},
+%\end{equation*}
 where ${\downarrow}t = \{t'\in T\mid t'\le t\}$, and the
 $G$-\emph{guarded orbital} of $f$ along $T$ in $s$~\cite{MuniveS19}
 via the state transformer $\gamma^f_G:S\to \Pow\, S$ as
 \begin{equation*}
   \gamma^f_G\ s = \bigcup\{\gamma^X_G\, s\mid X\in \Sols\, f\, T\, s\}.
 \end{equation*}
-Using preciates instead of sets, 
-\begin{equation*}
-\gamma^X_{G}\, s= \{X\, t\mid t\in T\land \forall \tau\in
-{\downarrow}t.\ G\, (X\, \tau)\}.
-\end{equation*}
-\gin{shall we only/always use predicates?} 
 
 In applications, ${\downarrow}t$ is typically an interval
-$[0,t]\in T$.  Expanding definitions,
+$[0,t]\subseteq T$.  Expanding definitions,
 $\gamma^f_G\, s = \{X\, t \mid X\in \Sols\, f\, T\, s \land t\in T
-\land \Pow\, X\, {\downarrow}t\subseteq G\}$.
+\land \forall \tau\in{\downarrow}t.\ G\, (X\, \tau)\}$.
 If $\top$ either denotes the predicate that holds of all states in $S$
 or the set $S$ itself, we simply write $\gamma^f$ instead of
 $\gamma^f_\top$.
@@ -363,9 +358,9 @@ where $f[a\mapsto b]$ updates $f:A\to B$ by associating $a\in A$ with
 $b$ and every $y\neq a$ with $f\, y$.  The ``expression''
 ${e:S\to \reals}$ is thus evaluated in state $s$ to $e\, s$.  Then we
 lift $f_a\, x\, e:S\to S$ to state transformer
-$x:= e:S \to \Pow\, S$ using $\eta_X$:
+$x:= e:S \to \Pow\, S$ using $\eta_S$:
 \begin{equation}
-  (x:= e) = \{\lambda s.\ f_a\, x\, e\, s\}.\label{eq:st-assgn}\tag{st-assgn}
+  (x:= e) = \lambda s.\ \{f_a\, x\, e\, s\}.\label{eq:st-assgn}\tag{st-assgn}
 \end{equation}
 
 The development in this section has been formalised with
@@ -377,7 +372,7 @@ orbitals, the state transformer semantics is arguably conceptually
 simpler and more elegant.
 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
 \section{Flow-Based Hoare Logic for Hybrid
@@ -389,11 +384,13 @@ of substitutions:
 \begin{equation}
 \{\lambda s.\ P\, s[x\mapsto e\, s]\}\,  x:=e\, \{P\}. \label{eq:h-assgn}\tag{h-assgn}
 \end{equation}
+Hereinafter we abuse notation and identify predicates with sets and state 
+transformers, $P\simeq \{s\mid P\, s\}\simeq (\lambda s.\ \{x\mid x=s \land P\, s\})$.
 Hence it remains to derive a rule for evolution commands.  We restrict
 our attention to Lipschitz-continuous vector fields for which unique
 solutions to IVPs are guaranteed by Picard-Lindel\"of's
 theorem~\cite{Hirsch09,Teschl12}.  These are \emph{(local)\ flows}
-$\flow:T\to S\to S$ and $X=\flow_s=\lambda t.\ \flow\, s\, t$ is the
+$\flow:T\to S\to S$ and $X=\flow_s=\lambda t.\ \flow\, t\, s$ is the
 trajectory at $s$. Guarded orbitals $\gamma^f_G$  then specialise to
 \emph{guarded orbits}
 \begin{equation*}
@@ -409,31 +406,83 @@ interval $[0,t]$ for some $t\in T$~\cite{MuniveS19}.  Accordingly,
 The following Hoare-style rule for evolution commands is then
 derivable.
 \begin{equation}
-\{\lambda s.\forall t\in U.\ (\forall
+\{\lambda s\in S.\forall t\in U.\ (\forall
 \tau\in {\downarrow}t.\ G\, (\flow_s\, \tau)) \rightarrow P\,
 (\flow_s\, t)\}\, x' = f\, \&\, G\, \{P\}. \label{eq:h-evl}\tag{h-evl}
 \end{equation}
 
-\gin{is this correct?}
-
 This finishes the derivation of rules for a Hoare logic for hybrid
-programs---to our knowledge the first Hoare logic for hybrid
+programs---to our knowledge, the first Hoare logic for hybrid
 programs. As usual, there is one rule per programming construct, so
 that their recursive application generates proof obligations that are
 entirely about data-level relationships---the discrete and continuous
 evolution of the hybrid program store.
 
-\gin{explain procedure from pt-paper and add example}
+The Hoare-style rule~(\ref{eq:h-evl}) supports the following procedure for dealing with an evolution command $x' = f\, \&\, G$ on a set $U$ in this calculus:
+\begin{enumerate}
+\item Check that vector field $f$ satisfies the conditions for Picard-Lindel\"of's theorem ($f$ is Lipschitz continuous and $S\subseteq\reals^n$ is open).
+\item Supply a (local) flow $\flow$ for $f$ with open interval of existence $T$ around $0$.
+\item Check that $\flow_s$ solves the IVP $(f,s)$ for each $s\in S$. That is, $\flow_s'\, t = f\, (\flow_s\, t)$,  $\flow_s\, 0 = s$, and $U\subseteq T$.
+\item If successful, apply rule~(\ref{eq:h-evl}).
+\end{enumerate}
+
+\gin{add example}
 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Invariant-Based Hoare Logic for Hybrid Programs}\label{sec:hoare-inv}
 
-\gin{do invariant calculus as in pt-paper and do example}
+We can reason with invariants for evolution commands instead of supplying local flows and applying the rule~(\ref{eq:h-evl}). For this we follow~\cite{MuniveS19} in capturing semantically the meaning of these invariants.
+
+A predicate $I:S\to\bools$ is a \emph{differential invariant} of the continuous vector field $f:S\to S$ and guard $G:S\to\bools$ \emph{along} $T\subseteq \reals$ if
+\begin{equation*}
+\bigcup \mathcal{P}\, \gamma^f_G\, I\subseteq  I,
+\end{equation*}
+where $\mathcal{P}$ is the powerset functor. This is equivalent to the expression \jin{copy from Isabelle}
+For $G=\top$ we call $I$ an \emph{invariant} of $f$ along $T$. 
+
+Then, the following proposition yields the relationship between invariants for evolution commands and differential invariants.
+\begin{proposition}\label{P:inv-prop}
+  Let $f:S\to S$ be continuous, $G:S\to\bools$ and
+  $T\subseteq \reals$. Then the following are equivalent.
+\begin{enumerate}
+\item $I$ is a differential invariant for $f$ and $G$ \emph{along} $T$;
+\item $\{I\}\, x' = f\, \&\, G\, \{I\}$.
+\end{enumerate}
+\end{proposition}
+
+This yields a procedure for reasoning with evolution commands without the need to supply local flows or solutions to IVPs.
+\jin{pending: adapt and expand to Hoare Logic}
+Proposition~\ref{P:wlpprop-gen2}, the properties in this section---in
+particular Lemma~\ref{P:invrules}---and
+Lemma~\ref{P:inv-lemma} yield the following procedure for proving a
+correctness specification $P\le |x' = f\, \&\, G]Q$ using a
+differential invariant.
+\begin{enumerate}
+\item Check whether a candidate predicate $I$ is a differential
+  invariant:
+  \begin{enumerate}
+\item transform $I$ into negation normal form;
+  \item if $I$ is complex, reduce it with
+    Lemma~\ref{P:inv-lemma}, and Proposition~\ref{P:invrules}(3) and (4);
+\item if $I$ is atomic, apply Proposition~\ref{P:invrules}(1) and (2);
+  \end{enumerate}
+(if successful,  $I\le |x' = f\, \&\, G]I$ holds by
+Proposition~\ref{P:inv-prop}(3) and Lemma~\ref{P:inv-props2});
+\item if successful, prove $I\le P$ and $|x' = f\, \&\, G](G\cdot I)
+  \le |x' = f\, \&\, G]Q$.
+\end{enumerate}
 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% coincide with other invariant concepts. In $\dL$, differential invariants are predicates $I$ that satisfy $I\leq |{x'=f\ \&\ G}] I$~\cite{Platzer12}. In the terminology of Section~\ref{sec:mka-pt}, they are simply invariants for evolution commands. They play a crucial role in $\dL$ and KeYmaera X because of the limited support for solving ODEs.  
+
+% In dynamical systems theory, when all guards are $\top$ and global flows exist, and in (semi)group theory, \emph{invariant sets} for actions or flows $\flow:T\to S\to S$ are sets $I\subseteq S$ satisfying $\gamma^\flow\, s\subseteq I$ for all $s\in I$~\cite{Teschl12}.  Based on the results from Section~\ref{sec:generalisation}, we generalise both notions uniformly.
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Refinement Calculi for Hybrid Programs}\label{sec:refine}
 
@@ -506,18 +555,18 @@ in~\cite{MuniveS19}, but applications remain to be explored.
 \gin{do two examples; one for flows, one for invariants. One in one
   go, one compositionally.}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Starting from Flows}\label{sec:from-flows}
 
 \gin{do components that use flows instead of vector fields in evolution commands}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Conclusion}\label{sec:conclusion}
 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \bibliographystyle{abbrv}
 \bibliography{hybrid-kat.bib}
