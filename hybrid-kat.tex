@@ -88,6 +88,39 @@
 
 \section{Introduction}\label{sec:introduction}
 
+Research question: We already have a predicate transformer calculus,
+for instance based on $\MKA$. We know from~\cite{GomesS16} that we can
+specialise it to a Hoare logic and a Morgan-style refinement
+calculus. But how can we derive standalone Isabelle components based
+on $\KAT$. 
+
+technical contributions:
+\begin{itemize}
+\item first Hoare logic for $\dL$-style hybrid programs,
+\item first Morgan-style refinement calculus for these,
+\item Isabell verification components for both:
+  \begin{itemize}
+  \item post-hoc verification and refinement by supplying flows for
+    Lipschitz continuous vector fields,
+\item post-hoc verification and refinement with invariants for continuous vector
+  fields,
+\item post-hoc verification and refinement components for flow based
+  hybrid programs,
+  \end{itemize}
+\item verification examples that demonstrate approach at work.
+\end{itemize}
+
+conceptual contributions: simple conceptual link between $\KAT$,
+$\rKAT$, hybrid systems verification and standard verification
+approaches beyond predicate transformers and $\dL$, now
+domain-specific inference rules beyond assignment rules and refinement
+laws for basic commands. 
+
+Simplicity shows up in complexity and expressivity: equational theory
+of $\KAT$ is PSPACE complete, that of $\MKA$, which underlies $\dL$, is
+EXPTIME complete~\cite{MollerS06}. Weakest liberal preconditions,
+which are the working horses of $\dL$, cannot be expressed in $\KAT$~\cite{Struth16}.
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Kleene Algebra with Tests}\label{sec:kat} 
@@ -105,7 +138,7 @@ $\alpha,\beta,\gamma\in K$, the axioms
                              \alpha^\ast \le \beta.
 \end{align*}
 In these axioms, the ordering $\le$ on $K$ is defined by
-$x\le y\leftrightarrow x+y=y$---idempotent semirings are a forteriori
+$x\le y\leftrightarrow x+y=y$, as idempotent semirings are 
 semilattices. We often write $\alpha\beta$ instead of
 $\alpha\cdot\beta$.
 
@@ -131,16 +164,18 @@ closure and the elements of $B$ as subidentities---relations below the
 relational unit. This grounds $\KAT$ within standard relational
 imperative program semantics. Yet we prefer the isomorphic
 representation as nondeterministic functions or \emph{state
-  transformers} of type $X\to \Pow\, X$.  Composition is then
+  transformers} of type $X\to \Pow\, X$.  Composition $\cdot$ is then
 interpreted as Kleisli composition
 \begin{equation*} 
 (f\circ_K g)\, x = \bigcup\{g\, y\mid y \in f\ x \}, 
 \end{equation*} 
 $0$ as $\lambda x.\ 0$ and $1$ as $\eta_X = \{-\}$.  Stars
 $f^{\ast}\, x = \bigcup_{i\in\mathbb{N}} f^i\, x$ are defined with
-  respect to Kleisli composition: $f^{0} = \eta_X$ and
+  respect to Kleisli composition with $f^{0} = \eta_X$ and
   $f^{n+1} = f \circ_K f^{n}$. The boolean algebra of tests has
-  carrier set $B_X=\{f:X\to \Pow\, X \mid f\subseteq \eta_X\}$ and complementation
+  carrier set $B_X=\{f:X\to \Pow\, X \mid f\le \eta_X\}$, where the
+  order on function has been extended pointwise,  and complementation
+  is given by
   \begin{equation*} 
     \overline{f}\, x =
   \begin{cases}
@@ -162,13 +197,12 @@ We have already formalised Kleene algebras with and without tests at
 type classes in Isabelle~\cite{afp:ka,afp:kat}.  As Isabelle's type
 classes allow only one type parameter, we are using a non-standard
 approach that expands a Kleene algebra $K$ by an \emph{antitest}
-function $n:K\to K$ from which a \emph{test} function $t:K\to K$ can
-be defined as $t=n^2$. Then
-$K_t = \{\alpha \mid t\, \alpha = \alpha\}$ forms a boolean algebra in
-which $n$ acts as test complementation. It can be used in place of the
-boolean algebra $B$.  A formalisation of the relational model of
-$\KAT$ can be found in~\cite{afp:kat}, that of the state transformer
-model is a contribution to this article.
+function $n:K\to K$ from which a \emph{test} function $t:K\to K$ is
+defined as $t=n^2$. Then $K_t = \{\alpha \mid t\, \alpha = \alpha\}$
+forms a boolean algebra in which $n$ acts as test complementation. It
+can be used in place of the boolean algebra $B$.  A formalisation of
+the relational model of $\KAT$ can be found in~\cite{afp:kat}; that of
+the state transformer model is a contribution to this article.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -239,7 +273,7 @@ article.
 
 \section{Predicate Transformer Semantics for Hybrid Programs}\label{sec:sta-hybrid}
 
-Hybrid programs of $\dL$~\cite{Platzer10} are defined by the syntax
+Hybrid programs of differential dynamic logic ($\dL$)~\cite{Platzer10} are defined by the syntax
 \begin{equation*}
 \mathcal{C}\ ::= \ x:=e \mid x' = f \, \&\, G \mid ?P\mid \mathcal{C};\mathcal{C}\mid \mathcal{C}+\mathcal{C}\mid \mathcal{C}^*
 \end{equation*}
@@ -260,7 +294,8 @@ $n$. Program states in $S$ can thus be identified with hybrid program
 stores modelled as functions from variables in $V$ to values in
 $\reals$, as usual.
 
-Geometrically, vector field $f$ assigns a vector to any point of
+Geometrically, vector field $f$ assigns a vector to any point of the
+state space
 $S$. A solution to the \emph{initial value problem} (IVP) for the pair
 $(f,s)$ and initial value $(0,s)\in T\times S$, where $T$ is an open
 interval in $\reals$ containing $0$, is then a function $X:T\to S$
@@ -272,7 +307,8 @@ or \emph{integral curve} of $f$ at $s$ whenever it is uniquely
 defined ~\cite{Hirsch09,Teschl12}.
 
 \gin{We use $X$ for solutions and for carrier sets of state
-  transformers. Maybe we should write $S$ for the carrier sets.}
+  transformers. Maybe we should write $S$ for the carrier sets. Or
+  rather $x$ for solutions?}
 
 For IVP $(f,s)$ with continuous vector field $f:S\to S$ and initial
 state $s\in S$ we define the set of solutions on
@@ -283,16 +319,15 @@ $T$ as
 Each solution $X$ is then continuously differentiable and thus
 $f\circ X$ integrable in $T$.  For $X\in \Sols\, f\, T\, s$ and
 $G:S\to\bools$, we further define the $G$-\emph{guarded orbit} of $X$
-along $T$ in $s$~\cite{MuniveS19} with the help of the function
+along $T$ in $s$~\cite{MuniveS19} with the help of the state transformer
 $\gamma^X_G:S\to \Pow\, S$ as 
 \begin{equation*} \gamma^X_{G}\, s =
   \bigcup\{\Pow\, X\, {\downarrow}t \mid t\in T\land \Pow\, X\,
   {\downarrow}t\subseteq G\},
 \end{equation*}
-where ${\downarrow}t = \{t'\in T\mid t'\le t\}$, 
- and the $G$-\emph{guarded orbital} of
-$f$ along $T$ in $s$~\cite{MuniveS19} via
-$\gamma^f_G:S\to \Pow\, S$ as
+where ${\downarrow}t = \{t'\in T\mid t'\le t\}$, and the
+$G$-\emph{guarded orbital} of $f$ along $T$ in $s$~\cite{MuniveS19}
+via the state transformer $\gamma^f_G:S\to \Pow\, S$ as
 \begin{equation*}
   \gamma^f_G\ s = \bigcup\{\gamma^X_G\, s\mid X\in \Sols\, f\, T\, s\}.
 \end{equation*}
@@ -311,8 +346,7 @@ If $\top$ either denotes the predicate that holds of all states in $S$
 or the set $S$ itself, we simply write $\gamma^f$ instead of
 $\gamma^f_\top$.
 
-The function $\gamma^f_G$ is a state transformer. Hence we use it to
-define the semantics of the evolution command
+We use $\gamma^f_G$ to define the semantics of the evolution command
 $x'= f\, \&\, G$~\cite{MuniveS19} for any continuous $f:S\to S$ and
 $G:S\to \bools$ simply as
 \begin{equation}
@@ -323,15 +357,15 @@ Defining the state transformer semantics of assignments is
 straightforward~\cite{MuniveS19}. First we define a state update
 function $f_a:V\to (S \to E) \to S\to S$ as
 \begin{equation*}
-f_a\, v\, e\, s = s[v\mapsto e\, s],
+f_a\, x\, e\, s = s[x\mapsto e\, s],
 \end{equation*}
 where $f[a\mapsto b]$ updates $f:A\to B$ by associating $a\in A$ with
 $b$ and every $y\neq a$ with $f\, y$.  The ``expression''
 ${e:S\to \reals}$ is thus evaluated in state $s$ to $e\, s$.  Then we
-simply lift $f_a\, v\, e:S\to S$ to state transformer
-$v:= e:S \to \Pow\, S$ using $\eta_X$:
+lift $f_a\, x\, e:S\to S$ to state transformer
+$x:= e:S \to \Pow\, S$ using $\eta_X$:
 \begin{equation}
-  (v:= e) = \{\lambda s.\ f_a\, v\, e\, s\}.\label{eq:st-assgn}\tag{st-assgn}
+  (x:= e) = \{\lambda s.\ f_a\, x\, e\, s\}.\label{eq:st-assgn}\tag{st-assgn}
 \end{equation}
 
 The development in this section has been formalised with
@@ -355,24 +389,25 @@ of substitutions:
 \begin{equation}
 \{\lambda s.\ P\, s[x\mapsto e\, s]\}\,  x:=e\, \{P\}. \label{eq:h-assgn}\tag{h-assgn}
 \end{equation}
-
-Next we derive a rule for evolution commands.  We restrict our
-attention to Lipschitz-continuous vector fields for which unique
-solutions to IVPs are guaranteed by the Picard-Lindel\"of
-theorem~\cite{Hirsch09,Teschl12}.  Solutions then arise from
-\emph{(local)\ flows} $\flow:T\to S\to S$ and
-$X=\flow_s=\lambda t.\ \flow\, s\, t$ is the trajectory at $s$. We can
-then specialise $\gamma^f_G$~\cite{MuniveS19} to
+Hence it remains to derive a rule for evolution commands.  We restrict
+our attention to Lipschitz-continuous vector fields for which unique
+solutions to IVPs are guaranteed by Picard-Lindel\"of's
+theorem~\cite{Hirsch09,Teschl12}.  These are \emph{(local)\ flows}
+$\flow:T\to S\to S$ and $X=\flow_s=\lambda t.\ \flow\, s\, t$ is the
+trajectory at $s$. Guarded orbitals $\gamma^f_G$  then specialise to
+\emph{guarded orbits}
 \begin{equation*}
   \gamma^f_{G,U} = \{\flow_s\, t\mid t\in U\land \forall\tau \in
   {\downarrow}t.\ G\, (\flow_s\, t)\},
 \end{equation*}
-where $U\subseteq T$ is a time domain of interest, typically an interval
-$[0,t]$ for some $t\in T$, and accordingly (\ref{eq:st-evl}) to
+where $U\subseteq T$ is a time domain of interest, typically an
+interval $[0,t]$ for some $t\in T$~\cite{MuniveS19}.  Accordingly,
+(\ref{eq:st-evl}) becomes
 \begin{equation}
   (x' = f\, \&\, G)= \gamma^f_{G,U}.\label{eq:st-evl-flow}\tag{st-evl-flow}
 \end{equation}
-This yields the Hoare-style inference rule
+The following Hoare-style rule for evolution commands is then
+derivable.
 \begin{equation}
 \{\lambda s.\forall t\in U.\ (\forall
 \tau\in {\downarrow}t.\ G\, (\flow_s\, \tau)) \rightarrow P\,
@@ -380,6 +415,13 @@ This yields the Hoare-style inference rule
 \end{equation}
 
 \gin{is this correct?}
+
+This finishes the derivation of rules for a Hoare logic for hybrid
+programs---to our knowledge the first Hoare logic for hybrid
+programs. As usual, there is one rule per programming construct, so
+that their recursive application generates proof obligations that are
+entirely about data-level relationships---the discrete and continuous
+evolution of the hybrid program store.
 
 \gin{explain procedure from pt-paper and add example}
 
@@ -403,19 +445,18 @@ satisfies, for all $\alpha \in K$ and $p,q\in B$,
   \{p\}\, \alpha\, \{q\} \leftrightarrow \alpha\le [p,q].
 \end{equation*}
 The element $[p,q]$ of $K$ is called \emph{specification
-  statement}~\cite{Morgan94}. It satisfies the characteristic
-properties
+  statement}~\cite{Morgan94}. It satisfies 
 \begin{equation*}
-  \{p\}\, [p,q]\, \{q\}\qquad \text{ and }\qquad \{p\}\, \alpha\, \{q\} \rightarrow \alpha\le [p,q].
+  \{p\}\, [p,q]\, \{q\}\qquad \text{ and }\qquad \{p\}\, \alpha\, \{q\} \rightarrow \alpha\le [p,q];
 \end{equation*}
-Hence $[p,q]$ is the greatest element of $K$ that satisfies the Hoare
+which make $[p,q]$ the greatest element of $K$ that satisfies the Hoare
 triple with precondition $p$ and postcondition $q$.  Indeed, in
 $\sta\, S$ and for $S\subseteq \reals^n$,
 \begin{equation*}
   [P,Q] = \bigcup \left\{f:S\to \Pow\, S \mid \{P\}\, f\, \{Q\}\right\}.
 \end{equation*}
 
-The following refinement laws~\cite{Morgan94} are derivable in
+The following Morgan-style refinement laws~\cite{Morgan94} are derivable in
 $\rKAT$~\cite{ArmstrongGS16}. 
 \begin{align}
   1 &\le [p,p],\label{eq:r-skip}\tag{r-skip}\\
@@ -448,12 +489,22 @@ law. They introduce an assignment before and after a block of code.
 As refinement law for evolution commands we obtain
 \begin{equation}
 x' = f\, \&\, G \le [\lambda s.\forall t\in U.\ (\forall
-\tau\in {\downarrow}t.\ G\, (\flow_s\, \tau)),P]. \label{eq:r-evl}\tag{r-evl}
+\tau\in {\downarrow}t.\ G\, (\flow_s\, \tau))\to P\, (\flow_s\, t),P]. \label{eq:r-evl}\tag{r-evl}
 \end{equation}
 
-\gin{is that correct? we also need to derive leading/following laws for evolution statements.}
+\gin{is that correct? we also need to derive leading/following laws
+  for evolution statements.}
 
-\gin{do two examples; one for flows, one for invariants.}
+These laws suffice for constructing hybrid programs from an initial
+specification statement by step-wise refinement in an incremental and
+compositional way in the style of Morgan. To our knowledge this is the
+first refinement calculus for hybrid programs in this style.  A more
+powerful refinement calculus based on predicate transformers in the
+style of Back and von Wright~\cite{BackW98} has been developed
+in~\cite{MuniveS19}, but applications remain to be explored.
+
+\gin{do two examples; one for flows, one for invariants. One in one
+  go, one compositionally.}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
