@@ -433,16 +433,16 @@ The Hoare-style rule~(\ref{eq:h-evl}) supports the following procedure for deali
 
 \section{Invariant-Based Hoare Logic for Hybrid Programs}\label{sec:hoare-inv}
 
-We can reason with invariants for evolution commands instead of supplying local flows and applying the rule~(\ref{eq:h-evl}). For this we follow~\cite{MuniveS19} in capturing semantically the meaning of these invariants.
+We can reason with invariants for evolution commands instead of supplying local flows to the rule~(\ref{eq:h-evl}). For this we follow~\cite{MuniveS19} in capturing semantically the meaning of these invariants.
 
 A predicate $I:S\to\bools$ is a \emph{differential invariant} of the continuous vector field $f:S\to S$ and guard $G:S\to\bools$ \emph{along} $T\subseteq \reals$ if
 \begin{equation*}
 \bigcup \mathcal{P}\, \gamma^f_G\, I\subseteq  I,
 \end{equation*}
-where $\mathcal{P}$ is the powerset functor. This is equivalent to the expression \jin{copy from Isabelle}
-For $G=\top$ we call $I$ an \emph{invariant} of $f$ along $T$. 
+where $\mathcal{P}$ is the powerset functor. Unfolding definitions this is equivalent to $\forall s.\ I\, s \to (\forall X\in\Sols f\, T\, s.\ \forall t\in T. (\forall \tau\in {\downarrow}t.\ G\, (X\, \tau)) \to I\, (X\, t))$.
+For $G=\top$ we call $I$ an \emph{invariant} of $f$ along $T$. These are a generalization of both $\dL$-style differential invariants~\cite{Platzer12} and \emph{invariant sets} for actions~\cite{Teschl12} from dynamical systems theory and (semi)group theory.
 
-Then, the following proposition yields the relationship between invariants for evolution commands and differential invariants.
+The following proposition yields the relationship between invariants for evolution commands and differential invariants.
 \begin{proposition}\label{P:inv-prop}
   Let $f:S\to S$ be continuous, $G:S\to\bools$ and
   $T\subseteq \reals$. Then the following are equivalent.
@@ -452,33 +452,38 @@ Then, the following proposition yields the relationship between invariants for e
 \end{enumerate}
 \end{proposition}
 
-This yields a procedure for reasoning with evolution commands without the need to supply local flows or solutions to IVPs.
-\jin{pending: adapt and expand to Hoare Logic}
-Proposition~\ref{P:wlpprop-gen2}, the properties in this section---in
-particular Lemma~\ref{P:invrules}---and
-Lemma~\ref{P:inv-lemma} yield the following procedure for proving a
-correctness specification $P\le |x' = f\, \&\, G]Q$ using a
-differential invariant.
+This property in conjuction with the following variant of (\ref{eq:h-inv}), help in the conversion from Hoare triples to proof obligations:
+\begin{align}
+  P\le I \land \{I\}\, x' = f\, \&\, G\, \{I\}\land (I\cdot G)\le Q\ \rightarrow\
+  &\{P\}\, x' = f\, \&\, G\, \{Q\},\label{eq:h-invg}\tag{h-invg}
+\end{align}
+
+A combination of (\ref{eq:h-invg}) and Proposition~\ref{P:inv-prop} then requires a proof for differential invariance. The next result provides tools for checking this condition:
+
+\begin{proposition}\label{P:invrules}
+  Let $f:S\to S$ be a continuous vector field, $\mu,\nu:S\to\reals$
+  differentiable and $T\subseteq \reals$. 
 \begin{enumerate}
-\item Check whether a candidate predicate $I$ is a differential
-  invariant:
-  \begin{enumerate}
-\item transform $I$ into negation normal form;
-  \item if $I$ is complex, reduce it with
-    Lemma~\ref{P:inv-lemma}, and Proposition~\ref{P:invrules}(3) and (4);
-\item if $I$ is atomic, apply Proposition~\ref{P:invrules}(1) and (2);
-  \end{enumerate}
-(if successful,  $I\le |x' = f\, \&\, G]I$ holds by
-Proposition~\ref{P:inv-prop}(3) and Lemma~\ref{P:inv-props2});
-\item if successful, prove $I\le P$ and $|x' = f\, \&\, G](G\cdot I)
-  \le |x' = f\, \&\, G]Q$.
+\item If $(\mu\circ X)' =(\nu\circ X)'$ for all $X\in \Sols f\, T\, s$, then $\mu = \nu$ is a differential invariant for $f$ along $T$,
+\item if $(\mu\circ X)'\, t\leq(\nu\circ X)'\, t$ when $t> 0$, and $(\mu\circ X)'\, t\geq(\nu\circ X)'\, t$ when $t< 0$, for all $X\in \Sols f\, T\, s$,
+  then $\mu < \nu$ is an invariant for $f$ along $T$,
+\item if $I_1$ and $I_2$ are differential invariants for $f$ along $T$, then so are $\lambda s.\ I_1\, s \land I_2\, s$ and $\lambda s.\ I_1\, s \lor I_2\, s$.
+\item $\mu\neq \nu$ if and only if $\mu < \nu$ or $\nu < \mu$,
+\item $\mu \not\le \nu$ if and only if $\nu < \mu$.
 \end{enumerate}
+\end{proposition}
 
-
-
-% coincide with other invariant concepts. In $\dL$, differential invariants are predicates $I$ that satisfy $I\leq |{x'=f\ \&\ G}] I$~\cite{Platzer12}. In the terminology of Section~\ref{sec:mka-pt}, they are simply invariants for evolution commands. They play a crucial role in $\dL$ and KeYmaera X because of the limited support for solving ODEs.  
-
-% In dynamical systems theory, when all guards are $\top$ and global flows exist, and in (semi)group theory, \emph{invariant sets} for actions or flows $\flow:T\to S\to S$ are sets $I\subseteq S$ satisfying $\gamma^\flow\, s\subseteq I$ for all $s\in I$~\cite{Teschl12}.  Based on the results from Section~\ref{sec:generalisation}, we generalise both notions uniformly.
+Therefore, the rule (\ref{eq:h-invg}) and Propositions~\ref{P:inv-prop} and~\ref{P:invrules} yield the following procedure for proving the triple $\{P\}\, x' = f\, \&\, G\, \{Q\}$ using a differential invariant.
+\begin{enumerate}
+\item Check whether a candidate predicate $I$ is a differential invariant:
+	\begin{enumerate}
+	\item transform $I$ into negation normal form;
+	\item if $I$ is complex, reduce it with Proposition~\ref{P:invrules} (3), (4) and (5);
+	\item for atomic $I$, apply Proposition~\ref{P:invrules} (1) and (2);
+	\end{enumerate}
+(if successful,  $\{I\}\, x' = f\, \&\, G\, \{I\}$ holds by Proposition~\ref{P:inv-prop}(2))
+\item if successful, prove $P\le I$ and $(I\cdot G)\le Q$ to apply rule (\ref{eq:h-invg}).
+\end{enumerate}
 
 
 
@@ -522,8 +527,6 @@ For invariants and loops, we obtain, in addition,
   [i,i] &\le [p,q],\qquad \text{ if } p\le i \le q,\label{eq:r-inv}\tag{r-inv}\\
 \mathbf{loop} [i,i] &\le [i,i]. \label{eq:r-loop}\tag{r-loop}
 \end{align}
-
-\gin{check law for loops and for invariants.}
 
 In $\sta\, S$, moreover, the following assignments laws are
 derivable~\cite{ArmstrongGS16}.
