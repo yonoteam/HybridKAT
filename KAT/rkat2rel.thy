@@ -171,6 +171,12 @@ lemma R_loop: "X \<le> rel_R \<lceil>I\<rceil> \<lceil>I\<rceil> \<Longrightarro
 lemma R_loop_mono: "X \<subseteq> X' \<Longrightarrow> LOOP X INV I \<subseteq> LOOP X' INV I"
   unfolding rel_kat.loopi_def by (simp add: rel_kleene_algebra.star_iso)
 
+lemma R_g_evol: 
+  fixes \<phi> :: "('a::preorder) \<Rightarrow> 'b \<Rightarrow> 'b"
+  shows"(\<forall>s. P s \<longrightarrow> (\<forall>t\<in>T. (\<forall>\<tau>\<in>down T t. G (\<phi> \<tau> s)) \<longrightarrow> Q (\<phi> t s))) \<Longrightarrow> 
+  (EVOL \<phi> G T) \<le> rel_R \<lceil>P\<rceil> \<lceil>Q\<rceil>"
+  unfolding sH_g_evol[symmetric] rel_rkat.spec_def .
+
 lemma (in local_flow) R_g_ode: "(\<forall>s\<in>S. P s \<longrightarrow> (\<forall>t\<in>T. (\<forall>\<tau>\<in>down T t. G (\<phi> \<tau> s)) \<longrightarrow> Q (\<phi> t s))) \<Longrightarrow> 
   (x\<acute>= f & G on T S @ 0) \<le> rel_R \<lceil>P\<rceil> \<lceil>Q\<rceil>"
   unfolding sH_g_ode[symmetric] by (rule rel_rkat.R2)

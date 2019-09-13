@@ -12,11 +12,9 @@ specifications of continuous dynamics: flows, solutions and invariants. \<close>
 theory kat2rel
   imports
   "../hs_prelims_dyn_sys"
-  KAT_and_DRA.PHL_KAT 
-  (*"../../../../Georgs/Algebraic_VCs/AVC_KAT/VC_KAT"*)
-  (*"../../../afpModified/VC_KAT"*)
+  KAT_and_DRA.PHL_KAT
 
-begin
+begin (* do state transformers version *)
 
 subsection \<open> Kleene algebra preparation \<close> 
 
