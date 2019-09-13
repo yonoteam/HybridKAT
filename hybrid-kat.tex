@@ -183,6 +183,9 @@ $f^{\ast}\, x = \bigcup_{i\in\mathbb{N}} f^i\, x$ are defined with
 \emptyset, & \text{ otherwise}.
   \end{cases}
 \end{equation*}
+Henceforth we freely identify predicates, sets and state 
+transformers below $\eta_S$: 
+$P\cong \{s\mid P\, s\}\cong \lambda s.\ \{x\mid x=s \land P\, s\}$.
 
 \begin{proposition}\label{P:kleisli-ka}
 $\sta\, S = ((\Pow\, S)^S,B_S,\cup,\circ_K,\lambda x.\
@@ -317,15 +320,10 @@ $f\circ X$ integrable in $T$.  For $X\in \Sols\, f\, T\, s$ and
 $G:S\to\bools$, we further define the $G$-\emph{guarded orbit} of $X$
 along $T$ in $s$~\cite{MuniveS19} with the help of the state transformer
 $\gamma^X_G:S\to \Pow\, S$ as 
-%Using predicates instead of sets, 
 \begin{equation*}
 \gamma^X_{G}\, s= \{X\, t\mid t\in T\land \forall \tau\in
-{\downarrow}t.\ G\, (X\, \tau)\}.
+{\downarrow}t.\ G\, (X\, \tau)\},
 \end{equation*}
-%\begin{equation*} \gamma^X_{G}\, s =
-%  \bigcup\{\Pow\, X\, {\downarrow}t \mid t\in T\land \Pow\, X\,
-%  {\downarrow}t\subseteq G\},
-%\end{equation*}
 where ${\downarrow}t = \{t'\in T\mid t'\le t\}$, and the
 $G$-\emph{guarded orbital} of $f$ along $T$ in $s$~\cite{MuniveS19}
 via the state transformer $\gamma^f_G:S\to \Pow\, S$ as
@@ -335,8 +333,10 @@ via the state transformer $\gamma^f_G:S\to \Pow\, S$ as
 
 In applications, ${\downarrow}t$ is typically an interval
 $[0,t]\subseteq T$.  Expanding definitions,
-$\gamma^f_G\, s = \{X\, t \mid X\in \Sols\, f\, T\, s \land t\in T
-\land \forall \tau\in{\downarrow}t.\ G\, (X\, \tau)\}$.
+\begin{equation*}
+\gamma^f_G\, s = \{X\, t \mid X\in \Sols\, f\, T\, s \land t\in T
+\land \forall \tau\in{\downarrow}t.\ G\, (X\, \tau)\}.
+\end{equation*}
 If $\top$ either denotes the predicate that holds of all states in $S$
 or the set $S$ itself, we simply write $\gamma^f$ instead of
 $\gamma^f_\top$.
@@ -384,8 +384,6 @@ of substitutions:
 \begin{equation}
 \{\lambda s.\ P\, s[x\mapsto e\, s]\}\,  x:=e\, \{P\}. \label{eq:h-assgn}\tag{h-assgn}
 \end{equation}
-Hereinafter we abuse notation and identify predicates with sets and state 
-transformers, $P\simeq \{s\mid P\, s\}\simeq (\lambda s.\ \{x\mid x=s \land P\, s\})$.
 Hence it remains to derive a rule for evolution commands.  We restrict
 our attention to Lipschitz-continuous vector fields for which unique
 solutions to IVPs are guaranteed by Picard-Lindel\"of's
@@ -418,7 +416,7 @@ that their recursive application generates proof obligations that are
 entirely about data-level relationships---the discrete and continuous
 evolution of the hybrid program store.
 
-The Hoare-style rule~(\ref{eq:h-evl}) supports the following procedure for dealing with an evolution command $x' = f\, \&\, G$ on a set $U$ in this calculus:
+The Hoare-style rule~(\ref{eq:h-evl}) supports the following procedure for reasoning with an evolution command $x' = f\, \&\, G$ on a set $U$ in this calculus:
 \begin{enumerate}
 \item Check that vector field $f$ satisfies the conditions for Picard-Lindel\"of's theorem ($f$ is Lipschitz continuous and $S\subseteq\reals^n$ is open).
 \item Supply a (local) flow $\flow$ for $f$ with open interval of existence $T$ around $0$.
@@ -433,32 +431,34 @@ The Hoare-style rule~(\ref{eq:h-evl}) supports the following procedure for deali
 
 \section{Invariant-Based Hoare Logic for Hybrid Programs}\label{sec:hoare-inv}
 
-We can reason with invariants for evolution commands instead of supplying local flows to the rule~(\ref{eq:h-evl}). For this we follow~\cite{MuniveS19} in capturing semantically the meaning of these invariants.
+Alternatively, we can reason with invariants for evolution commands instead of supplying flows to the rule~(\ref{eq:h-evl}). For this we follow~\cite{MuniveS19} in capturing the meaning of these invariants semantically. Our invariants generalise both $\dL$-style differential invariants~\cite{Platzer12} and \emph{invariant sets} for actions~\cite{Teschl12} in dynamical systems theory and (semi)group theory.
 
-A predicate $I:S\to\bools$ is a \emph{differential invariant} of the continuous vector field $f:S\to S$ and guard $G:S\to\bools$ \emph{along} $T\subseteq \reals$ if
+A predicate $I:S\to\bools$ is an \emph{invariant} of the continuous vector field $f:S\to S$ and guard $G:S\to\bools$ \emph{along} $T\subseteq \reals$ if
 \begin{equation*}
-\bigcup \mathcal{P}\, \gamma^f_G\, I\subseteq  I,
+\bigcup \Pow\, \gamma^f_G\, I\subseteq  I.
 \end{equation*}
-where $\mathcal{P}$ is the powerset functor. Unfolding definitions this is equivalent to $\forall s.\ I\, s \to (\forall X\in\Sols f\, T\, s.\ \forall t\in T. (\forall \tau\in {\downarrow}t.\ G\, (X\, \tau)) \to I\, (X\, t))$.
-For $G=\top$ we call $I$ an \emph{invariant} of $f$ along $T$. These are a generalization of both $\dL$-style differential invariants~\cite{Platzer12} and \emph{invariant sets} for actions~\cite{Teschl12} from dynamical systems theory and (semi)group theory.
+The operation $\bigcup\circ\Pow$ is known as the Kleisli extension in the powerset monad. The definition of invariance unfolds to 
+\begin{equation*}
+\forall s.\ I\, s \to (\forall X\in\Sols f\, T\, s.\forall t\in T.\ (\forall \tau\in {\downarrow}t.\ G\, (X\, \tau)) \to I\, (X\, t)).
+\end{equation*}
+For $G=\top$ we call $I$ an \emph{invariant} of $f$ along $T$.  Intuitively, invariants can be seen as sets of orbits.
 
-The following proposition yields the relationship between invariants for evolution commands and differential invariants.
+Next we relate invariants for evolution commands with Hoare triples.
 \begin{proposition}\label{P:inv-prop}
   Let $f:S\to S$ be continuous, $G:S\to\bools$ and
-  $T\subseteq \reals$. Then the following are equivalent.
-\begin{enumerate}
-\item $I$ is a differential invariant for $f$ and $G$ \emph{along} $T$;
-\item $\{I\}\, x' = f\, \&\, G\, \{I\}$.
-\end{enumerate}
+  $T\subseteq \reals$. Then $I$ is an invariant for $f$ and $G$ \emph{along} $T$ if and only if
+\begin{equation*}
+ \{I\}\, x' = f\, \&\, G\, \{I\}.
+\end{equation*}
 \end{proposition}
 
-This property in conjuction with the following variant of (\ref{eq:h-inv}), help in the conversion from Hoare triples to proof obligations:
+This proposition and the following variant of (\ref{eq:h-inv}) are helpful for verification condition generation:
 \begin{align}
   P\le I \land \{I\}\, x' = f\, \&\, G\, \{I\}\land (I\cdot G)\le Q\ \rightarrow\
   &\{P\}\, x' = f\, \&\, G\, \{Q\},\label{eq:h-invg}\tag{h-invg}
 \end{align}
 
-A combination of (\ref{eq:h-invg}) and Proposition~\ref{P:inv-prop} then requires a proof for differential invariance. The next result provides tools for checking this condition:
+Applying (\ref{eq:h-invg}) in the context of Proposition~\ref{P:inv-prop} then requires a proof for invariance.
 
 \begin{proposition}\label{P:invrules}
   Let $f:S\to S$ be a continuous vector field, $\mu,\nu:S\to\reals$
@@ -467,13 +467,17 @@ A combination of (\ref{eq:h-invg}) and Proposition~\ref{P:inv-prop} then require
 \item If $(\mu\circ X)' =(\nu\circ X)'$ for all $X\in \Sols f\, T\, s$, then $\mu = \nu$ is a differential invariant for $f$ along $T$,
 \item if $(\mu\circ X)'\, t\leq(\nu\circ X)'\, t$ when $t> 0$, and $(\mu\circ X)'\, t\geq(\nu\circ X)'\, t$ when $t< 0$, for all $X\in \Sols f\, T\, s$,
   then $\mu < \nu$ is an invariant for $f$ along $T$,
-\item if $I_1$ and $I_2$ are differential invariants for $f$ along $T$, then so are $\lambda s.\ I_1\, s \land I_2\, s$ and $\lambda s.\ I_1\, s \lor I_2\, s$.
 \item $\mu\neq \nu$ if and only if $\mu < \nu$ or $\nu < \mu$,
-\item $\mu \not\le \nu$ if and only if $\nu < \mu$.
+\item $\mu \not\le \nu$ if and only if $\nu < \mu$,
+\jin{get Hoare triple version in Isabelle}
+\item if $\{I_i\}\, x' = f\, \&\, G\, \{I_i\}$ for $i\in\{1,2\}$, then $\{I_1\land I_2\}\, x' = f\, \&\, G\, \{I_1\land I_2\}$ and $\{I_1\lor I_2\}\, x' = f\, \&\, G\, \{I_1\lor I_2\}$.
+%\item if $I_1$ and $I_2$ are differential invariants for $f$ along $T$, then so are $\lambda s.\ I_1\, s \land I_2\, s$ and $\lambda s.\ I_1\, s \lor I_2\, s$.
 \end{enumerate}
 \end{proposition}
 
-Therefore, the rule (\ref{eq:h-invg}) and Propositions~\ref{P:inv-prop} and~\ref{P:invrules} yield the following procedure for proving the triple $\{P\}\, x' = f\, \&\, G\, \{Q\}$ using a differential invariant.
+Condition $(1)$ follows from the well-known fact that two continuously differentiable are equal if they intersect at some point and their derivatives are equal.
+
+Therefore, the rule (\ref{eq:h-invg}) and Propositions~\ref{P:inv-prop} and~\ref{P:invrules} yield the following procedure for proving the triple $\{P\}\, x' = f\, \&\, G\, \{Q\}$ using a invariant.
 \begin{enumerate}
 \item Check whether a candidate predicate $I$ is a differential invariant:
 	\begin{enumerate}
