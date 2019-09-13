@@ -1,5 +1,5 @@
 theory kat2rel_examples
-  imports "../hs_prelims_matrices" kat2rel
+  imports kat2rel
 
 begin
 
@@ -86,24 +86,7 @@ lemma pendulum_dyn: "rel_kat.Hoare
   \<lceil>\<lambda>s. r\<^sup>2 = (s$1)\<^sup>2 + (s$2)\<^sup>2\<rceil> (EVOL \<phi> G T) \<lceil>\<lambda>s. r\<^sup>2 = (s$1)\<^sup>2 + (s$2)\<^sup>2\<rceil>"
   by simp
 
-\<comment> \<open>Verified as a linear system (using uniqueness). \<close>
-
-abbreviation pend_sq_mtx :: "2 sq_mtx" ("A")
-  where "A \<equiv> sq_mtx_chi (\<chi> i. if i=1 then \<e> 2 else - \<e> 1)"
-
-lemma pend_sq_mtx_exp_eq_flow: "exp (\<tau> *\<^sub>R A) *\<^sub>V s = \<phi> \<tau> s"
-  apply(rule local_flow.eq_solution[OF local_flow_exp, symmetric], rule ivp_solsI)
-  apply(clarsimp simp: sq_mtx_vec_prod_def matrix_vector_mult_def)
-  apply(force intro!: poly_derivatives)
-  using exhaust_2 by (auto simp: vec_eq_iff)
-
-lemma pendulum_sq_mtx: "rel_kat.Hoare
-  \<lceil>\<lambda>s. r\<^sup>2 = (s$1)\<^sup>2 + (s$2)\<^sup>2\<rceil> (x\<acute>= ((*\<^sub>V) A) & G) \<lceil>\<lambda>s. r\<^sup>2 = (s$1)\<^sup>2 + (s$2)\<^sup>2\<rceil>"
-  apply(subst local_flow.sH_g_ode[OF local_flow_exp])
-  unfolding pend_sq_mtx_exp_eq_flow by auto
-
 no_notation fpend ("f")
-        and pend_sq_mtx ("A")
         and pend_flow ("\<phi>")
 
 
@@ -226,50 +209,8 @@ lemma bouncing_ball_flow: "g < 0 \<Longrightarrow> h \<ge> 0 \<Longrightarrow> r
      apply(force simp: bb_real_arith)
   by (rule H_cond) (auto simp: bb_real_arith)
 
-\<comment> \<open>Verified as a linear system (computing exponential). \<close>
-
-abbreviation ball_sq_mtx :: "3 sq_mtx" ("A")
-  where "ball_sq_mtx \<equiv> sq_mtx_chi (\<chi> i. if i=1 then \<e> 2 else if i=2 then \<e> 3 else 0)"
-
-lemma ball_sq_mtx_pow2: "A\<^sup>2 = sq_mtx_chi (\<chi> i. if i=1 then \<e> 3 else 0)"
-  unfolding monoid_mult_class.power2_eq_square times_sq_mtx_def
-  by (simp add: sq_mtx_chi_inject vec_eq_iff matrix_matrix_mult_def)
-
-lemma ball_sq_mtx_powN: "m > 2 \<Longrightarrow> (\<tau> *\<^sub>R A)^m = 0"
-  apply(induct m, simp, case_tac "m \<le> 2")
-   apply(simp only: le_less_Suc_eq power_class.power.simps(2), simp)
-  by (auto simp: ball_sq_mtx_pow2 sq_mtx_chi_inject vec_eq_iff 
-      times_sq_mtx_def zero_sq_mtx_def matrix_matrix_mult_def)
-
-lemma exp_ball_sq_mtx: "exp (\<tau> *\<^sub>R A) = ((\<tau> *\<^sub>R A)\<^sup>2/\<^sub>R 2) + (\<tau> *\<^sub>R A) + 1"
-  unfolding exp_def apply(subst suminf_eq_sum[of 2])
-  using ball_sq_mtx_powN by (simp_all add: numeral_2_eq_2)
- 
-lemma exp_ball_sq_mtx_simps:
-  "exp (\<tau> *\<^sub>R A) $$ 1 $ 1 = 1" "exp (\<tau> *\<^sub>R A) $$ 1 $ 2 = \<tau>" "exp (\<tau> *\<^sub>R A) $$ 1 $ 3 = \<tau>^2/2"
-  "exp (\<tau> *\<^sub>R A) $$ 2 $ 1 = 0" "exp (\<tau> *\<^sub>R A) $$ 2 $ 2 = 1" "exp (\<tau> *\<^sub>R A) $$ 2 $ 3 = \<tau>"
-  "exp (\<tau> *\<^sub>R A) $$ 3 $ 1 = 0" "exp (\<tau> *\<^sub>R A) $$ 3 $ 2 = 0" "exp (\<tau> *\<^sub>R A) $$ 3 $ 3 = 1"
-  unfolding exp_ball_sq_mtx scaleR_power ball_sq_mtx_pow2
-  by (auto simp: plus_sq_mtx_def scaleR_sq_mtx_def one_sq_mtx_def 
-      mat_def scaleR_vec_def axis_def plus_vec_def)
-
-lemma bouncing_ball_sq_mtx: "rel_kat.Hoare
-  \<lceil>\<lambda>s. 0 \<le> s$1 \<and> s$1 = h \<and> s$2 = 0 \<and> 0 > s$3\<rceil>
-    (LOOP 
-      ((x\<acute>=(*\<^sub>V) A & (\<lambda> s. s$1 \<ge> 0));
-      (IF (\<lambda>s. s$1 = 0) THEN (2 ::= (\<lambda>s. - s$2)) ELSE skip))
-    INV (\<lambda>s. 0 \<le> s$1 \<and> 0 > s$3 \<and>  2 \<cdot> s$3 \<cdot> s$1 = 2 \<cdot> s$3 \<cdot> h + (s$2 \<cdot> s$2)))
-  \<lceil>\<lambda>s. 0 \<le> s$1 \<and> s$1 \<le> h\<rceil>"
-  apply(rule H_loopI)
-    apply(rule H_comp[where R="\<lambda>s. 0 \<le> s$1 \<and> 0 > s$3 \<and>  2 \<cdot> s$3 \<cdot> s$1 = 2 \<cdot> s$3 \<cdot> h + (s$2 \<cdot> s$2)"])
-  apply(subst local_flow.sH_g_ode[OF local_flow_exp])
-     apply(simp add: sq_mtx_vec_prod_eq, unfold UNIV_3)
-     apply(simp add: exp_ball_sq_mtx_simps field_simps monoid_mult_class.power2_eq_square)
-  by (rule H_cond) (auto simp: bb_real_arith)
-
 no_notation fball ("f")
         and ball_flow ("\<phi>")
-        and ball_sq_mtx ("A")
 
 
 subsubsection \<open> Thermostat \<close>

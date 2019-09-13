@@ -213,6 +213,8 @@ subsection \<open> Store and Hoare triples \<close>
 
 type_synonym 'a pred = "'a \<Rightarrow> bool"
 
+typ "real ^ 'i"
+
 \<comment> \<open>We start by deleting some conflicting notation.\<close>
 
 no_notation Archimedean_Field.ceiling ("\<lceil>_\<rceil>")
