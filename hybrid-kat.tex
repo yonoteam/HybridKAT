@@ -107,6 +107,9 @@ technical contributions:
 \item post-hoc verification and refinement components for flow based
   hybrid programs,
   \end{itemize}
+\item lenses,
+\item specification statements with frames,
+\item our store model plus executable euclidean spaces,
 \item verification examples that demonstrate approach at work.
 \end{itemize}
 
@@ -475,9 +478,12 @@ Applying (\ref{eq:h-invg}) in the context of Proposition~\ref{P:inv-prop} then r
 \end{enumerate}
 \end{proposition}
 
-Condition $(1)$ follows from the well-known fact that two continuously differentiable are equal if they intersect at some point and their derivatives are equal.
-
-Therefore, the rule (\ref{eq:h-invg}) and Propositions~\ref{P:inv-prop} and~\ref{P:invrules} yield the following procedure for proving the triple $\{P\}\, x' = f\, \&\, G\, \{Q\}$ using a invariant.
+Condition $(1)$ follows from the well known fact that two continuously
+differentiable are equal if they intersect at some point and their
+derivatives are equal. Therefore, the rule (\ref{eq:h-invg}) and
+Propositions~\ref{P:inv-prop} and~\ref{P:invrules} yield the following
+procedure for proving the triple $\{P\}\, x' = f\, \&\, G\, \{Q\}$
+using an invariant.
 \begin{enumerate}
 \item Check whether a candidate predicate $I$ is a differential invariant:
 	\begin{enumerate}
@@ -485,7 +491,7 @@ Therefore, the rule (\ref{eq:h-invg}) and Propositions~\ref{P:inv-prop} and~\ref
 	\item if $I$ is complex, reduce it with Proposition~\ref{P:invrules} (3), (4) and (5);
 	\item for atomic $I$, apply Proposition~\ref{P:invrules} (1) and (2);
 	\end{enumerate}
-(if successful,  $\{I\}\, x' = f\, \&\, G\, \{I\}$ holds by Proposition~\ref{P:inv-prop}(2))
+(if successful,  $\{I\}\, x' = f\, \&\, G\, \{I\}$ holds by Proposition~\ref{P:inv-prop}),
 \item if successful, prove $P\le I$ and $(I\cdot G)\le Q$ to apply rule (\ref{eq:h-invg}).
 \end{enumerate}
 
@@ -548,7 +554,7 @@ x' = f\, \&\, G \le [\lambda s.\forall t\in U.\ (\forall
 \tau\in {\downarrow}t.\ G\, (\flow_s\, \tau))\to P\, (\flow_s\, t),P]. \label{eq:r-evl}\tag{r-evl}
 \end{equation}
 
-\gin{is that correct? we also need to derive leading/following laws
+\gin{we also need to derive leading/following laws
   for evolution statements.}
 
 These laws suffice for constructing hybrid programs from an initial
