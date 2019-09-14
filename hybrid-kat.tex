@@ -247,14 +247,12 @@ verification condition generation:
   \rightarrow\ & \{p\}\, \IF{t}{\alpha}{\beta}\, \{q\},\label{eq:h-cond}\tag{h-cond}\\
   \{tp\}\, \alpha\, \{p\}\ \rightarrow\ & \{p\}\, \WHILE{t}{\alpha}\, \{\neg tp\}.\label{eq:h-while}\tag{h-while}
 \end{align}
-Specific rules for commands with invariant assertions
-$\alpha\ \mathbf{inv}\ i$ are easily derivable (operationally,
-$\alpha\, \mathbf{inv}\, i = \alpha$).  We define an \emph{invariant}
-of an element $\alpha\in K$ as an element $i\in B$ satisfying $\{i\}\,
-\alpha\, \{i\}$. 
-
+Rules for commands with invariant assertions $\alpha\ \mathbf{inv}\ i$
+are derivable, too (operationally,
+$\alpha\, \mathbf{inv}\, i = \alpha$).  An \emph{invariant} for
+$\alpha\in K$ is an $i\in B$ satisfying $\{i\}\, \alpha\, \{i\}$.
 Then, with $\mathbf{loop}\, \alpha$ as syntactic sugar for
-$\alpha^\ast$, one can easily derive
+$\alpha^\ast$, we obtain
 \begin{align}
   p\le i \land \{i\}\, \alpha\, \{i\}\land i\le q\ \rightarrow\
   &\{p\}\, \alpha\, \{q\},\label{eq:h-inv}\tag{h-inv}\\
@@ -268,7 +266,7 @@ We use (\ref{eq:h-inv})---an instance of (\ref{eq:h-cons})---to reason
 about invariants for continuous evolutions of hybrid systems in
 Section~\ref{sec:hoare-inv}, \ref{sec:refine} and
 \ref{sec:from-flows}. Rule (\ref{eq:h-while-inv}) is standard for
-reasoning with invariants for while loops; (\ref{eq:h-loop-inv})
+reasoning with invariants for while loops; (\ref{eq:h-loop-inv}) is
 specific to loops of hybrid programs (see
 Section~\ref{sec:sta-hybrid}).
 
@@ -281,7 +279,7 @@ article.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Predicate Transformer Semantics for Hybrid
+\section{State Transformer Semantics of Hybrid
   Programs}\label{sec:sta-hybrid}
 
 \gin{Simon: add some paras on lenses.}
@@ -341,7 +339,6 @@ via the state transformer $\gamma^f_G:S\to \Pow\, S$ as
 \begin{equation*}
   \gamma^f_G\ s = \bigcup\{\gamma^X_G\, s\mid X\in \Sols\, f\, T\, s\}.
 \end{equation*}
-
 In applications, ${\downarrow}t$ is typically an interval
 $[0,t]\subseteq T$.  Expanding definitions,
 \begin{equation*}
@@ -349,12 +346,12 @@ $[0,t]\subseteq T$.  Expanding definitions,
 \land \forall \tau\in{\downarrow}t.\ G\, (X\, \tau)\}.
 \end{equation*}
 If $\top$ either denotes the predicate that holds of all states in $S$
-or the set $S$ itself, we simply write $\gamma^f$ instead of
+or the set $S$ itself, we write $\gamma^f$ instead of
 $\gamma^f_\top$.
 
-We use $\gamma^f_G$ to define the semantics of the evolution command
+We define the semantics of the evolution command
 $x'= f\, \&\, G$~\cite{MuniveS19} for any continuous $f:S\to S$ and
-$G:S\to \bools$ simply as
+$G:S\to \bools$ as
 \begin{equation}
 {(x'= f\, \&\, G)} = \gamma^f_G.\label{eq:st-evl}\tag{st-evl}
 \end{equation}
@@ -388,8 +385,8 @@ simpler and more elegant.
 \section{Flow-Based Hoare Logic for Hybrid
   Programs}\label{sec:hoare-flow}
 
-The assignment axiom of Hoare logic needs little explanation. Our
-semantics allows us to derive a variant with update functions instead
+The assignment axiom of Hoare logic need not be explained. Our
+semantics yilds a variant with update functions instead
 of substitutions:
 \begin{equation}
 \{\lambda s.\ P\, s[x\mapsto e\, s]\}\,  x:=e\, \{P\}. \label{eq:h-assgn}\tag{h-assgn}
@@ -423,11 +420,11 @@ derivable.
 \end{lemma}
 
 This finishes the derivation of rules for a Hoare logic for hybrid
-programs---to our knowledge, the first Hoare logic for hybrid
-programs. As usual, there is one rule per programming construct, so
-that their recursive application generates proof obligations that are
-entirely about data-level relationships---the discrete and continuous
-evolution of the hybrid program store.
+programs---to our knowledge, the first Hoare logic of this kind. As
+usual, there is one rule per programming construct, so that their
+recursive application generates proof obligations that are entirely
+about data-level relationships---the discrete and continuous evolution
+of the hybrid program store.
 
 The Hoare-style rule~(\ref{eq:h-evl}) supports the following procedure
 for reasoning with an evolution command $x' = f\, \&\, G$ on a set $U$
@@ -451,13 +448,12 @@ in this calculus:
 
 \section{Invariant-Based Hoare Logic for Hybrid Programs}\label{sec:hoare-inv}
 
-Alternatively, our approach supports reasoning with invariants for
+Alternatively, our Hoare logic supports reasoning with invariants for
 evolution commands instead of supplying flows to the
-rule~(\ref{eq:h-evl}). It follows~\cite{MuniveS19} in capturing the
-meaning of these invariants semantically. The invariants used
-generalise both $\dL$-style differential invariants~\cite{Platzer18}
-and \emph{invariant sets} for actions~\cite{Teschl12} in dynamical
-systems theory and (semi)group theory.
+rule~(\ref{eq:h-evl}), similar to~\cite{MuniveS19}. Our invariants
+generalise the \emph{differential invariants} of
+$\dL$~\cite{Platzer18} and the \emph{invariant sets} of dynamical
+systems  and (semi)group theory~\cite{Teschl12} .
 
 A predicate $I:S\to\bools$ is an \emph{invariant} of the continuous
 vector field $f:S\to S$ and guard $G:S\to\bools$ \emph{along}
@@ -475,21 +471,19 @@ unfolds to
 For $G=\top$ we call $I$ an \emph{invariant} of $f$ along $T$.
 Intuitively, invariants can be seen as sets of orbits.
 
-Next we relate invariants for evolution commands with Hoare triples.
+Invariants for evolution commands are coherent with those in Section~\ref{sec:hl-invariants}.
 \begin{proposition}\label{P:inv-prop}
   Let $f:S\to S$ be continuous, $G:S\to\bools$ and
   $T\subseteq \reals$. Then $I$ is an invariant for $f$ and $G$ \emph{along} $T$ if and only if
-\begin{equation*}
- \{I\}\, x' = f\, \&\, G\, \{I\}.
-\end{equation*}
+$ \{I\}\, x' = f\, \&\, G\, \{I\}$.
 \end{proposition}
-We use it in the following instance of (\ref{eq:h-inv}) for verification condition generation:
+Hence we can use an instance of (\ref{eq:h-inv}) for verification condition generation:
 \begin{align}
   P\le I \land \{I\}\, x' = f\, \&\, G\, \{I\}\land (I\cdot G)\le Q\ \rightarrow\
   &\{P\}\, x' = f\, \&\, G\, \{Q\}.\label{eq:h-invg}\tag{h-invg}
 \end{align}
-It then remains to check invariance using Proposition~\ref{P:inv-prop}
-in the antecedent of (\ref{eq:h-invg}). The following lemma leads to a procedure.
+It remains to check invariance in the antecedent of this rule. The
+following lemma leads to a procedure.
 
 \begin{lemma}\label{P:invrules}
   Let $f:S\to S$ be a continuous vector field, $\mu,\nu:S\to\reals$
@@ -551,9 +545,8 @@ $\sta\, S$ and for $S\subseteq \reals^n$,
   [P,Q] = \bigcup \left\{f:S\to \Pow\, S \mid \{P\}\, f\, \{Q\}\right\}.
 \end{equation*}
 
-The following Morgan-style refinement laws~\cite{Morgan94} of a
-\emph{propositional refinement calculus} are derivable in
-$\rKAT$~\cite{ArmstrongGS16}.
+The classical laws~\cite{Morgan94} of a \emph{propositional
+  refinement calculus} are then derivable in $\rKAT$~\cite{ArmstrongGS16}.
 \begin{align}
   1 &\le [p,p],\label{eq:r-skip}\tag{r-skip}\\
 [p',q'] &\le [p,q],\qquad \text{ if } p\le p'\text{ and } q'\le q,\label{eq:r-cons}\tag{r-cons}\\
@@ -564,7 +557,7 @@ $\rKAT$~\cite{ArmstrongGS16}.
  \WHILE{t}{[tp,p]} &\le [p,\neg tp]. \label{eq:r-while}\tag{r-while}
 \end{align}
 
-For invariants and loops, we can easily derive the refinement laws
+For invariants and loops, we obtain the additional refinement laws
 \begin{align}
   [i,i] &\le [p,q],\qquad \text{ if } p\le i \le q,\label{eq:r-inv}\tag{r-inv}\\
 \mathbf{loop} [i,i] &\le [i,i]. \label{eq:r-loop}\tag{r-loop}
@@ -580,7 +573,7 @@ derivable~\cite{ArmstrongGS16}.
 The second and third law are known as \emph{leading} and \emph{following}
 law. They introduce an assignment before and after a block of code. 
 
-Finally, we can derive the following refinement law for evolution
+Finally, we obtain the following refinement laws for evolution
 commands.
 \begin{lemma}\label{P:r-evl-lemma}
 \gin{add conditions}
@@ -593,13 +586,16 @@ x' = f\, \&\, G \le [\lambda s.\forall t\in U.\ (\forall
 \gin{we also need to derive leading/following laws
   for evolution statements.}
 
-These laws suffice for constructing hybrid programs from  initial
-specification statements by step-wise refinement  incrementally and
-compositionally in the style of Morgan. To our knowledge this is the
-first refinement calculus for hybrid programs of this kind.  A more
-powerful refinement calculus based on predicate transformers in the
-style of Back and von Wright~\cite{BackW98} has been developed
-in~\cite{MuniveS19}, but applications remain to be explored.
+These laws suffice for constructing hybrid programs from initial
+specification statements by step-wise refinement incrementally and
+compositionally. To our knowledge this is the first refinement
+calculus for hybrid programs of this kind.  A more powerful variant
+based on predicate transformers \`a la Back and von
+Wright~\cite{BackW98} has been developed in~\cite{MuniveS19}, but
+applications remain to be explored.  A previous approach to refinement
+for hybrid programs in $\dL$~\cite{LoosP16} seems quite different to
+the two standard calculi mentioned and much more intricate than the
+approach presented.
 
 \gin{do two examples; one for flows (thermostat, stepwise, done), one for
   invariants (water tank, in one go,  with ex euclidean space, tbd).}
@@ -608,7 +604,7 @@ in~\cite{MuniveS19}, but applications remain to be explored.
 
 \section{Starting from Flows}\label{sec:from-flows}
 
-Finally, we present a verification component that starts directly from
+Finally, we present an approach that starts directly from
 flows $\flow:T\to S\to S$ instead of vector fields.  This avoids
 checking the conditions of the Picard-Lindel\"of theorem, which
 simplifies verification proofs considerably.  Instead of $x'=f\, \&\,
@@ -617,9 +613,9 @@ in hybrid programs and define
 \begin{equation*}
   (\mathbf{evol}\, \flow\, G) = \lambda s.\ \gamma^{\flow_s}_G\, s
 \end{equation*}
-with respect to the guarded orbit of $\flow_s$ along $T$ in $s$. It is
-then straightforward to derive a Hoare triple and basic refinement law
-for such evolution commands along the lines of previous sections.
+with respect to the guarded orbit of $\flow_s$ along $T$ in $s$. We
+can then derive a Hoare-style axiom and refinement law
+for such evolution commands as in previously.
 \begin{lemma}\label{P:hr-evlfl}
 \gin{add conditions}
 \begin{gather}
@@ -682,14 +678,12 @@ for $P= (\lambda s.\ s_x = h\land s_v = 0)$ and $Q  = (\lambda s.\
 \section{Conclusion}\label{sec:conclusion}
 
 Development generalises further to Hoare semigroups and refinement
-semigroups~\cite{Struth18}. 
+semigroups~\cite{Struth18}. This is left for future work.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\gin{we need to cite this paper with refinement~\cite{LoosP16} ---
-  quite incredible that they got a lics paper out of it!
-}
+
 
 \bibliographystyle{abbrv}
 \bibliography{hybrid-kat.bib}
