@@ -177,7 +177,7 @@ $f^{\ast}\, x = \bigcup_{i\in\mathbb{N}} f^i\, x$ are defined with
   respect to Kleisli composition with $f^{0} = \eta_S$ and
   $f^{n+1} = f \circ_K f^{n}$. The boolean algebra of tests has
   carrier set $B_S=\{f:S\to \Pow\, S \mid f\le \eta_S\}$, where the
-  order on function has been extended pointwise,  and complementation
+  order on functions has been extended pointwise,  and complementation
   is given by
   \begin{equation*} 
     \overline{f}\, x =
@@ -187,7 +187,7 @@ $f^{\ast}\, x = \bigcup_{i\in\mathbb{N}} f^i\, x$ are defined with
   \end{cases}
 \end{equation*}
 Henceforth we freely identify predicates, sets and state 
-transformers below $\eta_S$: 
+transformers below $\eta_S$, which are isomorphic:
 $P\cong \{s\mid P\, s\}\cong \lambda s.\ \{x\mid x=s \land P\, s\}$.
 
 \begin{proposition}\label{P:kleisli-ka}
@@ -220,15 +220,15 @@ programs,
 \begin{align*}
   \IF{p}{\alpha}{\beta} = p\cdot \alpha + \bar p \cdot
   \beta\qquad\text{ and }\qquad
-\WHILE{p}{\alpha} = (p\cdot \alpha)^\ast \cdot \bar p,
+\WHILE{p}{\alpha} = (p\cdot \alpha)^\ast \cdot \bar p.
 \end{align*}
-captures validity of Hoare triples in
-a partial correctness semantics,
+It captures validity of Hoare triples in
+a partial correctness semantics as
 \begin{equation*}
   \{p\}\, \alpha\, \{q\} \leftrightarrow p\alpha\neg q = 0,
 \end{equation*}
-or equivalently by $p\alpha\le \alpha q$ or $p\alpha = p\alpha q$, and
-allows deriving the rules of \emph{propositional Hoare
+or equivalently by $p\alpha\le \alpha q$ or $p\alpha = p\alpha q$. It
+also allows deriving the rules of \emph{propositional Hoare
   logic}~\cite{Kozen00}---disregarding assignments---which we use for
 verification condition generation:
 \begin{align}
@@ -246,7 +246,7 @@ verification condition generation:
 Specific rules for commands with invariant assertions
 $\alpha\ \mathbf{inv}\ i$ are easily derivable (operationally,
 $\alpha\, \mathbf{inv}\, i = \alpha$).  We define an \emph{invariant}
-of an element $\alpha\in K$ as an element $i\in B$ that satisfies
+of an element $\alpha\in K$ as an element $i\in B$ satisfying
 \begin{equation*}
   \{i\}\, \alpha\, \{i\}.
 \end{equation*}
@@ -255,14 +255,14 @@ $\alpha^\ast$, one can easily derive
 \begin{align}
   p\le i \land \{i\}\, \alpha\, \{i\}\land i\le q\ \rightarrow\
   &\{p\}\, \alpha\, \{q\},\label{eq:h-inv}\tag{h-inv}\\
-  p \le i \wedge \{it\}\, \alpha\, \{i\} \wedge \neg t p\le q\
+  p \le i \wedge \{it\}\, \alpha\, \{i\} \wedge \neg t i\le q\
   \rightarrow \ & \{p\}\, \WHILEI{t}{i}{\alpha}\,  \{q\},\label{eq:h-while-inv}\tag{h-while-inv}\\
    p\le i \land \{i\}\, \alpha\, \{i\}\land i\le q\ \rightarrow\ &
                                                                    \{p\}\, \mathbf{loop}\, \alpha\,
     \mathbf{inv}\, i\, \{q\}. \label{eq:h-loop-inv}\tag{h-loop-inv}
 \end{align}
 We use (\ref{eq:h-inv}), which is a special case of (\ref{eq:h-cons}),
-to reason about differential invariants for continuous evolutions of
+to reason about invariants for continuous evolutions of
 hybrid systems in Section~\ref{sec:hoare-inv}, \ref{sec:refine} and
 \ref{sec:from-flows}. Rule (\ref{eq:h-while-inv}) is standard for
 reasoning with invariants for while loops; (\ref{eq:h-loop-inv})
@@ -283,7 +283,8 @@ article.
 
 \gin{Simon: add some paras on lenses.}
 
-Hybrid programs of differential dynamic logic ($\dL$)~\cite{Platzer10} are defined by the syntax
+Hybrid programs of differential dynamic logic ($\dL$)~\cite{Platzer10}
+are defined by the syntax
 \begin{equation*}
 \mathcal{C}\ ::= \ x:=e \mid x' = f \, \&\, G \mid ?P\mid \mathcal{C};\mathcal{C}\mid \mathcal{C}+\mathcal{C}\mid \mathcal{C}^*
 \end{equation*}
@@ -461,8 +462,10 @@ $T\subseteq \reals$ if
 \begin{equation*}
 \bigcup \Pow\, \gamma^f_G\, I\subseteq  I.
 \end{equation*}
-The operation $\bigcup\circ\Pow$ is known as the Kleisli extension in
-the powerset monad. The definition of invariance unfolds to
+The operation $\bigcup\circ\Pow$ is the Kleisli extension $^\dagger$
+in the powerset monad. Hence we could simply write
+$(\gamma^f_gG)^\dagger\, I \subseteq I$. The definition of invariance
+unfolds to
 \begin{equation*}
   \forall s.\ I\, s \to (\forall X\in\Sols f\, T\, s.\forall t\in T.\ (\forall \tau\in {\downarrow}t.\ G\, (X\, \tau)) \to I\, (X\, t)).
 \end{equation*}
@@ -477,40 +480,43 @@ Next we relate invariants for evolution commands with Hoare triples.
  \{I\}\, x' = f\, \&\, G\, \{I\}.
 \end{equation*}
 \end{proposition}
-We use it in the following variant of (\ref{eq:h-inv}) for verification condition generation:
+We use it in the following instance of (\ref{eq:h-inv}) for verification condition generation:
 \begin{align}
   P\le I \land \{I\}\, x' = f\, \&\, G\, \{I\}\land (I\cdot G)\le Q\ \rightarrow\
-  &\{P\}\, x' = f\, \&\, G\, \{Q\},\label{eq:h-invg}\tag{h-invg}
+  &\{P\}\, x' = f\, \&\, G\, \{Q\}.\label{eq:h-invg}\tag{h-invg}
 \end{align}
-Applying (\ref{eq:h-invg}) with Proposition~\ref{P:inv-prop} then requires checking invariance.
+It then remains to check invariance using Proposition~\ref{P:inv-prop}
+in the antecedent of (\ref{eq:h-invg}). The following lemma leads to a procedure.
 
 \begin{lemma}\label{P:invrules}
   Let $f:S\to S$ be a continuous vector field, $\mu,\nu:S\to\reals$
   differentiable and $T\subseteq \reals$. 
 \begin{enumerate}
-\item If $(\mu\circ X)' =(\nu\circ X)'$ for all $X\in \Sols f\, T\, s$, then $\mu = \nu$ is a differential invariant for $f$ along $T$,
+\item If $(\mu\circ X)' =(\nu\circ X)'$ for all
+  $X\in \Sols f\, T\, s$, then $\{\mu=\nu\}\, x' = f\, \&\, G\, \{\mu=\nu\}$, 
 \item if $(\mu\circ X)'\, t\leq(\nu\circ X)'\, t$ when $t> 0$, and $(\mu\circ X)'\, t\geq(\nu\circ X)'\, t$ when $t< 0$, for all $X\in \Sols f\, T\, s$,
-  then $\mu < \nu$ is an invariant for $f$ along $T$,
+  then $\{\mu <\nu\}\, x' = f\, \&\, G\, \{\mu <\nu\}$
 \item $\mu\neq \nu$ if and only if $\mu < \nu$ or $\nu < \mu$,
 \item $\mu \not\le \nu$ if and only if $\nu < \mu$,
 \jin{get Hoare triple version in Isabelle}
-\item if $\{I_i\}\, x' = f\, \&\, G\, \{I_i\}$ for $i\in\{1,2\}$, then $\{I_1\land I_2\}\, x' = f\, \&\, G\, \{I_1\land I_2\}$ and $\{I_1\lor I_2\}\, x' = f\, \&\, G\, \{I_1\lor I_2\}$.
+\item if $\{I_i\}\, x' = f\, \&\, G\, \{I_i\}$for $i\in\{1,2\}$, then $\{I_1\land I_2\}\, x' = f\, \&\, G\, \{I_1\land I_2\}$ and $\{I_1\lor I_2\}\, x' = f\, \&\, G\, \{I_1\lor I_2\}$.
 %\item if $I_1$ and $I_2$ are differential invariants for $f$ along $T$, then so are $\lambda s.\ I_1\, s \land I_2\, s$ and $\lambda s.\ I_1\, s \lor I_2\, s$.
 \end{enumerate}
 \end{lemma}
 
 Condition $(1)$ follows from the well known fact that two continuously
-differentiable are equal if they intersect at some point and their
-derivatives are equal. Therefore, the rule (\ref{eq:h-invg}) and
-Propositions~\ref{P:inv-prop} and~\ref{P:invrules} yield the following
-procedure for proving the triple $\{P\}\, x' = f\, \&\, G\, \{Q\}$
+differentiable functions are equal if they intersect at some point and their
+derivatives are equal. Therefore, rule (\ref{eq:h-invg}),
+Proposition~\ref{P:inv-prop} and Lemma~\ref{P:invrules} yield the following
+procedure for verifying a triple $\{P\}\, x' = f\, \&\, G\, \{Q\}$
 using an invariant.
 \begin{enumerate}
-\item Check whether a candidate predicate $I$ is a differential invariant:
+\item Check whether a candidate predicate $I$ is am invariant for $f$
+  along $T$:
 	\begin{enumerate}
 	\item transform $I$ into negation normal form;
 	\item if $I$ is complex, reduce it with Lemma~\ref{P:invrules} (3), (4) and (5);
-	\item for atomic $I$, apply Lemma~\ref{P:invrules} (1) and (2);
+	\item if $I$ is atomic, apply Lemma~\ref{P:invrules} (1) and (2);
 	\end{enumerate}
 (if successful,  $\{I\}\, x' = f\, \&\, G\, \{I\}$ holds by Proposition~\ref{P:inv-prop}),
 \item if successful, prove $P\le I$ and $(I\cdot G)\le Q$ to apply rule (\ref{eq:h-invg}).
@@ -533,9 +539,9 @@ satisfies, for all $\alpha \in K$ and $p,q\in B$,
 The element $[p,q]$ of $K$ is called \emph{specification
   statement}~\cite{Morgan94}. It satisfies 
 \begin{equation*}
-  \{p\}\, [p,q]\, \{q\}\qquad \text{ and }\qquad \{p\}\, \alpha\, \{q\} \rightarrow \alpha\le [p,q];
+  \{p\}\, [p,q]\, \{q\}\qquad \text{ and }\qquad \{p\}\, \alpha\, \{q\} \rightarrow \alpha\le [p,q],
 \end{equation*}
-which make $[p,q]$ the greatest element of $K$ that satisfies the Hoare
+which makes $[p,q]$ the greatest element of $K$ that satisfies the Hoare
 triple with precondition $p$ and postcondition $q$.  Indeed, in
 $\sta\, S$ and for $S\subseteq \reals^n$,
 \begin{equation*}
@@ -554,7 +560,7 @@ $\rKAT$~\cite{ArmstrongGS16}.
  \WHILE{t}{[tp,p]} &\le [p,\neg tp]. \label{eq:r-while}\tag{r-while}
 \end{align}
 
-For invariants and loops, we can derive, in addition, 
+For invariants and loops, we can easily derive the refinement laws
 \begin{align}
   [i,i] &\le [p,q],\qquad \text{ if } p\le i \le q,\label{eq:r-inv}\tag{r-inv}\\
 \mathbf{loop} [i,i] &\le [i,i]. \label{eq:r-loop}\tag{r-loop}
@@ -583,10 +589,10 @@ x' = f\, \&\, G \le [\lambda s.\forall t\in U.\ (\forall
 \gin{we also need to derive leading/following laws
   for evolution statements.}
 
-These laws suffice for constructing hybrid programs from an initial
-specification statement by step-wise refinement in an incremental and
-compositional way in the style of Morgan. To our knowledge this is the
-first refinement calculus for hybrid programs in this style.  A more
+These laws suffice for constructing hybrid programs from  initial
+specification statements by step-wise refinement  incrementally and
+compositionally in the style of Morgan. To our knowledge this is the
+first refinement calculus for hybrid programs of this kind.  A more
 powerful refinement calculus based on predicate transformers in the
 style of Back and von Wright~\cite{BackW98} has been developed
 in~\cite{MuniveS19}, but applications remain to be explored.
@@ -598,21 +604,18 @@ in~\cite{MuniveS19}, but applications remain to be explored.
 
 \section{Starting from Flows}\label{sec:from-flows}
 
-Finally, we introduce a verification component that starts directly
-from flows $\flow:T\to S\to S$ instead of vector fields.  This avoids
-checking the conditions of the Picard-Lindel\"of theorem.  A syntax
-for hybrid programs would now be
+Finally, we present a verification component that starts directly from
+flows $\flow:T\to S\to S$ instead of vector fields.  This avoids
+checking the conditions of the Picard-Lindel\"of theorem, which
+simplifies verification proofs considerably.  Instead of $x'=f\, \&\,
+G$, we now use the basic evolution command $\mathbf{evol}\, \flow\, G$
+in hybrid programs and define
 \begin{equation*}
-\mathcal{C}\ ::= \ x:=e \mid \mathbf{evol}\, \flow\, G \mid ?P\mid \mathcal{C};\mathcal{C}\mid \mathcal{C}+\mathcal{C}\mid \mathcal{C}^*
+  (\mathbf{evol}\, \flow\, G) = \lambda s.\ \gamma^{\flow_s}_G\, s
 \end{equation*}
-although we do not use it with our shallow embedding. Instead, the
-flow-based evolution command is simply a semantic illusion for the
-guarded orbit of $\flow_s$ along $T$ in $s$,
-\begin{equation*}
-  (\mathbf{evol}\, \flow\, G) = \lambda s.\ \gamma^{\flow_s}_G\, s.
-\end{equation*}
-It is then straightforward to derive a Hoare triple and basic
-refinement law for such evolution commands. 
+with respect to the guarded orbit of $\flow_s$ along $T$ in $s$. It is
+then straightforward to derive a Hoare triple and basic refinement law
+for such evolution commands along the lines of previous sections.
 \begin{lemma}\label{P:hr-evlfl}
 \gin{add conditions}
 \begin{gather}
@@ -629,8 +632,9 @@ refinement law for such evolution commands.
   space, tbd).}
 
 \begin{example}[Bouncing ball via Hoare logic]\label{ex:ball-hoare}
-  Suppose a ball of mass $m$ falls down from height $h\geq 0$, which $x$ denoting its position
-  and $v$ its velocity. Its kinematics is modelled by the vector field
+  Suppose a ball of mass $m$ falls down from height $h\geq 0$, with
+  $x$ denoting its position, $v$ its velocity and $g$ its
+  acceleration. Its kinematics is modelled by the vector field
   $f:\reals^V\to\reals^V$ with
  \begin{equation*}
     f\,
@@ -644,23 +648,23 @@ refinement law for such evolution commands.
 -g
 \end{pmatrix},
 \end{equation*}
-where $g$ is the acceleration due to gravity and we abbreviate
-$s_x = s\, x$ and $s_v = s\, v$.  The ball bounces back
+where we abbreviate
+$s_x = s\, x$ and $s_v = s\, v$.  It bounces back
 from the ground in an elastic collision, which is modelled using a
 discrete control that checks whether $s_x=0$ and then flips the
 velocity.  Guard $G=(\lambda s.\ s_x\geq 0)$ excludes any motion
-below the ground. The system is modelled by the hybrid
+below the ground. This is modelled by the hybrid
 program~\cite{Platzer10}
 \begin{align*}
 	\mathsf{Cntrl} &= \IF {(\lambda\, s.\ s_x=0)} {v:=(\lambda\, s.\ - s_v)} \mathit{skip},\\
-	\mathsf{Ball} &= ({x'=f\, \&\, G}\,  {;}\, \mathsf{Cntrl})^\ast,
+	\mathsf{Ball} &= ({x'=f\, \&\, G}\,  {;}\, \mathsf{Cntrl})^\ast.
 \end{align*}
 Its correctness specification is
 \begin{equation*}
-\{P\}\, \mathsf{Ball}\, \{Q\}\qquad\text{ for }\quad
-  P= (\lambda s.\ s_x = h\land s_v = 0)\quad\text{ and }\quad Q  = (\lambda s.\ 0\leq s_x\leq h).
+\{P\}\, \mathsf{Ball}\, \{Q\}
 \end{equation*}
-We also need the loop invariant
+for $P= (\lambda s.\ s_x = h\land s_v = 0)$ and $Q  = (\lambda s.\
+0\leq s_x\leq h)$; its loop invariant
 \begin{equation*}
       I = \left(\lambda s.\ 0\le s_x \land \frac{1}{2}s_v^2= g(h - s_x)\right).
 \end{equation*}
