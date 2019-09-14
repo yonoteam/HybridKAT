@@ -68,7 +68,7 @@
 
 \begin{document}
 
-\title{Hoare Logics and Refinement Calculi\\ for Hybrid Systems Verification} \titlerunning{Hoare Logics and Refinement Calculi for Hybrid Systems Verification}
+\title{Hoare Logics and Refinement Calculi\\ for Hybrid Systems} \titlerunning{Hoare Logics and Refinement Calculi for Hybrid Systems}
 
 \author{Simon Foster$^1$ \and Jonathan Juli\'an Huerta y Munive$^2$ \and Georg Struth$^2$} \authorrunning{Foster, Huerta y Munive and Struth}
 
@@ -85,11 +85,10 @@
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-
 \section{Introduction}\label{sec:introduction}
 
 Research question: We already have a predicate transformer calculus,
-for instance based on $\MKA$. We know from~\cite{GomesS16} that we can
+for instance based on $\MKA$. We know that we can
 specialise it to a Hoare logic and a Morgan-style refinement
 calculus. But how can we derive standalone Isabelle components based
 on $\KAT$. 
@@ -128,29 +127,33 @@ which are the working horses of $\dL$, cannot be expressed in $\KAT$~\cite{Strut
 
 \section{Kleene Algebra with Tests}\label{sec:kat} 
 
-A \emph{Kleene algebra} is a structure $(K,+,\cdot,0,1,^\ast)$, where
-$(S,+,\cdot,0,1)$ is a semiring with idempotent addition and the
-Kleene star $(-)^\ast:K\to K$ satisfies, for all
-$\alpha,\beta,\gamma\in K$, the axioms
-\begin{align*} 
-1+\alpha\cdot\alpha^\ast &\le \alpha^\ast, \qquad
-  \gamma+\alpha\cdot
-                                          \beta\le \beta\rightarrow \alpha^\ast \cdot \gamma\le \beta,\\
-  1+\alpha^\ast\cdot\alpha &\le \alpha^\ast, \qquad \gamma+\beta\cdot
-                             \alpha\le \beta\rightarrow \gamma\cdot
-                             \alpha^\ast \le \beta.
-\end{align*}
-In these axioms, the ordering $\le$ on $K$ is defined by
-$x\le y\leftrightarrow x+y=y$, as idempotent semirings are 
-semilattices. We often write $\alpha\beta$ instead of
-$\alpha\cdot\beta$.
+% A \emph{Kleene algebra} is a structure $(K,+,\cdot,0,1,^\ast)$, where
+% $(S,+,\cdot,0,1)$ is a semiring with idempotent addition and the
+% Kleene star $(-)^\ast:K\to K$ satisfies, for all
+% $\alpha,\beta,\gamma\in K$, the axioms
+% \begin{align*} 
+% 1+\alpha\cdot\alpha^\ast &\le \alpha^\ast, \qquad
+%   \gamma+\alpha\cdot
+%                                           \beta\le \beta\rightarrow \alpha^\ast \cdot \gamma\le \beta,\\
+%   1+\alpha^\ast\cdot\alpha &\le \alpha^\ast, \qquad \gamma+\beta\cdot
+%                              \alpha\le \beta\rightarrow \gamma\cdot
+%                              \alpha^\ast \le \beta.
+% \end{align*}
 
-A \emph{Kleene algebra with tests}~\cite{Kozen97} ($\KAT$) is a structure
-$(K,B,+,\cdot,0,1,^\ast,\neg)$ where $(B,+,\cdot,0,1,\neg)$ is a
-boolean algebra with join $+$, meet $\cdot$, complementation $\neg$,
-least element $0$ and greatest element $1$, $B\subseteq K$, and
-$(K,+,\cdot,0,1,^\ast)$ is a Kleene algebra. We henceforth write
-$p,q,r,\dots$ for elements of $B$. 
+
+A \emph{Kleene algebra with tests}~\cite{Kozen97} ($\KAT$) is a
+structure $(K,B,+,\cdot,0,1,^\ast,\neg)$ where $(B,+,\cdot,0,1,\neg)$
+is a boolean algebra with join $+$, meet $\cdot$, complementation
+$\neg$, least element $0$ and greatest element $1$, $B\subseteq K$,
+and $(K,+,\cdot,0,1,^\ast)$ is a Kleene algebra---a semiring with
+idempotent addition equipped with a star operation that satisfies the
+axioms $1+\alpha\cdot\alpha^\ast \le \alpha^\ast$ and
+$\gamma+\alpha\cdot \beta\le \beta\rightarrow \alpha^\ast \cdot
+\gamma\le \beta$,
+as well as their opposities, with multiplication swapped.  The
+ordering $\le$ on $K$ is defined by $x\le y\leftrightarrow x+y=y$, as
+idempotent semirings are semilattices. We often write $\alpha\beta$
+instead of $\alpha\cdot\beta$, and $p,q,r,\dots$ for elements of $B$.
 
 Elements of $K$ represent programs; those of $B$ tests, assertions or
 propositions.  The operation $\cdot$ models the sequential composition
@@ -158,7 +161,8 @@ of programs, $+$ their nondeterministic choice, $(-)^\ast$ their finite
 unbounded iteration. Program $0$ aborts and $1$ skips.  Tests are
 meant to hold in some states of a program and fail in others;
 $p\alpha$ ($\alpha p$) restricts the execution of program $\alpha$ in
-its input (output) to those states where test $p$ holds.
+its input (output) to those states where test $p$ holds. The ordering
+$\le$ is the opposite of the refinement ordering on programs (see Section~\ref{sec:refine}).
 
 Binary relations of type $\Pow\, (S\times S)$ form
 $\KAT$s~\cite{Kozen97} when $\cdot$ is interpreted as relational
@@ -199,16 +203,16 @@ $\sta\, S = ((\Pow\, S)^S,B_S,\cup,\circ_K,\lambda x.\
 A \emph{state transformer $\KAT$} over $S$ is any subalgebra of
 $\sta\, S$. 
 
-We have already formalised Kleene algebras with and without tests at
-type classes in Isabelle~\cite{afp:ka,afp:kat}.  As Isabelle's type
-classes allow only one type parameter, we are using a non-standard
-approach that expands a Kleene algebra $K$ by an \emph{antitest}
-function $n:K\to K$ from which a \emph{test} function $t:K\to K$ is
-defined as $t=n^2$. Then $K_t = \{\alpha \mid t\, \alpha = \alpha\}$
-forms a boolean algebra in which $n$ acts as test complementation. It
-can be used in place of the boolean algebra $B$.  A formalisation of
-the relational model of $\KAT$ can be found in~\cite{afp:kat}; that of
-the state transformer model is a contribution to this article.
+We have already formalised $\KAT$ as type classes in
+Isabelle~\cite{afp:kat}.  As these allow only one type parameter, we
+are using a non-standard approach that expands a Kleene algebra $K$ by
+an \emph{antitest} function $n:K\to K$ from which a \emph{test}
+function $t:K\to K$ is defined as $t=n^2$. Then
+$K_t = \{\alpha \mid t\, \alpha = \alpha\}$ forms a boolean algebra in
+which $n$ acts as test complementation. It can be used in place of the
+boolean algebra $B$.  A formalisation of the relational model of
+$\KAT$ can be found in~\cite{afp:kat}; that of the state transformer
+model is a contribution to this article.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -246,10 +250,9 @@ verification condition generation:
 Specific rules for commands with invariant assertions
 $\alpha\ \mathbf{inv}\ i$ are easily derivable (operationally,
 $\alpha\, \mathbf{inv}\, i = \alpha$).  We define an \emph{invariant}
-of an element $\alpha\in K$ as an element $i\in B$ satisfying
-\begin{equation*}
-  \{i\}\, \alpha\, \{i\}.
-\end{equation*}
+of an element $\alpha\in K$ as an element $i\in B$ satisfying $\{i\}\,
+\alpha\, \{i\}$. 
+
 Then, with $\mathbf{loop}\, \alpha$ as syntactic sugar for
 $\alpha^\ast$, one can easily derive
 \begin{align}
@@ -269,8 +272,8 @@ reasoning with invariants for while loops; (\ref{eq:h-loop-inv})
 specific to loops of hybrid programs (see
 Section~\ref{sec:sta-hybrid}).
 
-Generic rules for propositional Hoare logic in Isabelle have been
-derived for Kleene algebra in~\cite{afp:ka}; more specific ones for
+The rules for propositional Hoare logic in Isabelle have been
+derived for
 $\KAT$ in~\cite{afp:kat,afp:vericomp}. Basic Isabelle infrastructure for
 reasoning with general invariants has been developed for this
 article. 
@@ -283,7 +286,7 @@ article.
 
 \gin{Simon: add some paras on lenses.}
 
-Hybrid programs of differential dynamic logic ($\dL$)~\cite{Platzer10}
+Hybrid programs of differential dynamic logic ($\dL$)~\cite{Platzer18}
 are defined by the syntax
 \begin{equation*}
 \mathcal{C}\ ::= \ x:=e \mid x' = f \, \&\, G \mid ?P\mid \mathcal{C};\mathcal{C}\mid \mathcal{C}+\mathcal{C}\mid \mathcal{C}^*
@@ -292,10 +295,10 @@ that adds \emph{evolution commands} $x' = f \, \&\, G$ to the language
 of $\KAT$---function $?(-)$ embeds tests explicitly into programs.
 Evolution commands introduce a time independent vector field $f$ for
 an autonomous system of ordinary differential equations
-(ODEs)~\cite{Hirsch09,Teschl12} and a guard $G$, a predicate modelling
+(ODEs)~\cite{Teschl12} and a guard $G$, a predicate modelling
 boundary conditions or similar restrictions of temporal
-evolutions. Guards are also known as \emph{evolution domain
-  restrictions}~\cite{DoyenFPP18}.
+evolutions. % Guards are also known as \emph{evolution domain
+  % restrictions}~\cite{DoyenFPP18}.
 
 Formally, vector fields are functions of type $S\to S$ on some open set
 $S\subseteq \reals^n$ and $n\in\mathbb{N}$---the state space of
@@ -315,7 +318,7 @@ in vector form---and $X\, 0 = s$. Solution
 $X$ is thus a curve in $S$ through $s$, parametrised in $T$ and
 tangential to $f$ at any point in $S$; it is called \emph{trajectory}
 or \emph{integral curve} of $f$ at $s$ whenever it is uniquely
-defined ~\cite{Hirsch09,Teschl12}.
+defined ~\cite{Teschl12}.
 
 For IVP $(f,s)$ with continuous vector field $f:S\to S$ and initial
 state $s\in S$ we define the set of solutions on
@@ -394,7 +397,7 @@ of substitutions:
 Hence it remains to derive a rule for evolution commands.  We restrict
 our attention to Lipschitz-continuous vector fields for which unique
 solutions to IVPs are guaranteed by Picard-Lindel\"of's
-theorem~\cite{Hirsch09,Teschl12}.  These are \emph{(local)\ flows}
+theorem~\cite{Teschl12}.  These are \emph{(local)\ flows}
 $\flow:T\to S\to S$ and $X=\flow_s=\lambda t.\ \flow\, t\, s$ is the
 trajectory at $s$. Guarded orbitals $\gamma^f_G$  then specialise to
 \emph{guarded orbits}
@@ -452,7 +455,7 @@ Alternatively, our approach supports reasoning with invariants for
 evolution commands instead of supplying flows to the
 rule~(\ref{eq:h-evl}). It follows~\cite{MuniveS19} in capturing the
 meaning of these invariants semantically. The invariants used
-generalise both $\dL$-style differential invariants~\cite{Platzer12}
+generalise both $\dL$-style differential invariants~\cite{Platzer18}
 and \emph{invariant sets} for actions~\cite{Teschl12} in dynamical
 systems theory and (semi)group theory.
 
@@ -548,8 +551,9 @@ $\sta\, S$ and for $S\subseteq \reals^n$,
   [P,Q] = \bigcup \left\{f:S\to \Pow\, S \mid \{P\}\, f\, \{Q\}\right\}.
 \end{equation*}
 
-The following Morgan-style refinement laws~\cite{Morgan94} are derivable in
-$\rKAT$~\cite{ArmstrongGS16}. 
+The following Morgan-style refinement laws~\cite{Morgan94} of a
+\emph{propositional refinement calculus} are derivable in
+$\rKAT$~\cite{ArmstrongGS16}.
 \begin{align}
   1 &\le [p,p],\label{eq:r-skip}\tag{r-skip}\\
 [p',q'] &\le [p,q],\qquad \text{ if } p\le p'\text{ and } q'\le q,\label{eq:r-cons}\tag{r-cons}\\
@@ -654,7 +658,7 @@ from the ground in an elastic collision, which is modelled using a
 discrete control that checks whether $s_x=0$ and then flips the
 velocity.  Guard $G=(\lambda s.\ s_x\geq 0)$ excludes any motion
 below the ground. This is modelled by the hybrid
-program~\cite{Platzer10}
+program~\cite{Platzer18}
 \begin{align*}
 	\mathsf{Cntrl} &= \IF {(\lambda\, s.\ s_x=0)} {v:=(\lambda\, s.\ - s_v)} \mathit{skip},\\
 	\mathsf{Ball} &= ({x'=f\, \&\, G}\,  {;}\, \mathsf{Cntrl})^\ast.
@@ -676,6 +680,9 @@ for $P= (\lambda s.\ s_x = h\land s_v = 0)$ and $Q  = (\lambda s.\
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Conclusion}\label{sec:conclusion}
+
+Development generalises further to Hoare semigroups and refinement
+semigroups~\cite{Struth18}. 
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
