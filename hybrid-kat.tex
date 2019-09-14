@@ -154,7 +154,7 @@ $p,q,r,\dots$ for elements of $B$.
 
 Elements of $K$ represent programs; those of $B$ tests, assertions or
 propositions.  The operation $\cdot$ models the sequential composition
-of programs, $+$ their nondeterministic choice, $^\ast$ their finite
+of programs, $+$ their nondeterministic choice, $(-)^\ast$ their finite
 unbounded iteration. Program $0$ aborts and $1$ skips.  Tests are
 meant to hold in some states of a program and fail in others;
 $p\alpha$ ($\alpha p$) restricts the execution of program $\alpha$ in
@@ -162,18 +162,18 @@ its input (output) to those states where test $p$ holds.
 
 Binary relations of type $\Pow\, (S\times S)$ form
 $\KAT$s~\cite{Kozen97} when $\cdot$ is interpreted as relational
-composition, $+$ as relational union, $^\ast$ as reflexive-transitive
-closure and the elements of $B$ as subidentities---relations below the
-relational unit. This grounds $\KAT$ within standard relational
-imperative program semantics. Yet we prefer the isomorphic
-representation as nondeterministic functions or \emph{state
-  transformers} of type $S\to \Pow\, S$.  Composition $\cdot$ is then
-interpreted as Kleisli composition
+composition, $+$ as relational union, $(-)^\ast$ as
+reflexive-transitive closure and the elements of $B$ as
+subidentities---relations below the relational unit. This grounds
+$\KAT$ within standard relational imperative program semantics. Yet we
+prefer the isomorphic representation as \emph{state transformers} of
+type $S\to \Pow\, S$.  Composition $\cdot$ is then interpreted as
+Kleisli composition
 \begin{equation*} 
 (f\circ_K g)\, x = \bigcup\{g\, y\mid y \in f\ x \}, 
 \end{equation*} 
 $0$ as $\lambda x.\ 0$ and $1$ as $\eta_S = \{-\}$.  Stars
-$f^{\ast}\, x = \bigcup_{i\in\mathbb{N}} f^i\, x$ are defined with
+$f^{\ast}  = \bigcup_{i\in\mathbb{N}} f^i$ are defined with
   respect to Kleisli composition with $f^{0} = \eta_S$ and
   $f^{n+1} = f \circ_K f^{n}$. The boolean algebra of tests has
   carrier set $B_S=\{f:S\to \Pow\, S \mid f\le \eta_S\}$, where the
@@ -186,7 +186,7 @@ $f^{\ast}\, x = \bigcup_{i\in\mathbb{N}} f^i\, x$ are defined with
 \emptyset, & \text{ otherwise}.
   \end{cases}
 \end{equation*}
-Henceforth we freely identify predicates, sets and state 
+We freely identify predicates, sets and state 
 transformers below $\eta_S$, which are isomorphic:
 $P\cong \{s\mid P\, s\}\cong \lambda s.\ \{x\mid x=s \land P\, s\}$.
 
@@ -261,13 +261,13 @@ $\alpha^\ast$, one can easily derive
                                                                    \{p\}\, \mathbf{loop}\, \alpha\,
     \mathbf{inv}\, i\, \{q\}. \label{eq:h-loop-inv}\tag{h-loop-inv}
 \end{align}
-We use (\ref{eq:h-inv}), which is a special case of (\ref{eq:h-cons}),
-to reason about invariants for continuous evolutions of
-hybrid systems in Section~\ref{sec:hoare-inv}, \ref{sec:refine} and
+We use (\ref{eq:h-inv})---an instance of (\ref{eq:h-cons})---to reason
+about invariants for continuous evolutions of hybrid systems in
+Section~\ref{sec:hoare-inv}, \ref{sec:refine} and
 \ref{sec:from-flows}. Rule (\ref{eq:h-while-inv}) is standard for
 reasoning with invariants for while loops; (\ref{eq:h-loop-inv})
-specific to loops of hybrid programs---see
-Section~\ref{sec:sta-hybrid}.
+specific to loops of hybrid programs (see
+Section~\ref{sec:sta-hybrid}).
 
 Generic rules for propositional Hoare logic in Isabelle have been
 derived for Kleene algebra in~\cite{afp:ka}; more specific ones for
