@@ -6,48 +6,6 @@ begin
 
 subsection \<open> Examples \<close>
 
-text\<open> Preliminary preparation for the examples.\<close>
-
-no_notation Archimedean_Field.ceiling ("\<lceil>_\<rceil>")
-        and Archimedean_Field.floor_ceiling_class.floor ("\<lfloor>_\<rfloor>")
-
-lemma exhaust_5:
-  fixes x :: 5
-  shows "x = 1 \<or> x = 2 \<or> x = 3 \<or> x = 4 \<or> x = 5"
-proof (induct x)
-  case (of_int z)
-  hence "0 \<le> z" and "z < 5" 
-    by simp_all
-  hence "z = 0 \<or> z = 1 \<or> z = 2 \<or> z = 3 \<or> z = 4" 
-    by arith
-  thus ?case 
-    by auto
-qed
-
-lemma UNIV_5: "(UNIV::5 set) = {1, 2, 3, 4, 5}"
-  using exhaust_5 by auto
-
-lemma forall_5: "(\<forall>i::5. P i) \<longleftrightarrow> P 1 \<and> P 2 \<and> P 3 \<and> P 4 \<and> P 5"
-  by (metis exhaust_5)
-
-lemma exhaust_6:
-  fixes x :: 6
-  shows "x = 1 \<or> x = 2 \<or> x = 3 \<or> x = 4 \<or> x = 5 \<or> x = 6"
-proof (induct x)
-  case (of_int z)
-  hence "0 \<le> z" and "z < 6" 
-    by simp_all
-  hence "z = 0 \<or> z = 1 \<or> z = 2 \<or> z = 3 \<or> z = 4 \<or> z = 5" 
-    by arith
-  thus ?case 
-    by auto
-qed
-
-lemma UNIV_6: "(UNIV::6 set) = {1, 2, 3, 4, 5, 6}"
-  using exhaust_6 by auto
-
-lemma forall_6: "(\<forall>i::6. P i) \<longleftrightarrow> P 1 \<and> P 2 \<and> P 3 \<and> P 4 \<and> P 5 \<and> P 6"
-  by (metis exhaust_6)
 
 subsubsection \<open>Pendulum\<close>
 
@@ -219,23 +177,23 @@ text \<open> A thermostat has a chronometer, a thermometer and a switch to turn 
 At most every @{text "t"} minutes, it sets its chronometer to @{term "0::real"}, it registers 
 the room temperature, and it turns the heater on (or off) based on this reading. The temperature 
 follows the ODE @{text "T' = - a * (T - U)"} where @{text "U"} is @{text "L \<ge> 0"} when the heater 
-is on, and @{text "U = 0"} when it is off. We use @{term "1::5"} to denote the room's temperature, 
-@{term "2::5"} is time as measured by the thermostat's chronometer, @{term "3::5"} is a variable
-to save tempreature measurements while @{term "4::5"} does the same for time measurements. Finally,
-@{term "5::5"} states whether the heater is on (@{text "s$5 = 1"}) or off (@{text "s$5 = 0"}). 
-We prove that the thermostat keeps the room's temperature between @{text "Tmin"} and @{text "Tmax"}. \<close>
+is on, and @{text "U = 0"} when it is off. We use @{term "1::4"} to denote the room's temperature, 
+@{term "2::4"} is time as measured by the thermostat's chronometer, and @{term "3::4"} is a variable
+to save temperature measurements. Finally, @{term "4::5"} states whether the heater is on 
+(@{text "s$4 = 1"}) or off (@{text "s$4 = 0"}). We prove that the thermostat keeps the room's 
+temperature between @{text "Tmin"} and @{text "Tmax"}. \<close>
 
-abbreviation temp_vec_field :: "real \<Rightarrow> real \<Rightarrow> real^5 \<Rightarrow> real^5" ("f")
+abbreviation temp_vec_field :: "real \<Rightarrow> real \<Rightarrow> real^4 \<Rightarrow> real^4" ("f")
   where "f a L s \<equiv> (\<chi> i. if i = 2 then 1 else (if i = 1 then - a * (s$1 - L) else 0))"
 
-abbreviation temp_flow :: "real \<Rightarrow> real \<Rightarrow> real \<Rightarrow> real^5 \<Rightarrow> real^5" ("\<phi>")
+abbreviation temp_flow :: "real \<Rightarrow> real \<Rightarrow> real \<Rightarrow> real^4 \<Rightarrow> real^4" ("\<phi>")
   where "\<phi> a L \<tau> s \<equiv> (\<chi> i. if i = 1 then - exp(-a * \<tau>) * (L - s$1) + L else 
   (if i = 2 then \<tau> + s$2 else s$i))"
 
 \<comment> \<open>Verified with the flow. \<close>
 
 lemma norm_diff_temp_dyn: "0 < a \<Longrightarrow> \<parallel>f a L s\<^sub>1 - f a L s\<^sub>2\<parallel> = \<bar>a\<bar> * \<bar>s\<^sub>1$1 - s\<^sub>2$1\<bar>"
-proof(simp add: norm_vec_def L2_set_def, unfold UNIV_5, simp)
+proof(simp add: norm_vec_def L2_set_def, unfold UNIV_4, simp)
   assume a1: "0 < a"
   have f2: "\<And>r ra. \<bar>(r::real) + - ra\<bar> = \<bar>ra + - r\<bar>"
     by (metis abs_minus_commute minus_real_def)
@@ -253,12 +211,12 @@ lemma local_lipschitz_temp_dyn:
   apply(unfold local_lipschitz_def lipschitz_on_def dist_norm)
   apply(clarsimp, rule_tac x=1 in exI, clarsimp, rule_tac x=a in exI)
   using assms apply(simp_all add: norm_diff_temp_dyn)
-  apply(simp add: norm_vec_def L2_set_def, unfold UNIV_5, clarsimp)
+  apply(simp add: norm_vec_def L2_set_def, unfold UNIV_4, clarsimp)
   unfolding real_sqrt_abs[symmetric] by (rule real_le_lsqrt) auto
 
 lemma local_flow_temp: "a > 0 \<Longrightarrow> local_flow (f a L) UNIV UNIV (\<phi> a L)"
   by (unfold_locales, auto intro!: poly_derivatives local_lipschitz_temp_dyn 
-      simp: forall_5 vec_eq_iff)
+      simp: forall_4 vec_eq_iff)
 
 lemma temp_dyn_down_real_arith:
   assumes "a > 0" and Thyps: "0 < Tmin" "Tmin \<le> T" "T \<le> Tmax"
@@ -312,21 +270,21 @@ lemmas Hoare_temp_dyn = local_flow.sH_g_ode_ivl[OF local_flow_temp _ UNIV_I]
 lemma thermostat_flow: 
   assumes "0 < a" and "0 \<le> \<tau>" and "0 < Tmin" and "Tmax < L"
   shows "rel_kat.Hoare 
-  \<lceil>\<lambda>s. Tmin \<le> s$1 \<and> s$1 \<le> Tmax \<and> s$5 = 0\<rceil>
+  \<lceil>\<lambda>s. Tmin \<le> s$1 \<and> s$1 \<le> Tmax \<and> s$4 = 0\<rceil>
   (LOOP 
     \<comment> \<open>control\<close>
     ((2 ::= (\<lambda>s. 0));(3 ::= (\<lambda>s. s$1));
-    (IF (\<lambda>s. s$5 = 0 \<and> s$3 \<le> Tmin + 1) THEN (5 ::= (\<lambda>s.1)) ELSE 
-    (IF (\<lambda>s. s$5 = 1 \<and> s$3 \<ge> Tmax - 1) THEN (5 ::= (\<lambda>s.0)) ELSE skip));
+    (IF (\<lambda>s. s$4 = 0 \<and> s$3 \<le> Tmin + 1) THEN (4 ::= (\<lambda>s.1)) ELSE 
+    (IF (\<lambda>s. s$4 = 1 \<and> s$3 \<ge> Tmax - 1) THEN (4 ::= (\<lambda>s.0)) ELSE skip));
     \<comment> \<open>dynamics\<close>
-    (IF (\<lambda>s. s$5 = 0) THEN (x\<acute>=(f a 0) & (\<lambda>s. s$2 \<le> - (ln (Tmin/s$3))/a) on {0..\<tau>} UNIV @ 0) 
+    (IF (\<lambda>s. s$4 = 0) THEN (x\<acute>=(f a 0) & (\<lambda>s. s$2 \<le> - (ln (Tmin/s$3))/a) on {0..\<tau>} UNIV @ 0) 
     ELSE (x\<acute>=(f a L) & (\<lambda>s. s$2 \<le> - (ln ((L-Tmax)/(L-s$3)))/a) on {0..\<tau>} UNIV @ 0)) )
-  INV (\<lambda>s. Tmin \<le>s$1 \<and> s$1 \<le> Tmax \<and> (s$5 = 0 \<or> s$5 = 1)))
+  INV (\<lambda>s. Tmin \<le>s$1 \<and> s$1 \<le> Tmax \<and> (s$4 = 0 \<or> s$4 = 1)))
   \<lceil>\<lambda>s. Tmin \<le> s$1 \<and> s$1 \<le> Tmax\<rceil>"
   apply(rule H_loopI)
-    apply(rule_tac R="\<lambda>s. Tmin \<le> s$1 \<and> s$1 \<le> Tmax \<and> s$2=0 \<and> s$3 = s$1 \<and> (s$5 = 0 \<or> s$5 = 1)" in H_comp)
-     apply(rule_tac R="\<lambda>s. Tmin \<le> s$1 \<and> s$1 \<le> Tmax \<and> s$2=0 \<and> s$3 = s$1 \<and> (s$5 = 0 \<or> s$5 = 1)" in H_comp)
-      apply(rule_tac R="\<lambda>s. Tmin \<le> s$1 \<and> s$1 \<le> Tmax \<and> s$2=0 \<and> (s$5 = 0 \<or> s$5 = 1)" in H_comp, simp, simp)
+    apply(rule_tac R="\<lambda>s. Tmin \<le> s$1 \<and> s$1 \<le> Tmax \<and> s$2=0 \<and> s$3 = s$1 \<and> (s$4 = 0 \<or> s$4 = 1)" in H_comp)
+     apply(rule_tac R="\<lambda>s. Tmin \<le> s$1 \<and> s$1 \<le> Tmax \<and> s$2=0 \<and> s$3 = s$1 \<and> (s$4 = 0 \<or> s$4 = 1)" in H_comp)
+      apply(rule_tac R="\<lambda>s. Tmin \<le> s$1 \<and> s$1 \<le> Tmax \<and> s$2=0 \<and> (s$4 = 0 \<or> s$4 = 1)" in H_comp, simp, simp)
       apply(rule H_cond, simp_all add: Hoare_temp_dyn[OF assms(1,2)])+
   using temp_dyn_up_real_arith[OF assms(1) _ _ assms(4), of Tmin]
     and temp_dyn_down_real_arith[OF assms(1,3), of _ Tmax] by auto
@@ -337,17 +295,17 @@ no_notation temp_vec_field ("f")
 
 subsubsection \<open> Water tank \<close>  \<comment> \<open>As generalized by Hespanha from \cite{Alur et. all, 1995}\<close>
 
-abbreviation water_vec_field :: "real \<Rightarrow> real \<Rightarrow> real^5 \<Rightarrow> real^5" ("f")
+abbreviation water_vec_field :: "real \<Rightarrow> real \<Rightarrow> real^4 \<Rightarrow> real^4" ("f")
   where "f c\<^sub>i c\<^sub>o s \<equiv> (\<chi> i. if i = 2 then 1 else (if i = 1 then c\<^sub>i - c\<^sub>o else 0))"
 
-abbreviation water_flow :: "real \<Rightarrow> real \<Rightarrow> real \<Rightarrow> real^5 \<Rightarrow> real^5" ("\<phi>")
+abbreviation water_flow :: "real \<Rightarrow> real \<Rightarrow> real \<Rightarrow> real^4 \<Rightarrow> real^4" ("\<phi>")
   where "\<phi> c\<^sub>i c\<^sub>o \<tau> s \<equiv> (\<chi> i. if i = 1 then (c\<^sub>i - c\<^sub>o) * \<tau> + s$1 else 
   (if i = 2 then \<tau> + s$2 else s$i))"
 
 lemma local_flow_water: "local_flow (f c\<^sub>i c\<^sub>o) UNIV UNIV (\<phi> c\<^sub>i c\<^sub>o)"
   apply (unfold_locales, unfold local_lipschitz_def lipschitz_on_def, simp_all, clarsimp)
   apply(rule_tac x="1/2" in exI, clarsimp, rule_tac x=1 in exI)
-  apply(simp add: dist_norm norm_vec_def L2_set_def, unfold UNIV_5)
+  apply(simp add: dist_norm norm_vec_def L2_set_def, unfold UNIV_4)
   by (auto intro!: poly_derivatives simp: vec_eq_iff)
 
 lemma water_tank_arith:
@@ -382,10 +340,10 @@ lemma water_tank_diff_inv:
   "0 \<le> \<tau> \<Longrightarrow> diff_invariant (\<lambda>s. s $ 1 = (c\<^sub>i - (c\<^sub>o::real)) \<cdot> s $ 2 + s $ 4 \<and> 0 \<le> s $ 2 \<and> 
     Hmin \<le> s$4 \<and> s$4 \<le> Hmax \<and> (s$3 =0 \<or> s$3 = 1)) (f c\<^sub>i c\<^sub>o) {0..\<tau>} UNIV 0 G"
   apply(intro diff_invariant_conj_rule)
-  apply(force simp: forall_5 intro!: poly_derivatives diff_invariant_rules)
-     apply(rule_tac \<nu>'="\<lambda>t. 0" and \<mu>'="\<lambda>t. 1" in diff_invariant_leq_rule, simp_all add: forall_5)
-    apply(rule_tac \<nu>'="\<lambda>t. 0" and \<mu>'="\<lambda>t. 0" in diff_invariant_leq_rule, 
-      simp_all add: forall_5, force intro!: poly_derivatives)+
+      apply(force intro!: poly_derivatives diff_invariant_rules)
+     apply(rule_tac \<nu>'="\<lambda>t. 0" and \<mu>'="\<lambda>t. 1" in diff_invariant_leq_rule, simp_all)
+    apply(rule_tac \<nu>'="\<lambda>t. 0" and \<mu>'="\<lambda>t. 0" in diff_invariant_leq_rule, simp_all)
+    apply(force intro!: poly_derivatives)+
   by (auto intro!: poly_derivatives diff_invariant_rules)
 
 lemma water_tank_inv_arith1:
@@ -446,67 +404,5 @@ lemma water_tank_inv:
 
 no_notation water_vec_field ("f")
         and water_flow ("\<phi>")
-
-(**************************************************************************************************)
-
-(* NEED MORE DIMENSIONS TO WORK WITH OBVIOUS INVARIANTS (ORBITS). *)
-
-lemma "a > 0 \<Longrightarrow> 0 \<le> \<tau> \<Longrightarrow> diff_invariant (\<lambda>s. (s$3 = 0 \<or> s$3 = 1)) (f a L) {0..\<tau>} UNIV 0 G"
-  by (auto intro!: diff_invariant_rules poly_derivatives)
-
-lemma "a > 0 \<Longrightarrow> 0 \<le> \<tau> \<Longrightarrow> diff_invariant (\<lambda>s. s$0 = - exp(-a * s$1) * (L - s$2) + L) (f a L) {0..\<tau>} UNIV 0 G"
-  apply(rule diff_invariant_rules(1), simp, simp, clarify)
-  apply(rule poly_derivatives, simp)
-    apply(erule_tac x=0 in allE, simp)
-   apply(rule poly_derivatives) defer
-   apply(rule poly_derivatives, force, force)
-   apply(intro poly_derivatives)
-              apply(rule poly_derivatives, force, simp)
-    apply(erule_tac x=1 in allE, simp)
-           apply force
-          apply force
-         apply force
-        apply(rule poly_derivatives, simp)
-    apply(erule_tac x=2 in allE, simp, simp)
-     apply force
-    apply(rule poly_derivatives)
-   apply force
-  apply auto
-  apply (auto intro!: diff_invariant_rules poly_derivatives)
-   apply force defer
-  apply(frule_tac x=1 in spec)
-
-
-lemma thermostat_inv: 
-  assumes "a > 0" and "0 \<le> \<tau>" and "0 < Tmin" and "Tmax < L"
-  shows "rel_kat.Hoare 
-  \<lceil>\<lambda>s. Tmin \<le> s$1 \<and> s$1 \<le> Tmax \<and> s$3 = 0\<rceil>
-  (LOOP 
-    \<comment> \<open>control\<close>
-    ((1 ::= (\<lambda>s. 0));(2 ::= (\<lambda>s. s$0));
-    (IF (\<lambda>s. s$3 = 0 \<and> s$2 \<le> Tmin + 1) THEN (3 ::= (\<lambda>s.1)) ELSE 
-    (IF (\<lambda>s. s$3 = 1 \<and> s$2 \<ge> Tmax - 1) THEN (3 ::= (\<lambda>s.0)) ELSE skip));
-    \<comment> \<open>dynamics\<close>
-    (IF (\<lambda>s. s$3 = 0) THEN 
-      (x\<acute>=(f a 0) & (\<lambda>s. s$1 \<le> - (ln (Tmin/s$2))/a) on {0..\<tau>} UNIV @ 0 
-      DINV (\<lambda>s. Tmin \<le>s$0 \<and> s$0 \<le> Tmax \<and> s$2 = s$0 \<and> (s$3 = 0 \<or> s$3 = 1)))
-    ELSE 
-      (x\<acute>=(f a L) & (\<lambda>s. s$1 \<le> - (ln ((L-Tmax)/(L-s$2)))/a) on {0..\<tau>} UNIV @ 0 
-      DINV (\<lambda>s. Tmin \<le>s$0 \<and> s$0 \<le> Tmax \<and> s$2 = s$0 \<and> (s$3 = 0 \<or> s$3 = 1)))))
-  INV (\<lambda>s. Tmin \<le>s$0 \<and> s$0 \<le> Tmax \<and> (s$3 = 0 \<or> s$3 = 1)))
-  \<lceil>\<lambda>s. Tmin \<le> s$1 \<and> s$1 \<le> Tmax\<rceil>"
-  apply(rule H_loopI)
-    apply(rule_tac R="\<lambda>s. Tmin \<le> s$1 \<and> s$1 \<le> Tmax \<and> s$1=0 \<and> s$2 = s$0 \<and> (s$3 = 0 \<or> s$3 = 1)" in H_comp)
-     apply(rule_tac R="\<lambda>s. Tmin \<le> s$1 \<and> s$1 \<le> Tmax \<and> s$1=0 \<and> s$2 = s$0 \<and> (s$3 = 0 \<or> s$3 = 1)" in H_comp)
-      apply(rule_tac R="\<lambda>s. Tmin \<le> s$1 \<and> s$1 \<le> Tmax \<and> s$1=0 \<and> (s$3 = 0 \<or> s$3 = 1)" in H_comp, simp, simp)
-     apply(rule H_cond, simp)
-  apply(rule H_cond, simp, simp)
-    apply(rule H_cond)
-     apply(rule H_g_ode_inv)
-       apply simp
-  oops
-
-no_notation temp_vec_field ("f")
-        and temp_flow ("\<phi>")
 
 end
