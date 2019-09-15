@@ -382,7 +382,7 @@ For IVP $(f,s)$ with continuous vector field $f:S\to S$ and initial
 state $s\in S$ we define the set of solutions on
 $T$ as
 \begin{equation*}
-\Sols f\, T\, s = \{X \mid \forall t\in T.\  X'\, t = f\, (X\, t)\land X\, 0 = s\}.
+\Sols f\, T\, s = \left\{X \mid \forall t\in T.\  X'\, t = f\, (X\, t)\land X\, 0 = s\right\}.
 \end{equation*}
 Each solution $X$ is then continuously differentiable and thus
 $f\circ X$ integrable in $T$.  For $X\in \Sols\, f\, T\, s$ and
@@ -390,20 +390,20 @@ $G:S\to\bools$, we further define the $G$-\emph{guarded orbit} of $X$
 along $T$ in $s$~\cite{MuniveS19} with the help of the state transformer
 $\gamma^X_G:S\to \Pow\, S$ as 
 \begin{equation*}
-\gamma^X_{G}\, s= \{X\, t\mid t\in T\land \forall \tau\in
-{\downarrow}t.\ G\, (X\, \tau)\},
+\gamma^X_{G}\, s= \left\{X\, t\mid t\in T\land \forall \tau\in
+{\downarrow}t.\ G\, (X\, \tau)\right\},
 \end{equation*}
-where ${\downarrow}t = \{t'\in T\mid t'\le t\}$, and the
+where ${\downarrow}t = \left\{t'\in T\mid t'\le t\right\}$, and the
 $G$-\emph{guarded orbital} of $f$ along $T$ in $s$~\cite{MuniveS19}
 via the state transformer $\gamma^f_G:S\to \Pow\, S$ as
 \begin{equation*}
-  \gamma^f_G\ s = \bigcup\{\gamma^X_G\, s\mid X\in \Sols\, f\, T\, s\}.
+  \gamma^f_G\ s = \bigcup\left\{\gamma^X_G\, s\mid X\in \Sols\, f\, T\, s\right\}.
 \end{equation*}
 In applications, ${\downarrow}t$ is usually an interval
 $[0,t]\subseteq T$.  Expanding definitions,
 \begin{equation*}
-\gamma^f_G\, s = \{X\, t \mid X\in \Sols\, f\, T\, s \land t\in T
-\land \forall \tau\in{\downarrow}t.\ G\, (X\, \tau)\}.
+\gamma^f_G\, s = \left\{X\, t \mid X\in \Sols\, f\, T\, s \land t\in T
+\land \forall \tau\in{\downarrow}t.\ G\, (X\, \tau)\right\}.
 \end{equation*}
 If $\top$ denotes the predicate that holds of all states in $S$ (or
 the set $S$ itself), we write $\gamma^f$ instead of
@@ -411,7 +411,7 @@ $\gamma^f_\top$. We define the semantics of the evolution command
 $x'= f\, \&\, G$~\cite{MuniveS19} for any continuous $f:S\to S$ and
 $G:S\to \bools$ as
 \begin{equation}
-{(x'= f\, \&\, G)} = \gamma^f_G.\label{eq:st-evl}\tag{st-evl}
+{\left(x'= f\, \&\, G\right)} = \gamma^f_G.\label{eq:st-evl}\tag{st-evl}
 \end{equation}
 
 Defining the state transformer semantics of assignments is
@@ -440,8 +440,7 @@ elegant.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Flow-Based Hoare Logic for Hybrid
-  Programs}\label{sec:hoare-flow}
+\section{Differential Hoare Logic for Flows}\label{sec:hoare-flow}
 
 \gin{we need to discuss hybrid semantics of hoare triples in detail
   --- how do they work?}
@@ -450,7 +449,7 @@ The assignment axiom of Hoare logic need not be explained. Our
 semantics yields a variant with update functions instead
 of substitutions:
 \begin{equation}
-\{\lambda s.\ P\, s[x\mapsto e\, s]\}\,  x:=e\, \{P\}. \label{eq:h-assgn}\tag{h-assgn}
+\left\{\lambda s.\ P\, s[x\mapsto e\, s]\right\}\,  x:=e\, \{P\}. \label{eq:h-assgn}\tag{h-assgn}
 \end{equation}
 Hence all we need to add to Hoare logic is a rule for evolution
 commands.  We restrict our attention to Lipschitz-continuous vector
@@ -460,23 +459,23 @@ Picard-Lindel\"of's theorem~\cite{Teschl12}.  These are \emph{(local)\
 is the trajectory at $s$. Guarded orbitals $\gamma^f_G$ then
 specialise to \emph{guarded orbits}
 \begin{equation*}
-  \gamma^f_{G,U} = \{\flow_s\, t\mid t\in U\land \forall\tau \in
-  {\downarrow}t.\ G\, (\flow_s\, t)\},
+  \gamma^f_{G,U} = \left\{\flow_s\, t\mid t\in U\land \forall\tau \in
+  {\downarrow}t.\ G\, (\flow_s\, t)\right\},
 \end{equation*}
 where $U\subseteq T$ is a time domain of interest, typically an
 interval $[0,t]$ for some $t\in T$~\cite{MuniveS19}.  Accordingly,
 (\ref{eq:st-evl}) becomes
 \begin{equation}
-  (x' = f\, \&\, G)= \gamma^f_{G,U}.\label{eq:st-evl-flow}\tag{st-evl-flow}
+  \left(x' = f\, \&\, G\right)= \gamma^f_{G,U}.\label{eq:st-evl-flow}\tag{st-evl-flow}
 \end{equation}
 The following Hoare-style rule for evolution commands is then
 derivable.
 \begin{lemma}\label{P:h-evl-lemma}
 \gin{add the right conditions}
 \begin{equation}
-\{\lambda s\in S.\forall t\in U.\ (\forall
-\tau\in {\downarrow}t.\ G\, (\flow_s\, \tau)) \rightarrow P\,
-(\flow_s\, t)\}\, x' = f\, \&\, G\, \{P\}. \label{eq:h-evl}\tag{h-evl}
+\left\{\lambda s\in S.\forall t\in U.\ \left(\forall
+\tau\in {\downarrow}t.\ G\, (\flow_s\, \tau)\right) \rightarrow P\,
+(\flow_s\, t)\right\}\, x' = f\, \&\, G\, \{P\}. \label{eq:h-evl}\tag{h-evl}
 \end{equation}
 \end{lemma}
 
@@ -507,7 +506,7 @@ in this calculus:
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Invariant-Based Hoare Logic for Hybrid Programs}\label{sec:hoare-inv}
+\section{Differential Hoare Logic for Invariants}\label{sec:hoare-inv}
 
 Alternatively, $\dH$ supports reasoning with invariants for evolution
 commands instead of supplying flows to~(\ref{eq:h-evl}).  The approach
@@ -585,7 +584,7 @@ using an invariant.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Refinement Calculi for Hybrid Programs}\label{sec:refine}
+\section{Differential Refinement Calculi}\label{sec:refine}
 
 A \emph{refinement Kleene algebra with tests}
 ($\rKAT$)~\cite{ArmstrongGS16}  is a $\KAT$
@@ -627,9 +626,9 @@ For invariants and loops, we obtain the additional refinement laws
 In $\sta\, S$, moreover, the following assignments laws are
 derivable~\cite{ArmstrongGS16}.
 \begin{align}
- (x := e)  &\le  [\lambda s.\ P\, s[x\mapsto e\, s],P],\label{eq:r-assgn}\tag{r-assgn}\\
-(x:= e) \cdot [\lambda s.\ P\, s[x\mapsto e\, s],P] &\le [P,P],\label{eq:r-assgn}\tag{r-assgnl}\\
-[P,\lambda s.\ P\, s[x\mapsto e\, s]]\cdot (x:=e) &\le [P,P]. \label{eq:r-assgn}\tag{r-assgnf}
+ (x := e)  &\le  \left[\lambda s.\ P\, s[x\mapsto e\, s],P\right],\label{eq:r-assgn}\tag{r-assgn}\\
+(x:= e) \cdot \left[\lambda s.\ P\, s[x\mapsto e\, s],P\right] &\le [P,P],\label{eq:r-assgn}\tag{r-assgnl}\\
+\left[P,\lambda s.\ P\, s[x\mapsto e\, s]\right]\cdot (x:=e) &\le [P,P]. \label{eq:r-assgn}\tag{r-assgnf}
 \end{align}
 The second and third law are known as \emph{leading} and \emph{following}
 law. They introduce an assignment before and after a block of code. 
@@ -664,7 +663,7 @@ approach presented.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Starting from Flows}\label{sec:from-flows}
+\section{Evolution Commands for Flows}\label{sec:from-flows}
 
 Finally, we present variants of $\dH$ and $\dR$ that start directly
 from flows $\flow:T\to S\to S$ instead of vector fields.  This avoids
