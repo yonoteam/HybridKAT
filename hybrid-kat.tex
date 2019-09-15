@@ -104,13 +104,13 @@ systems. Continuous evolutions are modelled in $\dL$'s evolution
 commands within a hybrid program syntax. These declare a vector field
 and a guard, which is meant to hold along the evolution.  Reasoning
 with evolution commands in $\dL$ requires either explicit solutions to
-differential equations represented by the vector field, or else
-invariant sets~\cite{Teschl12} that describe evolutions
-implicitly. $\dL$-inspired verification components have already been
-formalised in the Isabelle proof assistant~\cite{MuniveS19}. Yet the
-shallow embedding used has shifted the focus from the original
-proof-theoretic approach to a semantic one, and ultimately to
-predicate transformer algebras supporting a quite different workflow.
+differential equations represented by the vector field, or invariant
+sets~\cite{Teschl12} that describe evolutions implicitly. Verification
+components inspired by $\dL$ have already been formalised in the
+Isabelle proof assistant~\cite{MuniveS19}. Yet the shallow embedding
+used has shifted the focus from the original proof-theoretic approach
+to a semantic one, and ultimately to predicate transformer algebras
+supporting a quite different workflow.
 
 Dynamic logics and predicate transformers are powerful tools. They
 support reasoning about program equivalences and transformations
@@ -118,75 +118,71 @@ beyond what standard program verification requires~\cite{BackW98}. For
 the latter, much simpler Hoare logics generate precisely the
 verification conditions needed.  Asking about the feasibility of a
 \emph{differential Hoare logic} ($\dH$) is therefore natural and
-interesting.  As basic Hoare logic is strongly related to Morgan's
-refinement calculus~\cite{Morgan94}, it seems equally reasonable to
+interesting.  As Hoare logic is strongly related to Morgan's
+refinement calculus~\cite{Morgan94}, it is equally reasonable to
 ask wether a Morgan-style \emph{differential refinement calculus}
-($\dR$) would allow constructing hybrid programs from specifications.
+($\dR$) might allow constructing hybrid programs from specifications.
 
 A prima facie answer to these questions seems positive: after all, the
 rules of Hoare logic are derivable within dynamic logic and the laws
 of Morgan's refinement calculus can be proved using Hoare logic. But
 the formalisms envisaged might not be expressive enough for hybrid
 program verification or less suitable than $\dL$ in
-practice. Conceptually it also seems interesting to ask what it would
-take to extend a standard Hoare logic or refinement calculus to hybrid
-programs.
+practice. Conceptually it is also not obvious what exactly it would
+take to extend a standard Hoare logic or refinement calculus to
+hybrid programs.
 
-Our main contribution consists in showing that $\dH$ and $\dR$ are as
-feasible and applicable as $\dL$ for verifying hybrid programs and
-that developing these novel methods requires merely adding a
-Hoare-style axiom and a refinement rule for evolution commands to the
-standard formalisms. 
+Our main contribution consists in evidence that $\dH$ and $\dR$ are as
+feasible and applicable for verifying hybrid programs as $\dL$, and
+that developing these novel methods requires simply adding a single
+Hoare-style axiom and a single refinement rule for evolution commands
+to the standard formalisms.
 
-The conceptual simplicity of $\dH$ and $\dR$ is reflected by that of
-the Isabelle verification components for them, which reuses extant
+This conceptual simplicity is reflected by that of the Isabelle
+verification components for $\dH$ and $\dR$, which reuse extant
 components for (refinement) Kleene algebra with
-tests~\cite{Kozen97,ArmstrongGS16,afp:vericomp} $(\mathsf{(r)KAT}$) for the propositional
-Hoare logic and refinement calculi---ignoring assignment and evolution
-commands---and derives axioms and laws for these two basic commands
-within a concrete state transformer semantics for hybrid
-programs~\cite{MuniveS19} over a generic hybrid store model based on
-lenses~\cite{FosterZW16}, reusing mainly other Isabelle
-components~\cite{afp:hybrid,afp:simon?}.  Data-level verification
-conditions can be discharged using Isabelle's impressive hierarchy for
-analysis and ordinary differential equations~\cite{ImmlerH12a}.  
+tests~\cite{Kozen97,ArmstrongGS16,afp:vericomp} $(\mathsf{(r)KAT}$)
+for the propositional Hoare logic and refinement calculi---ignoring
+assignment and evolution commands---and in which we can derive axioms
+and laws for these two basic commands within a concrete state
+transformer semantics for hybrid programs~\cite{MuniveS19} over a
+generic hybrid store model based on lenses~\cite{FosterZW16}, reusing
+mainly other Isabelle components~\cite{afp:hybrid,afp:simon?}.
+Data-level verification conditions can be discharged using Isabelle's
+impressive hierarchy for analysis and ordinary differential
+equations~\cite{ImmlerH12a}.
 
-This simple modular development can be seen as a case study evidencing
-the benefits of algebraic reasoning and shallow embeddings with proof
-assistants. For our verification components, we mainly needed to
-replace a relational semantics of $\KAT$ and $\rKAT$ by a state
-transformer semantics formalised in~\cite{afp:hybrid}, and a concrete
-store semantics for imperative programs by those for hybrid
+This simple modular development evidences the benefits of algebraic
+reasoning and shallow embeddings with proof assistants. In our
+verification components, we mainly need to formalise a state
+transformer semantics for $\KAT$ and $\rKAT$ along the lines
+of~\cite{afp:hybrid} and a concrete store semantics for hybrid
 programs. Using lenses~\cite{FosterZW16} gives us the flexibility to
-switch seamlessly between stores using Isabelle's real vector spaces
-or executable Euclidean spaces. Beyond that it remained to prove a few
-algebraic laws for reasoning with invariants and to derive the
-Hoare-axioms and refinement laws for evolution commands in the
-concrete semantics. Ultimately, program verification is then performed
-within the concrete semantics, but this remains hidden, as Isabelle
-tactics generate data-level verification conditions fully
-automatically and we have created semantic illusions of clean progam
-syntax in correctness specifications.
+switch seamlessly between stores based on real vector spaces or
+executable Euclidean spaces. Beyond that it suffices to derive a few
+algebraic laws for reasoning with invariants and the Hoare-axioms and
+refinement laws for evolution commands in the concrete
+semantics. Program verification is then performed at this concrete
+level, but this remains hidden, as tactics generate data-level
+verification conditions automatically and we have programmed
+boiler-plate syntax for programs and correctness specifications.
 
-Our verification components support the usual workflows of $\dL$: both
-in $\dH$ and $\dL$, we can reason explicitly with solutions to
-differential equations and implicitly with invariant sets. We have
-also formalised a third method in which solutions, that is flows,  are declared ab
-initio in correctness specifications and need not be certified. 
+Our Isabelle components support the usual workflows of $\dL$ in $\dH$
+and $\dL$: we may reason explicitly with solutions to differential
+equations and implicitly with invariant sets. We have formalised third
+method in which solutions, that is flows, are declared ab initio in
+correctness specifications and need not be certified.
 
-We have so far evaluated our verification components on a small set of
+Our verification components have so far be evaluated on a small set of
 program construction and verification examples. Some of them are
 discussed in detail in this article to explain the different work
-flows supported by our approach. With Isabelle tactics for automated
+flows within our approach. With Isabelle tactics for automated
 verification condition generation in place, we noticed little
-difference compared to previous verification case studies based on
-predicate transformers~\cite{MuniveS19}.  The entire Isabelle
-development, including the examples, is available
-online\footnote{Jonathan's repo}. Replaying proofs requires installing
-Isabelle2019, downloading the Archive of Formal Proofs and our
-repository. A postscript proof document in the repository allows
-inspecting the Isabelle code without engaging with the proof
-assistant. 
+difference relative to our predicate transformer
+components~\cite{MuniveS19}.  The entire Isabelle formalisation, is
+available online\footnote{Jonathan's repo}; our repository contains
+instructions for using it and a postscript proof document that allows
+reading the Isabelle code without installing the proof assistant.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -447,6 +443,9 @@ elegant.
 \section{Flow-Based Hoare Logic for Hybrid
   Programs}\label{sec:hoare-flow}
 
+\gin{we need to discuss hybrid semantics of hoare triples in detail
+  --- how do they work?}
+
 The assignment axiom of Hoare logic need not be explained. Our
 semantics yields a variant with update functions instead
 of substitutions:
@@ -481,7 +480,7 @@ derivable.
 \end{equation}
 \end{lemma}
 
-This finishes the derivation of rules for an algebraic Hoare logic for
+This finishes the derivation of rules for a Hoare logic $\dH$ for
 hybrid programs---to our knowledge, the first Hoare logic of this
 kind. As usual, there is one rule per programming construct, so that
 their recursive application generates proof obligations that are
@@ -510,12 +509,12 @@ in this calculus:
 
 \section{Invariant-Based Hoare Logic for Hybrid Programs}\label{sec:hoare-inv}
 
-Alternatively, our Hoare logic supports reasoning with invariants for
-evolution commands instead of supplying flows to~(\ref{eq:h-evl}).
-The approach has been developed in~\cite{MuniveS19}. Our invariants
-generalise the \emph{differential invariants} of
-$\dL$~\cite{Platzer18} and the \emph{invariant sets} of dynamical
-systems and (semi)group theory~\cite{Teschl12} .
+Alternatively, $\dH$ supports reasoning with invariants for evolution
+commands instead of supplying flows to~(\ref{eq:h-evl}).  The approach
+has been developed in~\cite{MuniveS19}. Our invariants generalise the
+\emph{differential invariants} of $\dL$~\cite{Platzer18} and the
+\emph{invariant sets} of dynamical systems and (semi)group
+theory~\cite{Teschl12} .
 
 A predicate $I:S\to\bools$ is an \emph{invariant} of the continuous
 vector field $f:S\to S$ and guard $G:S\to\bools$ \emph{along}
@@ -648,15 +647,16 @@ x' = f\, \&\, G \le [\lambda s.\forall t\in U.\ (\forall
 \gin{we also need to derive leading/following laws
   for evolution statements.}
 
-These laws suffice for constructing hybrid programs from initial
-specification statements by step-wise refinement incrementally and
-compositionally. To our knowledge this is the first refinement
-calculus for hybrid programs of this kind.  A more powerful variant
-based on predicate transformers \`a la Back and von
+Taken together, the laws in this section form the differential
+refinement calculus $\dR$.  They suffice for constructing hybrid
+programs from initial specification statements by step-wise refinement
+incrementally and compositionally. To our knowledge $\dR$ is the first
+refinement calculus for hybrid programs of this kind.  A more powerful
+variant based on predicate transformers \`a la Back and von
 Wright~\cite{BackW98} has been developed in~\cite{MuniveS19}, but
 applications remain to be explored.  A previous approach to refinement
-for hybrid programs in $\dL$~\cite{LoosP16} seems quite different to
-the two standard calculi mentioned and much more intricate than the
+for hybrid programs in $\dL$~\cite{LoosP16} is quite different to the
+two standard calculi mentioned and much more intricate than the
 approach presented.
 
 \gin{do two examples; one for flows (thermostat, stepwise, done), one for
@@ -666,12 +666,12 @@ approach presented.
 
 \section{Starting from Flows}\label{sec:from-flows}
 
-Finally, we present an approach that starts directly from
-flows $\flow:T\to S\to S$ instead of vector fields.  This avoids
+Finally, we present variants of $\dH$ and $\dR$ that start directly
+from flows $\flow:T\to S\to S$ instead of vector fields.  This avoids
 checking the conditions of the Picard-Lindel\"of theorem and
-simplifies verification proofs considerably.  Instead of $x'=f\, \&\,
-G$, we now use the basic evolution command $\mathbf{evol}\, \flow\, G$
-in hybrid programs and define
+simplifies verification proofs considerably.  Instead of
+$x'=f\, \&\, G$, we now use the basic evolution command
+$\mathbf{evol}\, \flow\, G$ in hybrid programs and define
 \begin{equation*}
   (\mathbf{evol}\, \flow\, G) = \lambda s.\ \gamma^{\flow_s}_G\, s
 \end{equation*}
@@ -739,84 +739,74 @@ for $P= (\lambda s.\ s_x = h\land s_v = 0)$ and $Q  = (\lambda s.\
 
 \section{Conclusion}\label{sec:conclusion}
 
-This article on Hoare logics and refinement calculi for hybrid
-programs in the style of $\dL$ is a companion to another article that
-introduces a more complex and powerful predicate transformer based
-framework for reasoning about hybrid systems, formalised with
-Isabelle/HOL~\cite{MuniveS19}. The verification components contribute
-the following to this framework:
+This article contributes new methods and Isabelle components to a
+modular and open semantic framework for verifying hybrid systems that
+so far focussed on predicate transformer methods~\cite{MuniveS19};
+more specifically
 \begin{itemize}
-\item the first standalone Hoare logic for hybrid programs, 
-\item the first Morgan-style refinement calculus for such programs,
+\item the first standalone Hoare logic $\dH$ for hybrid programs, 
+\item the first Morgan-style refinement calculus $\dR$ for such programs,
 \item more generic state spaces modelled by lenses,
 \item improved Isabelle syntax for correctness specifications
   and hybrid programs,
 \item increased proof automation via Isabelle tactics. 
 \end{itemize}
-As previously~\cite{MuniveS19}, our frameworks supports evolution
-statements based on Lipschitz-continuous vector fields, where flows
-need to be supplied externally and can then be certified internally,
-evolution statements based on continuous vector fields, for which
-reasoning with invariant sets is supported, and evolution states based
-directly on flows, which circumvents their certification. 
+As previously~\cite{MuniveS19}, these components support three
+workflows based on certifying solutions to Lipschitz-continuous vector
+fields, reasoning with invariant sets for continuous vector fields,
+and working directly with flows without certification. 
 
-Compared to the standard $\dL$ toolchain, the methods presented are
-conceptually simple. They emphasise the natural mathematical style of
-reasoning about dynamical systems, with little formal overhead
-relative to standard Hoare logics and refinement calculi, instead of
-using an intricate idiosyncratic proof system. In post hoc
-verification, in particular, the only purpose of the inference system
-is to be invisible in verification condition generation. The modular
-approach based on algebras and a shallow embedding has made it also
-very simple to build these verification components and has allowed
-high reuse of extant Isabelle code. This makes our framework not only
-open to use any proof method and mathematical data supported by
-Isabelle's higher-order logic, type system and libraries, it should
-also allow developers to add new methods, for instance based on
-discrete dynamical systems, hybrid automata or duration
-calculi~\cite{***} with relative ease. It should be equally simple to
-develop $\dH$ and $\dR$ without using $\KAT$ and $\rKAT$, for instance
-in other Hoare logics supported by Isabelle, simply by plugging in our
-hybrid store model.
+Compared to the standard $\dL$ toolchain, $\dH$ and $\dR$ are
+simple. They emphasise the natural mathematical style of reasoning
+about dynamical systems, with minimal conceptual overhead relative to
+standard Hoare logics and refinement calculi, instead of using
+intricate idiosyncratic proof systems. The inference system of $\dH$,
+in particular, remains invisible and is only used for automated
+verification condition generation. The modular approach with algebras
+and a shallow embedding has simplified the construction of these
+verification components and made it incremental relative to extant
+ones. Our framework is not only open to use any proof method and
+mathematical theory supported by Isabelle, it should also allow
+developers to add new methods, for instance based on discrete
+dynamical systems, hybrid automata or duration calculi~\cite{***} with
+minimal effort. It should be equally straightforward to formalise
+$\dH$ and $\dR$ based on other Hoare logics supported by Isabelle by
+plugging in our hybrid store model.
 
-The naturality and importance of using Hoare logic and refinement
-calculi for hybrid systems verification is further underpinned by the
-fact that these ideas are not new: a hybrid Hoare logic has been
-proposed by Liu et al.~\cite{LiuLQZZZZ10} for a duration calculus
-based on hybrid CSP and successfully used in subsequent work. It is
-therefore syntactically and semantically very different from $\dH$. A
-differential refinement logic has been developed in Loos' PhD thesis
-and published in~\cite{LoosP16}.  It provides essentially a complex
-proof system with a large number of inference rules for reasoning
-about inequalities between Kleene algebra expressions that can be seen
-as refinements between hybrid programs. The approach is very different
-from the algebraic refinement calculi developed by Back and von
-Wright~\cite{BackW98}, Morgan~\cite{Morgan94}, and hence very
-different from the predicate transformer based approach
-in~\cite{MuniveS19} and in particular that based on specification
-statements used in $\dR$.  The relative advantages and disadvantages
-of the three approaches remain to be explored.
+The relevance of Hoare logic and refinement calculi for hybrid systems
+verification is further evidenced by the fact that such approaches are
+not new: A hybrid Hoare logic has been proposed by Liu et
+al.~\cite{LiuLQZZZZ10} for a duration calculus based on hybrid CSP and
+been widely used since. Yet it is conceptually very different from
+$\dH$ and $\dL$. A differential refinement logic based on $\dL$ has
+been developed as part of Loos' PhD work~\cite{LoosP16}.  It is based
+on a complex proof system with a large number of inference rules for
+reasoning about inequalities between $\KAT$ expressions, which are
+interpreted in a rather non-standard way as refinements between hybrid
+programs. It differs substantially from the algebraic calculi
+developed by Back and von Wright~\cite{BackW98},
+Morgan~\cite{Morgan94} and others, and thus from the predicate
+transformer algebras in~\cite{MuniveS19} and from $\dR$.  The relative
+advantages and disadvantages of these approaches remain to be
+explored.
 
-The difference in complexity and expressivity between Hoare logic and
-predicate transformer calculi, which is one of the motivations of this
-work, can be nicely explained in the algebraic setting. The equational
-theory of $\KAT$ is PSPACE complete, that of modal Kleene
-algebra, which yields predicate transformers, is in
-EXPTIME~\cite{MollerS06}.  Propositional Hoare logic can be
-represented within the equational theories.  Moreover, the weakest
-liberal precondition operator---a standard predicate transformer---can
-be expressed in modal Kleene algebra, but not in
-$\KAT$~\cite{Struth18}. 
+The expressivity and complexity gap between Hoare logic and predicate
+transformer semantics is particularly apparent within algebra. The
+weakest liberal precondition operator---a standard predicate
+transformer---cannot be expressed in $\KAT$~\cite{Struth18}.  The
+equational theory of $\KAT$, which captures propositional Hoare logic,
+is PSPACE complete, that of modal Kleene algebra, which yields
+predicate transformers, is in EXPTIME~\cite{MollerS06}.  
 
-Finally, while $\KAT$ and $\rKAT$ seem convenient starting points for
+Finally, while $\KAT$ and $\rKAT$ are convenient starting points for
 building program construction and verification components for hybrid
-programs, the simple more general setting of Hoare semigroups~\cite{Struth18}
-would support developing hybrid Hoare
-logics for total program correctness---where bouncing balls might
-bounce forever---or even for multirelational
-semantics~\cite{FurusawaS16,FurusawaS15} needed for Isabelle
-components for differential game logic~\cite{Platzer15}. This,
-however, is left for future work.
+programs, the simple and more general setting of Hoare
+semigroups~\cite{Struth18} would support developing hybrid Hoare
+logics for total program correctness---where balls may bounce
+forever---or even based on multirelational
+semantics~\cite{FurusawaS16,FurusawaS15} as needed for differential
+game logic~\cite{Platzer15}. This, however, is beyond the scope of
+this article.
 
 
 
