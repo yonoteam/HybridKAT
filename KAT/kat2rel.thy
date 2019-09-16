@@ -1,229 +1,32 @@
-(*  Title:       Verification components with relational MKA 
+(*  Title:       Hybrid systems in the relational KAT
     Author:      Jonathan Julián Huerta y Munive, 2019
     Maintainer:  Jonathan Julián Huerta y Munive <jjhuertaymunive1@sheffield.ac.uk>
 *)
 
-section \<open> Verification components with relational KAT \<close>
+section \<open> Hybrid systems in the relational KAT \<close>
 
-text \<open> We derive the rules of Hoare Logic in KAT. We instantiate to our relational model and 
-derive rules for evolution statements with our three methods for verifying correctness 
-specifications of continuous dynamics: flows, solutions and invariants. \<close>
+text \<open> We use our relational model to obtain verification components for hybrid programs. For 
+evolution commands, we devise three methods for verifying correctness specifications of their 
+continuous dynamics: flows, solutions and invariants. \<close>
 
 theory kat2rel
-  imports
-  "../hs_prelims_dyn_sys"
-  KAT_and_DRA.PHL_KAT
+  imports 
+    kat_rkat_models
+    "Hybrid_Systems_VCs.HS_ODEs"
 
-begin (* do state transformers version *)
-
-subsection \<open> Kleene algebra preparation \<close> 
-
-no_notation if_then_else ("if _ then _ else _ fi" [64,64,64] 63)
-        and while ("while _ do _ od" [64,64] 63)
-
-context dioid_one_zero (* by Victor Gomes, Georg Struth *)
 begin
-
-lemma power_inductl: "z + x \<cdot> y \<le> y \<Longrightarrow> (x ^ m) \<cdot> z \<le> y"
-  by(induct m, auto, metis mult.assoc mult_isol order_trans)
-
-lemma power_inductr: "z + y \<cdot> x \<le> y \<Longrightarrow> z \<cdot> (x ^ m) \<le> y"
-proof (induct m)
-  case 0 show ?case
-    using "0.prems" by auto
-  case Suc
-  {
-    fix m
-    assume "z + y \<cdot> x \<le> y \<Longrightarrow> z \<cdot> x ^ m \<le> y"
-      and "z + y \<cdot> x \<le> y"
-    hence "z \<cdot> x ^ m \<le> y"
-      by auto
-    also have "z \<cdot> x ^ Suc m = z \<cdot> x \<cdot> x ^ m"
-      by (metis mult.assoc power_Suc)
-    moreover have "... = (z \<cdot> x ^ m) \<cdot> x"
-      by (metis mult.assoc power_commutes)
-    moreover have "... \<le> y \<cdot> x"
-      by (metis calculation(1) mult_isor)
-    moreover have "... \<le> y"
-      using \<open>z + y \<cdot> x \<le> y\<close> by auto
-    ultimately have "z \<cdot> x ^ Suc m \<le> y" by auto
-  }
-  thus ?case
-    by (metis Suc)
-qed
-
-end
-
-context kat (* mostly by Victor Gomes, Georg Struth *)
-begin
-
-\<comment> \<open> Definitions of Hoare Triple \<close>
-
-definition Hoare :: "'a \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> bool" ("H") where
-  "H p x q \<longleftrightarrow> t p \<cdot> x \<le> x \<cdot> t q" 
-
-lemma H_consl: "t p \<le> t p' \<Longrightarrow> H p' x q \<Longrightarrow> H p x q"
-  using Hoare_def phl_cons1 by blast
-
-lemma H_consr: "t q' \<le> t q \<Longrightarrow> H p x q' \<Longrightarrow> H p x q"
-  using Hoare_def phl_cons2 by blast          
-
-lemma H_cons: "t p \<le> t p' \<Longrightarrow> t q' \<le> t q \<Longrightarrow> H p' x q' \<Longrightarrow> H p x q"
-  by (simp add: H_consl H_consr)
-
-\<comment> \<open> Skip program \<close>
-
-lemma H_skip:  "H p 1 p"
-  by (simp add: Hoare_def)
-
-\<comment> \<open> Sequential composition \<close>
-
-lemma H_seq: "H p x r \<Longrightarrow> H r y q \<Longrightarrow> H p (x \<cdot> y) q"
-  by (simp add: Hoare_def phl_seq)
-
-\<comment> \<open> Conditional statement \<close>
-
-definition ifthenelse :: "'a \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> 'a" ("if _ then _ else _ fi" [64,64,64] 63) where
-  "if p then x else y fi = (t p \<cdot> x + n p \<cdot> y)"
-
-lemma H_var: "H p x q \<longleftrightarrow> t p \<cdot> x \<cdot> n q = 0"
-  by (metis Hoare_def n_kat_3 t_n_closed)
-
-lemma H_cond_iff: "H p (if r then x else y fi) q \<longleftrightarrow> H (t p \<cdot> t r) x q \<and> H (t p \<cdot> n r) y q"
-proof -
-  have "H p (if r then x else y fi) q \<longleftrightarrow> t p \<cdot> (t r \<cdot> x + n r \<cdot> y) \<cdot> n q = 0"
-    by (simp add: H_var ifthenelse_def)
-  also have "... \<longleftrightarrow> t p \<cdot> t r \<cdot> x \<cdot> n q + t p \<cdot> n r \<cdot> y \<cdot> n q = 0"
-    by (simp add: distrib_left mult_assoc)
-  also have "... \<longleftrightarrow> t p \<cdot> t r \<cdot> x \<cdot> n q = 0 \<and> t p \<cdot> n r \<cdot> y \<cdot> n q = 0"
-    by (metis add_0_left no_trivial_inverse)
-  finally show ?thesis
-    by (metis H_var test_mult)
-qed
-
-lemma H_cond: "H (t p \<cdot> t r) x q \<Longrightarrow> H (t p \<cdot> n r) y q \<Longrightarrow> H p (if r then x else y fi) q"
-  by (simp add: H_cond_iff)
-
-\<comment> \<open> While loop \<close>
-
-definition while :: "'a \<Rightarrow> 'a \<Rightarrow> 'a" ("while _ do _ od" [64,64] 63) where
-  "while b do x od = (t b \<cdot> x)\<^sup>\<star> \<cdot> n b"
-
-definition while_inv :: "'a \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> 'a" ("while _ inv _ do _ od" [64,64,64] 63) where
-  "while p inv i do x od = while p do x od"
-
-lemma H_exp1: "H (t p \<cdot> t r) x q \<Longrightarrow> H p (t r \<cdot> x) q"
-  using Hoare_def n_de_morgan_var2 phl.ht_at_phl_export1 by auto
-
-lemma H_while: "H (t p \<cdot> t r) x p \<Longrightarrow> H p (while r do x od) (t p \<cdot> n r)"
-proof -
-  assume a1: "H (t p \<cdot> t r) x p"
-  have "t (t p \<cdot> n r) = n r \<cdot> t p \<cdot> n r"
-    using n_preserve test_mult by presburger
-  then show ?thesis
-    using a1 Hoare_def H_exp1 conway.phl.it_simr phl_export2 while_def by auto
-qed
-
-lemma H_while_inv: "t p \<le> t i \<Longrightarrow> t i \<cdot> n r \<le> t q \<Longrightarrow> H (t i \<cdot> t r) x i \<Longrightarrow> H p (while r inv i do x od) q"
-  by (metis H_cons H_while test_mult while_inv_def)
-
-\<comment> \<open> Finite iteration \<close>
-
-lemma H_star: "H i x i \<Longrightarrow> H i (x\<^sup>\<star>) i"
-  unfolding Hoare_def using star_sim2 by blast
-
-lemma H_star_inv: 
-  assumes "t p \<le> t i" and "H i x i" and "(t i) \<le> (t q)"
-  shows "H p (x\<^sup>\<star>) q"
-proof-
-  have "H i (x\<^sup>\<star>) i"
-    using assms(2) H_star by blast
-  hence "H p (x\<^sup>\<star>) i"
-    unfolding Hoare_def using assms(1) phl_cons1 by blast 
-  thus ?thesis 
-    unfolding Hoare_def using assms(3) phl_cons2 by blast 
-qed
-
-definition loopi :: "'a \<Rightarrow> 'a \<Rightarrow> 'a" ("loop _ inv _ " [64,64] 63)
-  where "loop x inv i = x\<^sup>\<star>"
-
-lemma H_loop: "H p x p \<Longrightarrow> H p (loop x inv i) p"
-  unfolding loopi_def by (rule H_star)
-
-lemma H_loop_inv: "t p \<le> t i \<Longrightarrow> H i x i \<Longrightarrow> t i \<le> t q \<Longrightarrow> H p (loop x inv i) q"
-  unfolding loopi_def using H_star_inv by blast
-
-\<comment> \<open> Invariants \<close>
-
-lemma H_inv: "t p \<le> t i \<Longrightarrow> t i \<le> t q \<Longrightarrow> H i x i \<Longrightarrow> H p x q"
-  by (rule_tac p'=i and q'=i in H_cons)
-
-end
-
-
-subsection \<open> Relational model \<close> (* by Alasdair Armstrong, Victor B. F. Gomes, Georg Struth, Tjark Weber *)
-
-interpretation rel_dioid: dioid_one_zero "(\<union>)" "(O)" Id "{}" "(\<subseteq>)" "(\<subset>)"
-  by (unfold_locales, auto)
-
-lemma power_is_relpow: "rel_dioid.power X m = X ^^ m"
-proof (induct m)
-  case 0 show ?case
-    by (metis rel_dioid.power_0 relpow.simps(1))
-  case Suc thus ?case
-    by (metis rel_dioid.power_Suc2 relpow.simps(2))
-qed
-
-lemma rel_star_def: "X^* = (\<Union>m. rel_dioid.power X m)"
-  by (simp add: power_is_relpow rtrancl_is_UN_relpow)
-
-lemma rel_star_contl: "X O Y^* = (\<Union>m. X O rel_dioid.power Y m)"
-by (metis rel_star_def relcomp_UNION_distrib)
-
-lemma rel_star_contr: "X^* O Y = (\<Union>m. (rel_dioid.power X m) O Y)"
-by (metis rel_star_def relcomp_UNION_distrib2)
-
-interpretation rel_kleene_algebra: kleene_algebra "(\<union>)" "(O)" Id "{}" "(\<subseteq>)" "(\<subset>)" rtrancl
-proof
-  fix x y z :: "'a rel"
-  show "Id \<union> x O x\<^sup>* \<subseteq> x\<^sup>*"
-    by (metis order_refl r_comp_rtrancl_eq rtrancl_unfold)
-next
-  fix x y z :: "'a rel"
-  assume "z \<union> x O y \<subseteq> y"
-  thus "x\<^sup>* O z \<subseteq> y"
-    by (simp only: rel_star_contr, metis (lifting) SUP_le_iff rel_dioid.power_inductl)
-next
-  fix x y z :: "'a rel"
-  assume "z \<union> y O x \<subseteq> y"
-  thus "z O x\<^sup>* \<subseteq> y"
-    by (simp only: rel_star_contl, metis (lifting) SUP_le_iff rel_dioid.power_inductr)
-qed
-
-interpretation rel_dioid_tests: test_semiring "(\<union>)" "(O)" Id "{}" "(\<subseteq>)" "(\<subset>)" "\<lambda>x. Id \<inter> ( - x)"
-  by (standard, auto)
-
-interpretation rel_kat: kat "(\<union>)" "(O)" Id "{}" "(\<subseteq>)" "(\<subset>)" rtrancl "\<lambda>x. Id \<inter> ( - x)"
-  by (unfold_locales)
-
 
 subsection \<open> Store and Hoare triples \<close>
 
 type_synonym 'a pred = "'a \<Rightarrow> bool"
 
-typ "real ^ 'i"
-
 \<comment> \<open>We start by deleting some conflicting notation.\<close>
 
 no_notation Archimedean_Field.ceiling ("\<lceil>_\<rceil>")
         and Archimedean_Field.floor_ceiling_class.floor ("\<lfloor>_\<rfloor>")
-        and Relation.Domain ("r2s")
         and tau ("\<tau>")
 
 notation Id ("skip")
-     and relcomp (infixl ";" 70) 
-     and inf (infixl "\<sqinter>" 70)  
-     and sup (infixl "\<squnion>" 65)
 
 \<comment> \<open>Canonical lifting from predicates to relations and its simplification rules\<close>
 
@@ -235,7 +38,7 @@ lemma p2r_simps[simp]:
   "(\<lceil>P\<rceil> = \<lceil>Q\<rceil>) = (\<forall>s. P s = Q s)"
   "(\<lceil>P\<rceil> ; \<lceil>Q\<rceil>) = \<lceil>\<lambda> s. P s \<and> Q s\<rceil>"
   "(\<lceil>P\<rceil> \<union> \<lceil>Q\<rceil>) = \<lceil>\<lambda> s. P s \<or> Q s\<rceil>"
-  "rel_dioid_tests.t \<lceil>P\<rceil> = \<lceil>P\<rceil>"
+  "rel_tests.t \<lceil>P\<rceil> = \<lceil>P\<rceil>"
   "(- Id) \<union> \<lceil>P\<rceil> = - \<lceil>\<lambda>s. \<not> P s\<rceil>"
   "Id \<inter> (- \<lceil>P\<rceil>) = \<lceil>\<lambda>s. \<not> P s\<rceil>"
   unfolding p2r_def by auto
@@ -245,10 +48,7 @@ lemma p2r_simps[simp]:
 lemma rel_kat_H: "rel_kat.Hoare \<lceil>P\<rceil> X \<lceil>Q\<rceil> \<longleftrightarrow> (\<forall>s s'. P s \<longrightarrow> (s,s') \<in> X \<longrightarrow> Q s')"
   by (simp add: rel_kat.Hoare_def, auto simp add: p2r_def)
 
-lemma rel_dioid_H: "rel_dioid.ht \<lceil>P\<rceil> X \<lceil>Q\<rceil> = (\<forall>s s'. P s \<longrightarrow> (s,s') \<in> X \<longrightarrow> Q s')"
-  by (auto simp: p2r_def subset_eq)
-
-\<comment> \<open> Hoare triple for skip and simp-rule \<close>
+\<comment> \<open> Hoare triple for skip and a simp-rule \<close>
 
 lemma H_skip: "rel_kat.Hoare \<lceil>P\<rceil> skip \<lceil>P\<rceil>"
   using rel_kat.H_skip by blast
@@ -256,7 +56,7 @@ lemma H_skip: "rel_kat.Hoare \<lceil>P\<rceil> skip \<lceil>P\<rceil>"
 lemma sH_skip[simp]: "rel_kat.Hoare \<lceil>P\<rceil> skip \<lceil>Q\<rceil> \<longleftrightarrow> \<lceil>P\<rceil> \<le> \<lceil>Q\<rceil>"
   unfolding rel_kat_H by simp
 
-\<comment> \<open> We introduce assignments and compute their Hoare triple. \<close>
+\<comment> \<open> We introduce assignments and compute derive their rule of Hoare logic. \<close>
 
 definition vec_upd :: "('a^'b) \<Rightarrow> 'b \<Rightarrow> 'a \<Rightarrow> 'a^'b"
   where "vec_upd s i a \<equiv> (\<chi> j. ((($) s)(i := a)) j)"
@@ -453,8 +253,7 @@ lemma H_g_ode_inv: "rel_kat.Hoare \<lceil>I\<rceil> (x\<acute>= f & G on T S @ t
 
 subsection \<open> Derivation of the rules of dL \<close>
 
-text \<open> We derive domain specific rules of differential dynamic logic (dL). First we present a 
-generalised version, then we show the rules as instances of the general ones.\<close>
+text \<open> We derive a generalised version of some domain specific rules of differential dynamic logic (dL).\<close>
 
 lemma diff_solve_axiom: 
   fixes c::"'a::{heine_borel, banach}"

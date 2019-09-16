@@ -9,80 +9,80 @@ text \<open> We use our relational model to obtain a refinement component for hy
 We provide three methods for refining continuous dynamics of hybrid systems in this 
 setting: using flows, solutions, and differential invariants. \<close>
 
-theory rkat2rel
-  imports kat2rel
+theory rkat2ndfun
+  imports kat2ndfun
 
 begin
 
 subsection \<open> Refinement Components \<close>
 
-lemma R_skip: "(\<forall>s. P s \<longrightarrow> Q s) \<Longrightarrow> Id \<le> rel_R \<lceil>P\<rceil> \<lceil>Q\<rceil>"
-  by (simp add: rel_rkat.R2 rel_kat_H)
+lemma R_skip: "(\<forall>s. P s \<longrightarrow> Q s) \<Longrightarrow> 1 \<le> Ref \<lceil>P\<rceil> \<lceil>Q\<rceil>"
+  by (auto simp: spec_def ndfun_kat_H one_nd_fun_def)
 
-lemma R_comp: "(rel_R \<lceil>P\<rceil> \<lceil>R\<rceil>) ; (rel_R \<lceil>R\<rceil> \<lceil>Q\<rceil>) \<le> rel_R \<lceil>P\<rceil> \<lceil>Q\<rceil>"
-  using rel_rkat.R_seq by blast
+lemma R_comp: "(Ref \<lceil>P\<rceil> \<lceil>R\<rceil>) ; (Ref \<lceil>R\<rceil> \<lceil>Q\<rceil>) \<le> Ref \<lceil>P\<rceil> \<lceil>Q\<rceil>"
+  using R_seq by blast
 
-lemma R_comp_rule: "X \<le> rel_R \<lceil>P\<rceil> \<lceil>R\<rceil> \<Longrightarrow> Y \<le> rel_R \<lceil>R\<rceil> \<lceil>Q\<rceil> \<Longrightarrow> X; Y \<le> rel_R \<lceil>P\<rceil> \<lceil>Q\<rceil>"
-  unfolding rel_rkat.spec_def by (rule H_comp)
+lemma R_comp_rule: "X \<le> Ref \<lceil>P\<rceil> \<lceil>R\<rceil> \<Longrightarrow> Y \<le> Ref \<lceil>R\<rceil> \<lceil>Q\<rceil> \<Longrightarrow> X; Y \<le> Ref \<lceil>P\<rceil> \<lceil>Q\<rceil>"
+  unfolding spec_def by (rule H_comp)
 
-lemmas R_comp_mono = relcomp_mono
+lemmas R_comp_mono = mult_isol_var
 
-lemma R_assign: "(x ::= e) \<le> rel_R \<lceil>\<lambda>s. P (\<chi> j. ((($) s)(x := e s)) j)\<rceil> \<lceil>P\<rceil>"
-  unfolding rel_rkat.spec_def by (rule H_assign, clarsimp simp: fun_upd_def)
+lemma R_assign: "(x ::= e) \<le> Ref \<lceil>\<lambda>s. P (\<chi> j. ((($) s)(x := e s)) j)\<rceil> \<lceil>P\<rceil>"
+  unfolding spec_def by (rule H_assign, clarsimp simp: fun_eq_iff fun_upd_def)
 
-lemma R_assign_rule: "(\<forall>s. P s \<longrightarrow> Q (\<chi> j. ((($) s)(x := (e s))) j)) \<Longrightarrow> (x ::= e) \<le> rel_R \<lceil>P\<rceil> \<lceil>Q\<rceil>"
-  unfolding sH_assign[symmetric] by (rule rel_rkat.R2)
+lemma R_assign_rule: "(\<forall>s. P s \<longrightarrow> Q (\<chi> j. ((($) s)(x := (e s))) j)) \<Longrightarrow> (x ::= e) \<le> Ref \<lceil>P\<rceil> \<lceil>Q\<rceil>"
+  unfolding sH_assign[symmetric] spec_def .
 
-lemma R_assignl: "P = (\<lambda>s. R (\<chi> j. ((($) s)(x := e s)) j)) \<Longrightarrow> (x ::= e) ; rel_R \<lceil>R\<rceil> \<lceil>Q\<rceil> \<le> rel_R \<lceil>P\<rceil> \<lceil>Q\<rceil>"
+lemma R_assignl: "P = (\<lambda>s. R (\<chi> j. ((($) s)(x := e s)) j)) \<Longrightarrow> (x ::= e) ; Ref \<lceil>R\<rceil> \<lceil>Q\<rceil> \<le> Ref \<lceil>P\<rceil> \<lceil>Q\<rceil>"
   apply(rule_tac R=R in R_comp_rule)
   by (rule_tac R_assign_rule, simp_all)
 
-lemma R_assignr: "R = (\<lambda>s. Q (\<chi> j. ((($) s)(x := e s)) j)) \<Longrightarrow> rel_R \<lceil>P\<rceil> \<lceil>R\<rceil>; (x ::= e) \<le> rel_R \<lceil>P\<rceil> \<lceil>Q\<rceil>"
+lemma R_assignr: "R = (\<lambda>s. Q (\<chi> j. ((($) s)(x := e s)) j)) \<Longrightarrow> Ref \<lceil>P\<rceil> \<lceil>R\<rceil>; (x ::= e) \<le> Ref \<lceil>P\<rceil> \<lceil>Q\<rceil>"
   apply(rule_tac R=R in R_comp_rule, simp)
   by (rule_tac R_assign_rule, simp)
 
-lemma R_cond: "(IF B THEN rel_R \<lceil>\<lambda>s. B s \<and> P s\<rceil> \<lceil>Q\<rceil> ELSE rel_R \<lceil>\<lambda>s. \<not> B s \<and> P s\<rceil> \<lceil>Q\<rceil>) \<le> rel_R \<lceil>P\<rceil> \<lceil>Q\<rceil>"
-  using rel_rkat.R_cond[of "\<lceil>B\<rceil>" "\<lceil>P\<rceil>" "\<lceil>Q\<rceil>"] by simp
+lemma R_cond: "(IF B THEN Ref \<lceil>\<lambda>s. B s \<and> P s\<rceil> \<lceil>Q\<rceil> ELSE Ref \<lceil>\<lambda>s. \<not> B s \<and> P s\<rceil> \<lceil>Q\<rceil>) \<le> Ref \<lceil>P\<rceil> \<lceil>Q\<rceil>"
+  using R_cond[of "\<lceil>B\<rceil>" "\<lceil>P\<rceil>" "\<lceil>Q\<rceil>"] by simp
 
-lemma R_cond_mono: "X \<subseteq> X' \<Longrightarrow> Y \<subseteq> Y' \<Longrightarrow> (IF P THEN X ELSE Y) \<le> IF P THEN X' ELSE Y'"
-  by (auto simp: rel_kat.ifthenelse_def)
+lemma R_cond_mono: "X \<le> X' \<Longrightarrow> Y \<le> Y' \<Longrightarrow> (IF P THEN X ELSE Y) \<le> IF P THEN X' ELSE Y'"
+  unfolding ifthenelse_def times_nd_fun_def plus_nd_fun_def n_op_nd_fun_def
+  by (auto simp: kcomp_def less_eq_nd_fun_def p2ndf_def le_fun_def)
 
-lemma R_while: "WHILE Q INV I DO (rel_R \<lceil>\<lambda>s. P s \<and> Q s\<rceil> \<lceil>P\<rceil>) \<subseteq> rel_R \<lceil>P\<rceil> \<lceil>\<lambda>s. P s \<and> \<not> Q s\<rceil>"
-  unfolding rel_kat.while_inv_def using rel_rkat.R_while[of "\<lceil>Q\<rceil>" "\<lceil>P\<rceil>"] by simp
+lemma R_while: "WHILE Q INV I DO (Ref \<lceil>\<lambda>s. P s \<and> Q s\<rceil> \<lceil>P\<rceil>) \<le> Ref \<lceil>P\<rceil> \<lceil>\<lambda>s. P s \<and> \<not> Q s\<rceil>"
+  unfolding while_inv_def using R_while[of "\<lceil>Q\<rceil>" "\<lceil>P\<rceil>"] by simp
 
-lemma R_while_mono: "X \<subseteq> X' \<Longrightarrow> (WHILE P INV I DO X) \<subseteq> WHILE P INV I DO X'"
-  by (simp add: rel_kat.while_inv_def rel_kat.while_def rel_uq.mult_isol 
-      rel_uq.mult_isor rel_ka.star_iso)
+lemma R_while_mono: "X \<le> X' \<Longrightarrow> (WHILE P INV I DO X) \<le> WHILE P INV I DO X'"
+  by (simp add: while_inv_def while_def mult_isol mult_isor star_iso)
 
-lemma R_loop: "X \<le> rel_R \<lceil>I\<rceil> \<lceil>I\<rceil> \<Longrightarrow> \<lceil>P\<rceil> \<le> \<lceil>I\<rceil> \<Longrightarrow> \<lceil>I\<rceil> \<le> \<lceil>Q\<rceil> \<Longrightarrow> LOOP X INV I \<le> rel_R \<lceil>P\<rceil> \<lceil>Q\<rceil>"
-  unfolding rel_rkat.spec_def using H_loopI by blast
+lemma R_loop: "X \<le> Ref \<lceil>I\<rceil> \<lceil>I\<rceil> \<Longrightarrow> \<lceil>P\<rceil> \<le> \<lceil>I\<rceil> \<Longrightarrow> \<lceil>I\<rceil> \<le> \<lceil>Q\<rceil> \<Longrightarrow> LOOP X INV I \<le> Ref \<lceil>P\<rceil> \<lceil>Q\<rceil>"
+  unfolding spec_def using H_loopI by blast
 
-lemma R_loop_mono: "X \<subseteq> X' \<Longrightarrow> LOOP X INV I \<subseteq> LOOP X' INV I"
-  unfolding rel_kat.loopi_def by (simp add: rel_ka.star_iso)
+lemma R_loop_mono: "X \<le> X' \<Longrightarrow> LOOP X INV I \<le> LOOP X' INV I"
+  unfolding loopi_def by (simp add: star_iso)
 
 lemma R_g_evol: 
   fixes \<phi> :: "('a::preorder) \<Rightarrow> 'b \<Rightarrow> 'b"
   shows"(\<forall>s. P s \<longrightarrow> (\<forall>t\<in>T. (\<forall>\<tau>\<in>down T t. G (\<phi> \<tau> s)) \<longrightarrow> Q (\<phi> t s))) \<Longrightarrow> 
-  (EVOL \<phi> G T) \<le> rel_R \<lceil>P\<rceil> \<lceil>Q\<rceil>"
-  unfolding sH_g_evol[symmetric] rel_rkat.spec_def .
+  (EVOL \<phi> G T) \<le> Ref \<lceil>P\<rceil> \<lceil>Q\<rceil>"
+  unfolding sH_g_evol[symmetric] spec_def .
 
 lemma (in local_flow) R_g_ode: "(\<forall>s\<in>S. P s \<longrightarrow> (\<forall>t\<in>T. (\<forall>\<tau>\<in>down T t. G (\<phi> \<tau> s)) \<longrightarrow> Q (\<phi> t s))) \<Longrightarrow> 
-  (x\<acute>= f & G on T S @ 0) \<le> rel_R \<lceil>P\<rceil> \<lceil>Q\<rceil>"
-  unfolding sH_g_ode[symmetric] by (rule rel_rkat.R2)
+  (x\<acute>= f & G on T S @ 0) \<le> Ref \<lceil>P\<rceil> \<lceil>Q\<rceil>"
+  unfolding sH_g_ode[symmetric] by (rule R2)
 
 (* MISSING LEFT AND RIGHT RULES FOR EVOLUTION COMMANDS *)
 
 lemma (in local_flow) R_g_ode_ivl: 
   "\<tau> \<ge> 0 \<Longrightarrow> \<tau> \<in> T \<Longrightarrow> (\<forall>s\<in>S. P s \<longrightarrow> (\<forall>t\<in>{0..\<tau>}. (\<forall>\<tau>\<in>{0..t}. G (\<phi> \<tau> s)) \<longrightarrow> Q (\<phi> t s))) \<Longrightarrow> 
-  (x\<acute>= f & G on {0..\<tau>} S @ 0) \<le> rel_R \<lceil>P\<rceil> \<lceil>Q\<rceil>"
-  unfolding sH_g_ode_ivl[symmetric] by (rule rel_rkat.R2)
+  (x\<acute>= f & G on {0..\<tau>} S @ 0) \<le> Ref \<lceil>P\<rceil> \<lceil>Q\<rceil>"
+  unfolding sH_g_ode_ivl[symmetric] by (rule R2)
 
 lemma R_g_ode_inv: "diff_invariant I f T S t\<^sub>0 G \<Longrightarrow> \<lceil>P\<rceil> \<le> \<lceil>I\<rceil> \<Longrightarrow> \<lceil>\<lambda>s. I s \<and> G s\<rceil> \<le> \<lceil>Q\<rceil> \<Longrightarrow> 
-  (x\<acute>=f & G on T S @ t\<^sub>0 DINV I) \<le> rel_R \<lceil>P\<rceil> \<lceil>Q\<rceil>"
-  unfolding rel_rkat.spec_def by (auto simp: H_g_ode_inv)
+  (x\<acute>=f & G on T S @ t\<^sub>0 DINV I) \<le> Ref \<lceil>P\<rceil> \<lceil>Q\<rceil>"
+  unfolding spec_def by (auto simp: H_g_ode_inv)
 
 
-subsection \<open> Example \<close>
+subsection \<open> Examples \<close>
 
 
 subsubsection \<open> Thermostat \<close>
@@ -169,7 +169,7 @@ qed
 
 lemma R_therm_dyn_down: 
   assumes "a > 0" and "0 \<le> \<tau>" and "0 < Tmin" and "Tmax < L"
-  shows "rel_R 
+  shows "Ref 
     \<lceil>\<lambda>s. s$4 = 0 \<and> Tmin \<le> s$1 \<and> s$1 \<le> Tmax \<and> s$2 = 0 \<and> s$3 = s$1 \<and> (s$4 = 0 \<or> s$4 = 1)\<rceil>
     \<lceil>\<lambda>s. Tmin \<le> s$1 \<and> s$1 \<le> Tmax \<and> (s$4 = 0 \<or> s$4 = 1)\<rceil> \<ge> 
   (x\<acute>=(f a 0) & (\<lambda>s. s$2 \<le> - (ln (Tmin/s$3))/a) on {0..\<tau>} UNIV @ 0)"
@@ -178,7 +178,7 @@ lemma R_therm_dyn_down:
 
 lemma R_therm_dyn_up: 
   assumes "a > 0" and "0 \<le> \<tau>" and "0 < Tmin" and "Tmax < L"
-  shows "rel_R 
+  shows "Ref 
     \<lceil>\<lambda>s. s$4 \<noteq> 0 \<and> Tmin \<le> s$1 \<and> s$1 \<le> Tmax \<and> s$2 = 0 \<and> s$3 = s$1 \<and> (s$4 = 0 \<or> s$4 = 1)\<rceil>
     \<lceil>\<lambda>s. Tmin \<le> s$1 \<and> s$1 \<le> Tmax \<and> (s$4 = 0 \<or> s$4 = 1)\<rceil> \<ge> 
   (x\<acute>=f a L & \<lambda>s. s$2 \<le> - ln ((L - Tmax) / (L - s$3)) / a on {0..\<tau>} UNIV @ 0)"
@@ -187,7 +187,7 @@ lemma R_therm_dyn_up:
 
 lemma R_therm_dyn:
   assumes "a > 0" and "0 \<le> \<tau>" and "0 < Tmin" and "Tmax < L"
-  shows "rel_R 
+  shows "Ref 
     \<lceil>\<lambda>s. Tmin \<le> s$1 \<and> s$1 \<le> Tmax \<and> s$2 = 0 \<and> s$3 = s$1 \<and> (s$4 = 0 \<or> s$4 = 1)\<rceil>
     \<lceil>\<lambda>s. Tmin \<le> s$1 \<and> s$1 \<le> Tmax \<and> (s$4 = 0 \<or> s$4 = 1)\<rceil> \<ge> 
   (IF (\<lambda>s. s$4 = 0) THEN (x\<acute>=(f a 0) & (\<lambda>s. s$2 \<le> - (ln (Tmin/s$3))/a) on {0..\<tau>} UNIV @ 0) 
@@ -199,19 +199,19 @@ lemma R_therm_dyn:
   by (rule R_cond)
 
 lemma R_therm_assign1:
-  "rel_R 
+  "Ref 
     \<lceil>\<lambda>s::real^4. Tmin \<le> s$1 \<and> s$1 \<le> Tmax \<and> (s$4 = 0 \<or> s$4 = 1)\<rceil> 
     \<lceil>\<lambda>s. Tmin \<le> s$1 \<and> s$1 \<le> Tmax \<and> (s$4 = 0 \<or> s$4 = 1) \<and> s$2 = 0\<rceil> \<ge> (2 ::= (\<lambda>s. 0))"
   by (auto simp: R_assign_rule)
 
 lemma R_therm_assign2:
-  "rel_R 
+  "Ref 
     \<lceil>\<lambda>s::real^4. Tmin \<le> s$1 \<and> s$1 \<le> Tmax \<and> (s$4 = 0 \<or> s$4 = 1) \<and> s$2 = 0\<rceil>
     \<lceil>\<lambda>s. Tmin \<le> s$1 \<and> s$1 \<le> Tmax \<and> (s$4 = 0 \<or> s$4 = 1) \<and> s$2 = 0 \<and> s$3 = s$1\<rceil> \<ge> (3 ::= (\<lambda>s. s$1))"
   by (auto simp: R_assign_rule)
 
 lemma R_therm_ctrl:
-  "rel_R 
+  "Ref 
     \<lceil>\<lambda>s::real^4. Tmin \<le> s$1 \<and> s$1 \<le> Tmax \<and> (s$4 = 0 \<or> s$4 = 1)\<rceil> 
     \<lceil>\<lambda>s. Tmin \<le> s$1 \<and> s$1 \<le> Tmax \<and> s$2 = 0 \<and> s$3 = s$1 \<and> (s$4 = 0 \<or> s$4 = 1)\<rceil> \<ge>
   (2 ::= (\<lambda>s. 0));(3 ::= (\<lambda>s. s$1));
@@ -231,12 +231,12 @@ lemma R_therm_ctrl:
        apply force
   by (rule R_cond)+ auto
 
-lemma R_therm_loop: "rel_R \<lceil>\<lambda>s. Tmin \<le> s$1 \<and> s$1 \<le> Tmax \<and> s$4 = 0\<rceil> \<lceil>\<lambda>s. Tmin \<le> s$1 \<and> s$1 \<le> Tmax\<rceil> \<ge> 
+lemma R_therm_loop: "Ref \<lceil>\<lambda>s. Tmin \<le> s$1 \<and> s$1 \<le> Tmax \<and> s$4 = 0\<rceil> \<lceil>\<lambda>s. Tmin \<le> s$1 \<and> s$1 \<le> Tmax\<rceil> \<ge> 
   (LOOP 
-    rel_R 
+    Ref 
       \<lceil>\<lambda>s. Tmin \<le> s$1 \<and> s$1 \<le> Tmax \<and> (s$4 = 0 \<or> s$4 = 1)\<rceil> 
       \<lceil>\<lambda>s. Tmin \<le> s$1 \<and> s$1 \<le> Tmax \<and> s$2 = 0 \<and> s$3 = s$1 \<and> (s$4 = 0 \<or> s$4 = 1)\<rceil>;
-    rel_R 
+    Ref 
       \<lceil>\<lambda>s. Tmin \<le> s$1 \<and> s$1 \<le> Tmax \<and> s$2 = 0 \<and> s$3 = s$1 \<and> (s$4 = 0 \<or> s$4 = 1)\<rceil>
       \<lceil>\<lambda>s. Tmin \<le> s$1 \<and> s$1 \<le> Tmax \<and> (s$4 = 0 \<or> s$4 = 1)\<rceil>
   INV (\<lambda>s. Tmin \<le>s$1 \<and> s$1 \<le> Tmax \<and> (s$4 = 0 \<or> s$4 = 1)))"
@@ -244,7 +244,7 @@ lemma R_therm_loop: "rel_R \<lceil>\<lambda>s. Tmin \<le> s$1 \<and> s$1 \<le> T
 
 lemma R_thermostat: 
   assumes "a > 0" and "0 \<le> \<tau>" and "0 < Tmin" and "Tmax < L"
-  shows "rel_R \<lceil>\<lambda>s. Tmin \<le> s$1 \<and> s$1 \<le> Tmax \<and> s$4 = 0\<rceil> \<lceil>\<lambda>s. Tmin \<le> s$1 \<and> s$1 \<le> Tmax\<rceil> \<ge> 
+  shows "Ref \<lceil>\<lambda>s. Tmin \<le> s$1 \<and> s$1 \<le> Tmax \<and> s$4 = 0\<rceil> \<lceil>\<lambda>s. Tmin \<le> s$1 \<and> s$1 \<le> Tmax\<rceil> \<ge> 
   (LOOP 
     \<comment> \<open>control\<close>
     ((2 ::= (\<lambda>s. 0));(3 ::= (\<lambda>s. s$1));
@@ -273,9 +273,102 @@ abbreviation water_flow :: "real \<Rightarrow> real \<Rightarrow> real \<Rightar
   where "\<phi> c\<^sub>i c\<^sub>o \<tau> s \<equiv> (\<chi> i. if i = 1 then (c\<^sub>i - c\<^sub>o) * \<tau> + s$1 else 
   (if i = 2 then \<tau> + s$2 else s$i))"
 
+lemma water_tank_diff_inv:
+  "0 \<le> \<tau> \<Longrightarrow> diff_invariant (\<lambda>s. s$1 = (c\<^sub>i - (c\<^sub>o::real)) \<cdot> s$2 + s$4 \<and> 0 \<le> s$2 \<and> 
+    Hmin \<le> s$4 \<and> s$4 \<le> Hmax \<and> (s$3 =0 \<or> s$3 = 1)) (f c\<^sub>i c\<^sub>o) {0..\<tau>} UNIV 0 G"
+  apply(intro diff_invariant_conj_rule)
+      apply(force intro!: poly_derivatives diff_invariant_rules)
+     apply(rule_tac \<nu>'="\<lambda>t. 0" and \<mu>'="\<lambda>t. 1" in diff_invariant_leq_rule, simp_all)
+    apply(rule_tac \<nu>'="\<lambda>t. 0" and \<mu>'="\<lambda>t. 0" in diff_invariant_leq_rule, simp_all)
+    apply(force intro!: poly_derivatives)+
+  by (auto intro!: poly_derivatives diff_invariant_rules)
 
+lemma water_tank_inv_arith1:
+  assumes "0 \<le> (\<tau>::real)" and "c\<^sub>o < c\<^sub>i" and b: "Hmin \<le> y\<^sub>0" and g: "\<tau> \<le> (Hmax - y\<^sub>0) / (c\<^sub>i - c\<^sub>o)"
+  shows "Hmin \<le> (c\<^sub>i - c\<^sub>o) \<cdot> \<tau> + y\<^sub>0" and "(c\<^sub>i - c\<^sub>o) \<cdot> \<tau> + y\<^sub>0 \<le> Hmax"
+proof-
+  have "(c\<^sub>i - c\<^sub>o) \<cdot> \<tau> \<le> (Hmax - y\<^sub>0)"
+    using g assms(2,3) by (metis diff_gt_0_iff_gt mult.commute pos_le_divide_eq) 
+  thus "(c\<^sub>i - c\<^sub>o) \<cdot> \<tau> + y\<^sub>0 \<le> Hmax"
+    by auto
+  show "Hmin \<le> (c\<^sub>i - c\<^sub>o) \<cdot> \<tau> + y\<^sub>0"
+    using b assms(1,2) by (metis add.commute add_increasing2 diff_ge_0_iff_ge 
+        less_eq_real_def mult_nonneg_nonneg) 
+qed
+
+lemma water_tank_inv_arith2:
+  assumes "0 \<le> (\<tau>::real)" and "0 < c\<^sub>o" and b: "y\<^sub>0 \<le> Hmax" and g: "\<tau> \<le> (y\<^sub>0 - Hmin) / c\<^sub>o"
+  shows "Hmin \<le> y\<^sub>0 - c\<^sub>o \<cdot> \<tau>" and "y\<^sub>0 - c\<^sub>o \<cdot> \<tau> \<le> Hmax"
+proof-
+  have "\<tau> \<cdot> c\<^sub>o \<le> y\<^sub>0 - Hmin"
+    using g \<open>0 < c\<^sub>o\<close> by (metis pos_le_divide_eq) 
+  thus "Hmin \<le> y\<^sub>0 - c\<^sub>o \<cdot> \<tau>"
+    by (auto simp: mult.commute)
+  show "y\<^sub>0 - c\<^sub>o \<cdot> \<tau> \<le> Hmax" 
+    using b assms(1,2) by (smt linordered_field_class.sign_simps(39) mult_less_cancel_right) 
+qed
+
+
+
+lemma water_tank_inv:
+  assumes "0 \<le> \<tau>" and "0 < c\<^sub>o" and "c\<^sub>o < c\<^sub>i"
+  shows "Ref \<lceil>\<lambda>s. Hmin < s$1 \<and> s$1 < Hmax \<and> s$3 = 1\<rceil> \<lceil>\<lambda>s. Hmin \<le> s$1 \<and> s$1 \<le> Hmax\<rceil> \<ge>
+  (LOOP 
+    \<comment> \<open>control\<close>
+    ((2 ::=(\<lambda>s.0));(4 ::=(\<lambda>s. s$1));
+    (IF (\<lambda>s. s$3 = 0 \<and> s$4 \<le> Hmin + 1) THEN (3 ::= (\<lambda>s.1)) ELSE 
+    (IF (\<lambda>s. s$3 = 1 \<and> s$4 \<ge> Hmax - 1) THEN (3 ::= (\<lambda>s.0)) ELSE skip));
+    \<comment> \<open>dynamics\<close>
+    (IF (\<lambda>s. s$3 = 0) THEN 
+      (x\<acute>=(f c\<^sub>i c\<^sub>o) & (\<lambda>s. s$2 \<le> (Hmax - s$4)/(c\<^sub>i - c\<^sub>o)) on {0..\<tau>} UNIV @ 0
+       DINV (\<lambda>s. s$1 = ((c\<^sub>i - c\<^sub>o)) * s$2 + s$4 \<and> s$2 \<ge> 0 \<and> Hmin \<le> s$4 \<and> s$4 \<le> Hmax \<and> (s$3 =0 \<or> s$3 = 1))) 
+     ELSE 
+      (x\<acute>=(f 0 c\<^sub>o) & (\<lambda>s. s$2 \<le> (s$4 - Hmin)/c\<^sub>o) on {0..\<tau>} UNIV @ 0
+       DINV (\<lambda>s. s$1 = (- c\<^sub>o) * s$2 + s$4 \<and> s$2 \<ge> 0 \<and> Hmin \<le> s$4 \<and> s$4 \<le> Hmax \<and> (s$3 =0 \<or> s$3 = 1)))) )
+  INV (\<lambda>s. Hmin \<le> s$1 \<and> s$1 \<le> Hmax \<and> (s$3 =0 \<or> s$3 = 1)))" (is "LOOP (?ctrl;?dyn) INV ?I \<le> ?ref")
+proof-
+  have "(IF (\<lambda>s. s$3 = 1 \<and> s$4 \<ge> Hmax - 1) THEN (3 ::= (\<lambda>s.0)) ELSE skip) \<le> 
+  IF (\<lambda>s. s$3 = 1 \<and> s$4 \<ge> Hmax - 1) THEN (3 ::= (\<lambda>s.0)) ELSE skip"
+    sorry
+  have "(IF (\<lambda>s. s$3 = 0 \<and> s$4 \<le> Hmin + 1) THEN (3 ::= (\<lambda>s.1)) ELSE 
+      (IF (\<lambda>s. s$3 = 1 \<and> s$4 \<ge> Hmax - 1) THEN (3 ::= (\<lambda>s.0)) ELSE skip)) \<le>
+   Ref \<lceil>\<lambda>s. (Hmin \<le> s$1 \<and> s$1 \<le> Hmax \<and> (s$3 = 0 \<or> s$3 = 1)) \<and> s$2 = 0 \<and> s$4 = s$1\<rceil>
+        \<lceil>\<lambda>s. (Hmin \<le> s$1 \<and> s$1 \<le> Hmax \<and> (s$3 = 0 \<or> s$3 = 1)) \<and> s$2 = 0 \<and> s$4 = s$1\<rceil>"
+    apply(rule order_trans, rule R_cond_mono, rule R_assign)
+    apply(rule order_trans, rule R_cond_mono, rule R_assign, rule R_skip) defer
+    apply(rule R_cond)
+  have ctrl: "?ctrl \<le> Ref \<lceil>?I\<rceil> \<lceil>\<lambda>s. ?I s \<and> s$2 = 0 \<and> s$4 = s$1\<rceil>"
+    apply(rule_tac R="\<lambda>s. ?I s \<and> s$2 = 0 \<and> s$4 = s$1" in R_comp_rule)
+     apply(rule_tac R="\<lambda>s. ?I s \<and> s$2 = 0" in R_comp_rule)
+      apply(rule R_assign_rule, force)+
+    apply(rule R_cond)
+    apply(intro R_assign_)
+    apply(force intro!: R_comp_mono R_assign_rule)
+    apply(auto intro!: R_comp R_cond_mono)
+  have pre_inv: "\<lceil>\<lambda>s. Hmin < s$1 \<and> s$1 < Hmax \<and> s$3 = 1\<rceil> \<le> \<lceil>?I\<rceil>"
+    by simp
+  moreover have inv_pos: "\<lceil>?I\<rceil> \<le> \<lceil>\<lambda>s. Hmin \<le> s$1 \<and> s$1 \<le> Hmax\<rceil>"
+    by simp
+  moreover have inv_inv: "Ref \<lceil>?I\<rceil> \<lceil>?I\<rceil> \<ge> Ref \<lceil>?I\<rceil> \<lceil>P\<rceil>; (Ref \<lceil>P\<rceil> \<lceil>?I\<rceil>)"
+    sorry
+  have "?ctrl;?dyn \<le> 
+  (Ref \<lceil>\<lambda>s::real^4. Hmin \<le> s$1 \<and> s$1 \<le> Hmax \<and> (s$3 =0 \<or> s$3 = 1)\<rceil> \<lceil>P\<rceil>;
+    \<comment> \<open>dynamics\<close>
+    (Ref \<lceil>P\<rceil> \<lceil>\<lambda>s. Hmin \<le> s$1 \<and> s$1 \<le> Hmax \<and> (s$3 =0 \<or> s$3 = 1)\<rceil> ) )"
+    apply(rule R_comp_mono)
+    sorry
+  apply(rule H_loopI)
+    apply(rule_tac R="\<lambda>s. Hmin \<le> s$1 \<and> s$1 \<le> Hmax \<and> s$2=0 \<and> s$4 = s$1 \<and> (s$3 =0 \<or> s$3 = 1)" in H_comp)
+     apply(rule_tac R="\<lambda>s. Hmin \<le> s$1 \<and> s$1 \<le> Hmax \<and> s$2=0 \<and> s$4 = s$1 \<and> (s$3 =0 \<or> s$3 = 1)" in H_comp)
+      apply(rule_tac R="\<lambda>s. Hmin \<le> s$1 \<and> s$1 \<le> Hmax \<and> s$2=0 \<and> (s$3 =0 \<or> s$3 = 1)" in H_comp, simp, simp)
+     apply(rule H_cond, simp)
+     apply(rule H_cond, simp, simp)
+    apply(rule H_cond)
+     apply(rule H_g_ode_inv)
+  using assms water_tank_inv_arith1 apply(force simp: water_tank_diff_inv, simp, clarsimp)
+    apply(rule H_g_ode_inv)
+  using assms water_tank_diff_inv[of _ 0 c\<^sub>o Hmin] water_tank_inv_arith2 by auto
 
 no_notation water_vec_field ("f")
         and water_flow ("\<phi>")
-
 end
