@@ -7,8 +7,8 @@ section \<open> KAT Models \<close>
 
 text \<open> We show that relations and non-deterministic functions form Kleene algebras with tests. \<close>
 
-theory kat_rkat_models
-  imports kat_rkat_prelims
+theory KAT_rKAT_Models
+  imports KAT_rKAT_Prelims
 
 begin
 

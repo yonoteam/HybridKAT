@@ -1,17 +1,17 @@
-(*  Title:       Hybrid systems in the relational KAT
+(*  Title:       Verification and refinement of hybrid systems in the relational KAT
     Author:      Jonathan Julián Huerta y Munive, 2019
     Maintainer:  Jonathan Julián Huerta y Munive <jjhuertaymunive1@sheffield.ac.uk>
 *)
 
-section \<open> Hybrid systems in the relational KAT \<close>
+section \<open> Verification and refinement of HS in the relational KAT \<close>
 
-text \<open> We use our relational model to obtain verification components for hybrid programs. For 
-evolution commands, we devise three methods for verifying correctness specifications of their 
-continuous dynamics: flows, solutions and invariants. \<close>
+text \<open> We use our relational model to obtain verification and refinement components for hybrid 
+programs. We devise three methods for reasoning with evolution commands and their continuous 
+dynamics: providing flows, solutions or invariants. \<close>
 
-theory kat2rel
+theory KAT_rKAT_rVCs_rel
   imports 
-    kat_rkat_models
+    KAT_rKAT_Models
     "Hybrid_Systems_VCs.HS_ODEs"
 
 begin
@@ -250,6 +250,75 @@ lemma H_g_ode_inv: "rel_kat.Hoare \<lceil>I\<rceil> (x\<acute>= f & G on T S @ t
   unfolding g_ode_inv_def apply(rule_tac q'="\<lceil>\<lambda>s. I s \<and> G s\<rceil>" in rel_kat.H_consr, simp)
   apply(subst sH_g_orbital_guard[symmetric], force)
   by (rule_tac I="I" in sH_g_orbital_inv, simp_all)
+
+
+subsection \<open> Refinement Components \<close>
+
+lemma R_skip: "(\<forall>s. P s \<longrightarrow> Q s) \<Longrightarrow> Id \<le> rel_R \<lceil>P\<rceil> \<lceil>Q\<rceil>"
+  by (simp add: rel_rkat.R2 rel_kat_H)
+
+lemma R_comp: "(rel_R \<lceil>P\<rceil> \<lceil>R\<rceil>) ; (rel_R \<lceil>R\<rceil> \<lceil>Q\<rceil>) \<le> rel_R \<lceil>P\<rceil> \<lceil>Q\<rceil>"
+  using rel_rkat.R_seq by blast
+
+lemma R_comp_rule: "X \<le> rel_R \<lceil>P\<rceil> \<lceil>R\<rceil> \<Longrightarrow> Y \<le> rel_R \<lceil>R\<rceil> \<lceil>Q\<rceil> \<Longrightarrow> X; Y \<le> rel_R \<lceil>P\<rceil> \<lceil>Q\<rceil>"
+  unfolding rel_rkat.spec_def by (rule H_comp)
+
+lemmas R_comp_mono = relcomp_mono
+
+lemma R_assign: "(x ::= e) \<le> rel_R \<lceil>\<lambda>s. P (\<chi> j. ((($) s)(x := e s)) j)\<rceil> \<lceil>P\<rceil>"
+  unfolding rel_rkat.spec_def by (rule H_assign, clarsimp simp: fun_upd_def)
+
+lemma R_assign_rule: "(\<forall>s. P s \<longrightarrow> Q (\<chi> j. ((($) s)(x := (e s))) j)) \<Longrightarrow> (x ::= e) \<le> rel_R \<lceil>P\<rceil> \<lceil>Q\<rceil>"
+  unfolding sH_assign[symmetric] by (rule rel_rkat.R2)
+
+lemma R_assignl: "P = (\<lambda>s. R (\<chi> j. ((($) s)(x := e s)) j)) \<Longrightarrow> (x ::= e) ; rel_R \<lceil>R\<rceil> \<lceil>Q\<rceil> \<le> rel_R \<lceil>P\<rceil> \<lceil>Q\<rceil>"
+  apply(rule_tac R=R in R_comp_rule)
+  by (rule_tac R_assign_rule, simp_all)
+
+lemma R_assignr: "R = (\<lambda>s. Q (\<chi> j. ((($) s)(x := e s)) j)) \<Longrightarrow> rel_R \<lceil>P\<rceil> \<lceil>R\<rceil>; (x ::= e) \<le> rel_R \<lceil>P\<rceil> \<lceil>Q\<rceil>"
+  apply(rule_tac R=R in R_comp_rule, simp)
+  by (rule_tac R_assign_rule, simp)
+
+lemma R_cond: "(IF B THEN rel_R \<lceil>\<lambda>s. B s \<and> P s\<rceil> \<lceil>Q\<rceil> ELSE rel_R \<lceil>\<lambda>s. \<not> B s \<and> P s\<rceil> \<lceil>Q\<rceil>) \<le> rel_R \<lceil>P\<rceil> \<lceil>Q\<rceil>"
+  using rel_rkat.R_cond[of "\<lceil>B\<rceil>" "\<lceil>P\<rceil>" "\<lceil>Q\<rceil>"] by simp
+
+lemma R_cond_mono: "X \<le> X' \<Longrightarrow> Y \<le> Y' \<Longrightarrow> (IF P THEN X ELSE Y) \<le> IF P THEN X' ELSE Y'"
+  by (auto simp: rel_kat.ifthenelse_def)
+
+lemma R_while: "WHILE Q INV I DO (rel_R \<lceil>\<lambda>s. P s \<and> Q s\<rceil> \<lceil>P\<rceil>) \<le> rel_R \<lceil>P\<rceil> \<lceil>\<lambda>s. P s \<and> \<not> Q s\<rceil>"
+  unfolding rel_kat.while_inv_def using rel_rkat.R_while[of "\<lceil>Q\<rceil>" "\<lceil>P\<rceil>"] by simp
+
+lemma R_while_mono: "X \<le> X' \<Longrightarrow> (WHILE P INV I DO X) \<subseteq> WHILE P INV I DO X'"
+  by (simp add: rel_kat.while_inv_def rel_kat.while_def rel_uq.mult_isol 
+      rel_uq.mult_isor rel_ka.star_iso)
+
+lemma R_loop: "X \<le> rel_R \<lceil>I\<rceil> \<lceil>I\<rceil> \<Longrightarrow> \<lceil>P\<rceil> \<le> \<lceil>I\<rceil> \<Longrightarrow> \<lceil>I\<rceil> \<le> \<lceil>Q\<rceil> \<Longrightarrow> LOOP X INV I \<le> rel_R \<lceil>P\<rceil> \<lceil>Q\<rceil>"
+  unfolding rel_rkat.spec_def using H_loopI by blast
+
+lemma R_loop_mono: "X \<le> X' \<Longrightarrow> LOOP X INV I \<subseteq> LOOP X' INV I"
+  unfolding rel_kat.loopi_def by (simp add: rel_ka.star_iso)
+
+lemma R_g_evol: 
+  fixes \<phi> :: "('a::preorder) \<Rightarrow> 'b \<Rightarrow> 'b"
+  shows"(\<forall>s. P s \<longrightarrow> (\<forall>t\<in>T. (\<forall>\<tau>\<in>down T t. G (\<phi> \<tau> s)) \<longrightarrow> Q (\<phi> t s))) \<Longrightarrow> 
+  (EVOL \<phi> G T) \<le> rel_R \<lceil>P\<rceil> \<lceil>Q\<rceil>"
+  unfolding sH_g_evol[symmetric] rel_rkat.spec_def .
+
+lemma (in local_flow) R_g_ode: "(\<forall>s\<in>S. P s \<longrightarrow> (\<forall>t\<in>T. (\<forall>\<tau>\<in>down T t. G (\<phi> \<tau> s)) \<longrightarrow> Q (\<phi> t s))) \<Longrightarrow> 
+  (x\<acute>= f & G on T S @ 0) \<le> rel_R \<lceil>P\<rceil> \<lceil>Q\<rceil>"
+  unfolding sH_g_ode[symmetric] by (rule rel_rkat.R2)
+
+(* MISSING LEFT AND RIGHT RULES FOR EVOLUTION COMMANDS *)
+
+lemma (in local_flow) R_g_ode_ivl: 
+  "\<tau> \<ge> 0 \<Longrightarrow> \<tau> \<in> T \<Longrightarrow> (\<forall>s\<in>S. P s \<longrightarrow> (\<forall>t\<in>{0..\<tau>}. (\<forall>\<tau>\<in>{0..t}. G (\<phi> \<tau> s)) \<longrightarrow> Q (\<phi> t s))) \<Longrightarrow> 
+  (x\<acute>= f & G on {0..\<tau>} S @ 0) \<le> rel_R \<lceil>P\<rceil> \<lceil>Q\<rceil>"
+  unfolding sH_g_ode_ivl[symmetric] by (rule rel_rkat.R2)
+
+lemma R_g_ode_inv: "diff_invariant I f T S t\<^sub>0 G \<Longrightarrow> \<lceil>P\<rceil> \<le> \<lceil>I\<rceil> \<Longrightarrow> \<lceil>\<lambda>s. I s \<and> G s\<rceil> \<le> \<lceil>Q\<rceil> \<Longrightarrow> 
+  (x\<acute>=f & G on T S @ t\<^sub>0 DINV I) \<le> rel_R \<lceil>P\<rceil> \<lceil>Q\<rceil>"
+  unfolding rel_rkat.spec_def by (auto simp: H_g_ode_inv)
+
 
 subsection \<open> Derivation of the rules of dL \<close>
 

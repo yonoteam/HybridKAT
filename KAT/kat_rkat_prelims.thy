@@ -7,7 +7,7 @@ section \<open> Verification components with KAT \<close>
 
 text \<open> In this section we derive the rules of Hoare Logic and a refinement calculus in KAT. \<close>
 
-theory kat_rkat_prelims
+theory KAT_rKAT_Prelims
   imports
   KAT_and_DRA.PHL_KAT
   "Transformer_Semantics.Kleisli_Quantale"
