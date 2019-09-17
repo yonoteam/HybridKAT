@@ -6,7 +6,7 @@
 subsection \<open> Examples \<close>
 
 text \<open> We prove partial correctness specifications of some hybrid systems with our 
-verification components.\<close>
+refinement and verification components.\<close>
 
 theory KAT_rKAT_Examples_rel
   imports KAT_rKAT_rVCs_rel
@@ -190,9 +190,9 @@ lemma bouncing_ball_flow: "g < 0 \<Longrightarrow> h \<ge> 0 \<Longrightarrow> r
 \<comment> \<open>Refined with annotated dynamics \<close>
 
 lemma R_bb_assign: "g < (0::real) \<Longrightarrow> 0 \<le> h \<Longrightarrow> 
-  2 ::= (\<lambda>s. - s $ 2) \<subseteq> rel_R 
-    \<lceil>\<lambda>s. s $ 1 = 0 \<and> 0 \<le> s $ 1 \<and> 2 \<cdot> g \<cdot> s $ 1 = 2 \<cdot> g \<cdot> h + s $ 2 \<cdot> s $ 2\<rceil> 
-    \<lceil>\<lambda>s. 0 \<le> s $ 1 \<and> 2 \<cdot> g \<cdot> s $ 1 = 2 \<cdot> g \<cdot> h + s $ 2 \<cdot> s $ 2\<rceil>"
+  2 ::= (\<lambda>s. - s$2) \<le> rel_R 
+    \<lceil>\<lambda>s. s$1 = 0 \<and> 0 \<le> s$1 \<and> 2 \<cdot> g \<cdot> s$1 = 2 \<cdot> g \<cdot> h + s$2 \<cdot> s$2\<rceil> 
+    \<lceil>\<lambda>s. 0 \<le> s$1 \<and> 2 \<cdot> g \<cdot> s$1 = 2 \<cdot> g \<cdot> h + s$2 \<cdot> s$2\<rceil>"
   by (rule R_assign_rule, auto)
 
 lemma R_bouncing_ball_dyn:
@@ -436,7 +436,7 @@ no_notation temp_vec_field ("f")
         and temp_flow ("\<phi>")
 
 
-subsubsection \<open> Water tank \<close>  \<comment> \<open>Variation of Hespanha and \cite{Alur et. all, 1995}\<close>
+subsubsection \<open> Water tank \<close>  \<comment> \<open>Variation of Hespanha and \cite{AlurCHHHNOSY95}\<close>
 
 abbreviation water_vec_field :: "real \<Rightarrow> real \<Rightarrow> real^4 \<Rightarrow> real^4" ("f")
   where "f c\<^sub>i c\<^sub>o s \<equiv> (\<chi> i. if i = 2 then 1 else (if i = 1 then c\<^sub>i - c\<^sub>o else 0))"
@@ -484,7 +484,7 @@ lemma water_tank_flow:
 \<comment> \<open>Verified with differential invariants \<close>
 
 lemma water_tank_diff_inv:
-  "0 \<le> \<tau> \<Longrightarrow> diff_invariant (\<lambda>s. s $ 1 = (c\<^sub>i - (c\<^sub>o::real)) \<cdot> s $ 2 + s $ 4 \<and> 0 \<le> s $ 2 \<and> 
+  "0 \<le> \<tau> \<Longrightarrow> diff_invariant (\<lambda>s. s$1 = (c\<^sub>i - (c\<^sub>o::real)) \<cdot> s$2 + s$4 \<and> 0 \<le> s$2 \<and> 
     Hmin \<le> s$4 \<and> s$4 \<le> Hmax \<and> (s$3 =0 \<or> s$3 = 1)) (f c\<^sub>i c\<^sub>o) {0..\<tau>} UNIV 0 G"
   apply(intro diff_invariant_conj_rule)
       apply(force intro!: poly_derivatives diff_invariant_rules)

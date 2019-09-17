@@ -428,7 +428,7 @@ no_notation temp_vec_field ("f")
         and temp_flow ("\<phi>")
 
 
-subsubsection \<open> Water tank \<close>  \<comment> \<open>Variation of Hespanha and \cite{Alur et. all, 1995}\<close>
+subsubsection \<open> Water tank \<close>  \<comment> \<open>Variation of Hespanha and \cite{AlurCHHHNOSY95}\<close>
 
 abbreviation water_vec_field :: "real \<Rightarrow> real \<Rightarrow> real^4 \<Rightarrow> real^4" ("f")
   where "f c\<^sub>i c\<^sub>o s \<equiv> (\<chi> i. if i = 2 then 1 else (if i = 1 then c\<^sub>i - c\<^sub>o else 0))"

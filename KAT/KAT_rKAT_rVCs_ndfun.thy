@@ -401,8 +401,7 @@ lemma R_g_ode_inv: "diff_invariant I f T S t\<^sub>0 G \<Longrightarrow> \<lceil
 
 subsection \<open> Derivation of the rules of dL \<close>
 
-text \<open> We derive domain specific rules of differential dynamic logic (dL). First we present a 
-generalised version, then we show the rules as instances of the general ones.\<close>
+text \<open> We derive a generalised version of some domain specific rules of differential dynamic logic (dL).\<close>
 
 lemma diff_solve_axiom: 
   fixes c::"'a::{heine_borel, banach}"
