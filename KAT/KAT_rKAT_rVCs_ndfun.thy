@@ -1,13 +1,13 @@
-(*  Title:       Hybrid systems in the state transformer KAT
+(*  Title:       Verification and refinement of hybrid systems in the state transformer  KAT
     Author:      Jonathan Julián Huerta y Munive, 2019
     Maintainer:  Jonathan Julián Huerta y Munive <jjhuertaymunive1@sheffield.ac.uk>
 *)
 
-section \<open> Hybrid systems in the state transformer KAT \<close>
+section \<open> Verification and refinement of HS in the state transformer KAT \<close>
 
-text \<open> We use our state transformer model to obtain verification components for hybrid programs. 
-For evolution commands, we devise three methods for verifying correctness specifications of their 
-continuous dynamics: flows, solutions and invariants. \<close>
+text \<open> We use our state transformers model to obtain verification and refinement components for 
+hybrid programs. We devise three methods for reasoning with evolution commands and their continuous 
+dynamics: providing flows, solutions or invariants. \<close>
 
 theory KAT_rKAT_rVCs_ndfun
   imports 
@@ -259,8 +259,12 @@ lemma H_g_ode_inv: "Hoare \<lceil>I\<rceil> (x\<acute>= f & G on T S @ t\<^sub>0
 
 subsection \<open> Refinement Components \<close>
 
+\<comment> \<open> Skip \<close>
+
 lemma R_skip: "(\<forall>s. P s \<longrightarrow> Q s) \<Longrightarrow> 1 \<le> Ref \<lceil>P\<rceil> \<lceil>Q\<rceil>"
   by (auto simp: spec_def ndfun_kat_H one_nd_fun_def)
+
+\<comment> \<open> Composition \<close>
 
 lemma R_comp: "(Ref \<lceil>P\<rceil> \<lceil>R\<rceil>) ; (Ref \<lceil>R\<rceil> \<lceil>Q\<rceil>) \<le> Ref \<lceil>P\<rceil> \<lceil>Q\<rceil>"
   using R_seq by blast
@@ -269,6 +273,8 @@ lemma R_comp_rule: "X \<le> Ref \<lceil>P\<rceil> \<lceil>R\<rceil> \<Longrighta
   unfolding spec_def by (rule H_comp)
 
 lemmas R_comp_mono = mult_isol_var
+
+\<comment> \<open> Assignment \<close>
 
 lemma R_assign: "(x ::= e) \<le> Ref \<lceil>\<lambda>s. P (\<chi> j. ((($) s)(x := e s)) j)\<rceil> \<lceil>P\<rceil>"
   unfolding spec_def by (rule H_assign, clarsimp simp: fun_eq_iff fun_upd_def)
@@ -284,6 +290,14 @@ lemma R_assignr: "R = (\<lambda>s. Q (\<chi> j. ((($) s)(x := e s)) j)) \<Longri
   apply(rule_tac R=R in R_comp_rule, simp)
   by (rule_tac R_assign_rule, simp)
 
+lemma "(x ::= e) ; Ref \<lceil>Q\<rceil> \<lceil>Q\<rceil> \<le> Ref \<lceil>(\<lambda>s. Q (\<chi> j. ((($) s)(x := e s)) j))\<rceil> \<lceil>Q\<rceil>"
+  by (rule R_assignl) simp
+
+lemma "Ref \<lceil>Q\<rceil> \<lceil>(\<lambda>s. Q (\<chi> j. ((($) s)(x := e s)) j))\<rceil>; (x ::= e) \<le> Ref \<lceil>Q\<rceil> \<lceil>Q\<rceil>"
+  by (rule R_assignr) simp
+
+\<comment> \<open> Conditional \<close>
+
 lemma R_cond: "(IF B THEN Ref \<lceil>\<lambda>s. B s \<and> P s\<rceil> \<lceil>Q\<rceil> ELSE Ref \<lceil>\<lambda>s. \<not> B s \<and> P s\<rceil> \<lceil>Q\<rceil>) \<le> Ref \<lceil>P\<rceil> \<lceil>Q\<rceil>"
   using R_cond[of "\<lceil>B\<rceil>" "\<lceil>P\<rceil>" "\<lceil>Q\<rceil>"] by simp
 
@@ -291,11 +305,15 @@ lemma R_cond_mono: "X \<le> X' \<Longrightarrow> Y \<le> Y' \<Longrightarrow> (I
   unfolding ifthenelse_def times_nd_fun_def plus_nd_fun_def n_op_nd_fun_def
   by (auto simp: kcomp_def less_eq_nd_fun_def p2ndf_def le_fun_def)
 
+\<comment> \<open> While loop \<close>
+
 lemma R_while: "WHILE Q INV I DO (Ref \<lceil>\<lambda>s. P s \<and> Q s\<rceil> \<lceil>P\<rceil>) \<le> Ref \<lceil>P\<rceil> \<lceil>\<lambda>s. P s \<and> \<not> Q s\<rceil>"
   unfolding while_inv_def using R_while[of "\<lceil>Q\<rceil>" "\<lceil>P\<rceil>"] by simp
 
 lemma R_while_mono: "X \<le> X' \<Longrightarrow> (WHILE P INV I DO X) \<le> WHILE P INV I DO X'"
   by (simp add: while_inv_def while_def mult_isol mult_isor star_iso)
+
+\<comment> \<open> Finite loop \<close>
 
 lemma R_loop: "X \<le> Ref \<lceil>I\<rceil> \<lceil>I\<rceil> \<Longrightarrow> \<lceil>P\<rceil> \<le> \<lceil>I\<rceil> \<Longrightarrow> \<lceil>I\<rceil> \<le> \<lceil>Q\<rceil> \<Longrightarrow> LOOP X INV I \<le> Ref \<lceil>P\<rceil> \<lceil>Q\<rceil>"
   unfolding spec_def using H_loopI by blast
@@ -303,22 +321,78 @@ lemma R_loop: "X \<le> Ref \<lceil>I\<rceil> \<lceil>I\<rceil> \<Longrightarrow>
 lemma R_loop_mono: "X \<le> X' \<Longrightarrow> LOOP X INV I \<le> LOOP X' INV I"
   unfolding loopi_def by (simp add: star_iso)
 
+\<comment> \<open> Evolution command (flow) \<close>
+
 lemma R_g_evol: 
   fixes \<phi> :: "('a::preorder) \<Rightarrow> 'b \<Rightarrow> 'b"
-  shows"(\<forall>s. P s \<longrightarrow> (\<forall>t\<in>T. (\<forall>\<tau>\<in>down T t. G (\<phi> \<tau> s)) \<longrightarrow> Q (\<phi> t s))) \<Longrightarrow> 
-  (EVOL \<phi> G T) \<le> Ref \<lceil>P\<rceil> \<lceil>Q\<rceil>"
+  shows "(EVOL \<phi> G T) \<le> Ref \<lceil>\<lambda>s. \<forall>t\<in>T. (\<forall>\<tau>\<in>down T t. G (\<phi> \<tau> s)) \<longrightarrow> P (\<phi> t s)\<rceil> \<lceil>P\<rceil>"
+  unfolding spec_def by (rule H_g_evol, simp)
+
+lemma R_g_evol_rule: 
+  fixes \<phi> :: "('a::preorder) \<Rightarrow> 'b \<Rightarrow> 'b"
+  shows "(\<forall>s. P s \<longrightarrow> (\<forall>t\<in>T. (\<forall>\<tau>\<in>down T t. G (\<phi> \<tau> s)) \<longrightarrow> Q (\<phi> t s))) \<Longrightarrow> (EVOL \<phi> G T) \<le> Ref \<lceil>P\<rceil> \<lceil>Q\<rceil>"
   unfolding sH_g_evol[symmetric] spec_def .
 
-lemma (in local_flow) R_g_ode: "(\<forall>s\<in>S. P s \<longrightarrow> (\<forall>t\<in>T. (\<forall>\<tau>\<in>down T t. G (\<phi> \<tau> s)) \<longrightarrow> Q (\<phi> t s))) \<Longrightarrow> 
+lemma R_g_evoll: 
+  fixes \<phi> :: "('a::preorder) \<Rightarrow> 'b \<Rightarrow> 'b"
+  shows "P = (\<lambda>s. \<forall>t\<in>T. (\<forall>\<tau>\<in>down T t. G (\<phi> \<tau> s)) \<longrightarrow> R (\<phi> t s)) \<Longrightarrow> 
+  (EVOL \<phi> G T) ; Ref \<lceil>R\<rceil> \<lceil>Q\<rceil> \<le> Ref \<lceil>P\<rceil> \<lceil>Q\<rceil>"
+  apply(rule_tac R=R in R_comp_rule)
+  by (rule_tac R_g_evol_rule, simp_all)
+
+lemma R_g_evolr: 
+  fixes \<phi> :: "('a::preorder) \<Rightarrow> 'b \<Rightarrow> 'b"
+  shows "R = (\<lambda>s. \<forall>t\<in>T. (\<forall>\<tau>\<in>down T t. G (\<phi> \<tau> s)) \<longrightarrow> Q (\<phi> t s)) \<Longrightarrow> 
+  Ref \<lceil>P\<rceil> \<lceil>R\<rceil>; (EVOL \<phi> G T) \<le> Ref \<lceil>P\<rceil> \<lceil>Q\<rceil>"
+  apply(rule_tac R=R in R_comp_rule, simp)
+  by (rule_tac R_g_evol_rule, simp)
+
+lemma 
+  fixes \<phi> :: "('a::preorder) \<Rightarrow> 'b \<Rightarrow> 'b"
+  shows "EVOL \<phi> G T ; Ref \<lceil>Q\<rceil> \<lceil>Q\<rceil> \<le> Ref \<lceil>\<lambda>s. \<forall>t\<in>T. (\<forall>\<tau>\<in>down T t. G (\<phi> \<tau> s)) \<longrightarrow> Q (\<phi> t s)\<rceil> \<lceil>Q\<rceil>"
+  by (rule R_g_evoll) simp
+
+lemma 
+  fixes \<phi> :: "('a::preorder) \<Rightarrow> 'b \<Rightarrow> 'b"
+  shows "Ref \<lceil>Q\<rceil> \<lceil>\<lambda>s. \<forall>t\<in>T. (\<forall>\<tau>\<in>down T t. G (\<phi> \<tau> s)) \<longrightarrow> Q (\<phi> t s)\<rceil>; EVOL \<phi> G T \<le> Ref \<lceil>Q\<rceil> \<lceil>Q\<rceil>"
+  by (rule R_g_evolr) simp
+
+\<comment> \<open> Evolution command (ode) \<close>
+
+context local_flow
+begin
+
+lemma R_g_ode: "(x\<acute>= f & G on T S @ 0) \<le> Ref \<lceil>\<lambda>s. s\<in>S \<longrightarrow> (\<forall>t\<in>T. (\<forall>\<tau>\<in>down T t. G (\<phi> \<tau> s)) \<longrightarrow> P (\<phi> t s))\<rceil> \<lceil>P\<rceil>"
+  unfolding spec_def by (rule H_g_ode, simp)
+
+lemma R_g_ode_rule: "(\<forall>s\<in>S. P s \<longrightarrow> (\<forall>t\<in>T. (\<forall>\<tau>\<in>down T t. G (\<phi> \<tau> s)) \<longrightarrow> Q (\<phi> t s))) \<Longrightarrow> 
   (x\<acute>= f & G on T S @ 0) \<le> Ref \<lceil>P\<rceil> \<lceil>Q\<rceil>"
   unfolding sH_g_ode[symmetric] by (rule R2)
 
-(* MISSING LEFT AND RIGHT RULES FOR EVOLUTION COMMANDS *)
+lemma R_g_odel: "P = (\<lambda>s. \<forall>t\<in>T. (\<forall>\<tau>\<in>down T t. G (\<phi> \<tau> s)) \<longrightarrow> R (\<phi> t s)) \<Longrightarrow> 
+  (x\<acute>= f & G on T S @ 0) ; Ref \<lceil>R\<rceil> \<lceil>Q\<rceil> \<le> Ref \<lceil>P\<rceil> \<lceil>Q\<rceil>"
+  apply(rule_tac R=R in R_comp_rule)
+  by (rule_tac R_g_ode_rule, simp_all)
 
-lemma (in local_flow) R_g_ode_ivl: 
+lemma R_g_oder: "R = (\<lambda>s. \<forall>t\<in>T. (\<forall>\<tau>\<in>down T t. G (\<phi> \<tau> s)) \<longrightarrow> Q (\<phi> t s)) \<Longrightarrow> 
+  Ref \<lceil>P\<rceil> \<lceil>R\<rceil>; (x\<acute>= f & G on T S @ 0) \<le> Ref \<lceil>P\<rceil> \<lceil>Q\<rceil>"
+  apply(rule_tac R=R in R_comp_rule, simp)
+  by (rule_tac R_g_ode_rule, simp)
+
+lemma "(x\<acute>= f & G on T S @ 0) ; Ref \<lceil>Q\<rceil> \<lceil>Q\<rceil> \<le> Ref \<lceil>\<lambda>s. \<forall>t\<in>T. (\<forall>\<tau>\<in>down T t. G (\<phi> \<tau> s)) \<longrightarrow> Q (\<phi> t s)\<rceil> \<lceil>Q\<rceil>"
+  by (rule R_g_odel) simp
+
+lemma "Ref \<lceil>Q\<rceil> \<lceil>\<lambda>s. \<forall>t\<in>T. (\<forall>\<tau>\<in>down T t. G (\<phi> \<tau> s)) \<longrightarrow> Q (\<phi> t s)\<rceil>; (x\<acute>= f & G on T S @ 0) \<le> Ref \<lceil>Q\<rceil> \<lceil>Q\<rceil>"
+  by (rule R_g_oder) simp
+
+lemma R_g_ode_ivl: 
   "\<tau> \<ge> 0 \<Longrightarrow> \<tau> \<in> T \<Longrightarrow> (\<forall>s\<in>S. P s \<longrightarrow> (\<forall>t\<in>{0..\<tau>}. (\<forall>\<tau>\<in>{0..t}. G (\<phi> \<tau> s)) \<longrightarrow> Q (\<phi> t s))) \<Longrightarrow> 
   (x\<acute>= f & G on {0..\<tau>} S @ 0) \<le> Ref \<lceil>P\<rceil> \<lceil>Q\<rceil>"
   unfolding sH_g_ode_ivl[symmetric] by (rule R2)
+
+end
+
+\<comment> \<open> Evolution command (invariants) \<close>
 
 lemma R_g_ode_inv: "diff_invariant I f T S t\<^sub>0 G \<Longrightarrow> \<lceil>P\<rceil> \<le> \<lceil>I\<rceil> \<Longrightarrow> \<lceil>\<lambda>s. I s \<and> G s\<rceil> \<le> \<lceil>Q\<rceil> \<Longrightarrow> 
   (x\<acute>=f & G on T S @ t\<^sub>0 DINV I) \<le> Ref \<lceil>P\<rceil> \<lceil>Q\<rceil>"

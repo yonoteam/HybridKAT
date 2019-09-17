@@ -1,10 +1,17 @@
+(*  Title:       Examples of hybrid systems verifications
+    Author:      Jonathan Julián Huerta y Munive, 2019
+    Maintainer:  Jonathan Julián Huerta y Munive <jjhuertaymunive1@sheffield.ac.uk>
+*)
+
+subsection \<open> Examples \<close>
+
+text \<open> We prove partial correctness specifications of some hybrid systems with our 
+verification components.\<close>
+
 theory KAT_rKAT_Examples_rel
   imports KAT_rKAT_rVCs_rel
 
 begin
-
-
-subsection \<open> Examples \<close>
 
 
 subsubsection \<open>Pendulum\<close>
@@ -13,20 +20,25 @@ text \<open> The ODEs @{text "x' t = y t"} and {text "y' t = - x t"} describe th
 a mass attached to a string looked from above. We use @{text "s$1"} to represent the x-coordinate
 and @{text "s$2"} for the y-coordinate. We prove that this motion remains circular. \<close>
 
-\<comment> \<open>Verified with differential invariants \<close>
-
 abbreviation fpend :: "real^2 \<Rightarrow> real^2" ("f")
   where "f s \<equiv> (\<chi> i. if i=1 then s$2 else -s$1)"
+
+abbreviation pend_flow :: "real \<Rightarrow> real^2 \<Rightarrow> real^2" ("\<phi>")
+  where "\<phi> \<tau> s \<equiv> (\<chi> i. if i = 1 then s$1 \<cdot> cos \<tau> + s$2 \<cdot> sin \<tau> 
+  else - s$1 \<cdot> sin \<tau> + s$2 \<cdot> cos \<tau>)"
+
+\<comment> \<open>Verified with annotated dynamics \<close>
+
+lemma pendulum_dyn: "rel_kat.Hoare \<lceil>\<lambda>s. r\<^sup>2 = (s$1)\<^sup>2 + (s$2)\<^sup>2\<rceil> (EVOL \<phi> G T) \<lceil>\<lambda>s. r\<^sup>2 = (s$1)\<^sup>2 + (s$2)\<^sup>2\<rceil>"
+  by simp
+
+\<comment> \<open>Verified with differential invariants \<close>
 
 lemma pendulum_inv: "rel_kat.Hoare
   \<lceil>\<lambda>s. r\<^sup>2 = (s$1)\<^sup>2 + (s$2)\<^sup>2\<rceil> (x\<acute>=f & G) \<lceil>\<lambda>s. r\<^sup>2 = (s$1)\<^sup>2 + (s$2)\<^sup>2\<rceil>"
   by (auto intro!: diff_invariant_rules poly_derivatives)
 
 \<comment> \<open>Verified with the flow \<close>
-
-abbreviation pend_flow :: "real \<Rightarrow> real^2 \<Rightarrow> real^2" ("\<phi>")
-  where "\<phi> \<tau> s \<equiv> (\<chi> i. if i = 1 then s$1 \<cdot> cos \<tau> + s$2 \<cdot> sin \<tau> 
-  else - s$1 \<cdot> sin \<tau> + s$2 \<cdot> cos \<tau>)"
 
 lemma local_flow_pend: "local_flow f UNIV UNIV \<phi>"
   apply(unfold_locales, simp_all add: local_lipschitz_def lipschitz_on_def vec_eq_iff, clarsimp)
@@ -37,12 +49,6 @@ lemma local_flow_pend: "local_flow f UNIV UNIV \<phi>"
 lemma pendulum_flow: "rel_kat.Hoare
   \<lceil>\<lambda>s. r\<^sup>2 = (s$1)\<^sup>2 + (s$2)\<^sup>2\<rceil> (x\<acute>=f & G) \<lceil>\<lambda>s. r\<^sup>2 = (s$1)\<^sup>2 + (s$2)\<^sup>2\<rceil>"
   by (simp only: local_flow.sH_g_ode[OF local_flow_pend], simp)
-
-\<comment> \<open>Verified by providing dynamics \<close>
-
-lemma pendulum_dyn: "rel_kat.Hoare
-  \<lceil>\<lambda>s. r\<^sup>2 = (s$1)\<^sup>2 + (s$2)\<^sup>2\<rceil> (EVOL \<phi> G T) \<lceil>\<lambda>s. r\<^sup>2 = (s$1)\<^sup>2 + (s$2)\<^sup>2\<rceil>"
-  by simp
 
 no_notation fpend ("f")
         and pend_flow ("\<phi>")
@@ -56,6 +62,12 @@ constant acceleration due to gravity. The bounce is modelled with a variable ass
 flips the velocity, thus it is a completely elastic collision with the ground. We use @{text "s$1"} 
 to ball's height and @{text "s$2"} for its velocity. We prove that the ball remains above ground
 and below its initial resting position. \<close>
+
+abbreviation fball :: "real \<Rightarrow> real^2 \<Rightarrow> real^2" ("f") 
+  where "f g s \<equiv> (\<chi> i. if i=1 then s$2 else g)"
+
+abbreviation ball_flow :: "real \<Rightarrow> real \<Rightarrow> real^2 \<Rightarrow> real^2" ("\<phi>") 
+  where "\<phi> g \<tau> s \<equiv> (\<chi> i. if i=1 then g \<cdot> \<tau> ^ 2/2 + s$2 \<cdot> \<tau> + s$1 else g \<cdot> \<tau> + s$2)"
 
 \<comment> \<open>Verified with differential invariants \<close>
 
@@ -78,9 +90,6 @@ proof-
   thus ?thesis by auto
 qed
 
-abbreviation fball :: "real \<Rightarrow> real^2 \<Rightarrow> real^2" ("f") 
-  where "f g s \<equiv> (\<chi> i. if i=1 then s$2 else g)"
-
 lemma fball_invariant: 
   fixes g h :: real
   defines dinv: "I \<equiv> (\<lambda>s. 2 \<cdot> g \<cdot> s$1 - 2 \<cdot> g \<cdot> h - (s$2 \<cdot> s$2) = 0)"
@@ -100,16 +109,7 @@ lemma bouncing_ball_inv: "g < 0 \<Longrightarrow> h \<ge> 0 \<Longrightarrow> re
      apply(rule H_g_ode_inv)
   by (auto simp: bb_real_arith intro!: poly_derivatives diff_invariant_rules)
 
-\<comment> \<open>Verified with the flow \<close>
-
-abbreviation ball_flow :: "real \<Rightarrow> real \<Rightarrow> real^2 \<Rightarrow> real^2" ("\<phi>") 
-  where "\<phi> g \<tau> s \<equiv> (\<chi> i. if i=1 then g \<cdot> \<tau> ^ 2/2 + s$2 \<cdot> \<tau> + s$1 else g \<cdot> \<tau> + s$2)"
-
-lemma local_flow_ball: "local_flow (f g) UNIV UNIV (\<phi> g)"
-  apply(unfold_locales, simp_all add: local_lipschitz_def lipschitz_on_def vec_eq_iff, clarsimp)
-  apply(rule_tac x="1/2" in exI, clarsimp, rule_tac x=1 in exI)
-    apply(simp add: dist_norm norm_vec_def L2_set_def UNIV_2)
-  by (auto simp: forall_2 intro!: poly_derivatives)
+\<comment> \<open>Verified with annotated dynamics \<close>
 
 lemma [bb_real_arith]:
   assumes invar: "2 \<cdot> g \<cdot> x = 2 \<cdot> g \<cdot> h + v \<cdot> v"
@@ -154,6 +154,26 @@ proof-
   ultimately show ?thesis by auto
 qed
 
+lemma bouncing_ball_dyn: "g < 0 \<Longrightarrow> h \<ge> 0 \<Longrightarrow> rel_kat.Hoare
+  \<lceil>\<lambda>s. s$1 = h \<and> s$2 = 0\<rceil>
+  (LOOP 
+      ((EVOL (\<phi> g) (\<lambda> s. s$1 \<ge> 0) T);
+       (IF (\<lambda> s. s$1 = 0) THEN (2 ::= (\<lambda>s. - s$2)) ELSE skip)) 
+    INV (\<lambda>s. 0 \<le> s$1 \<and> 2 \<cdot> g \<cdot> s$1 = 2 \<cdot> g \<cdot> h + s$2 \<cdot> s$2)
+  ) \<lceil>\<lambda>s. 0 \<le> s$1 \<and> s$1 \<le> h\<rceil>"
+  apply(rule H_loopI)
+    apply(rule H_comp[where R="\<lambda>s. 0 \<le> s$1 \<and> 2 \<cdot> g \<cdot> s$1 = 2 \<cdot> g \<cdot> h + s$2 \<cdot> s$2"])
+     apply(force simp: bb_real_arith)
+  by (rule H_cond) (auto simp: bb_real_arith)
+
+\<comment> \<open>Verified with the flow \<close>
+
+lemma local_flow_ball: "local_flow (f g) UNIV UNIV (\<phi> g)"
+  apply(unfold_locales, simp_all add: local_lipschitz_def lipschitz_on_def vec_eq_iff, clarsimp)
+  apply(rule_tac x="1/2" in exI, clarsimp, rule_tac x=1 in exI)
+    apply(simp add: dist_norm norm_vec_def L2_set_def UNIV_2)
+  by (auto simp: forall_2 intro!: poly_derivatives)
+
 lemma bouncing_ball_flow: "g < 0 \<Longrightarrow> h \<ge> 0 \<Longrightarrow> rel_kat.Hoare
   \<lceil>\<lambda>s. s$1 = h \<and> s$2 = 0\<rceil>
   (LOOP 
@@ -166,6 +186,34 @@ lemma bouncing_ball_flow: "g < 0 \<Longrightarrow> h \<ge> 0 \<Longrightarrow> r
      apply(subst local_flow.sH_g_ode[OF local_flow_ball])
      apply(force simp: bb_real_arith)
   by (rule H_cond) (auto simp: bb_real_arith)
+
+\<comment> \<open>Refined with annotated dynamics \<close>
+
+lemma R_bb_assign: "g < (0::real) \<Longrightarrow> 0 \<le> h \<Longrightarrow> 
+  2 ::= (\<lambda>s. - s $ 2) \<subseteq> rel_R 
+    \<lceil>\<lambda>s. s $ 1 = 0 \<and> 0 \<le> s $ 1 \<and> 2 \<cdot> g \<cdot> s $ 1 = 2 \<cdot> g \<cdot> h + s $ 2 \<cdot> s $ 2\<rceil> 
+    \<lceil>\<lambda>s. 0 \<le> s $ 1 \<and> 2 \<cdot> g \<cdot> s $ 1 = 2 \<cdot> g \<cdot> h + s $ 2 \<cdot> s $ 2\<rceil>"
+  by (rule R_assign_rule, auto)
+
+lemma R_bouncing_ball_dyn:
+  assumes "g < 0" and "h \<ge> 0"
+  shows "rel_R \<lceil>\<lambda>s. s$1 = h \<and> s$2 = 0\<rceil> \<lceil>\<lambda>s. 0 \<le> s$1 \<and> s$1 \<le> h\<rceil> \<ge> 
+  (LOOP 
+      ((EVOL (\<phi> g) (\<lambda> s. s$1 \<ge> 0) T);
+       (IF (\<lambda> s. s$1 = 0) THEN (2 ::= (\<lambda>s. - s$2)) ELSE skip)) 
+    INV (\<lambda>s. 0 \<le> s$1 \<and> 2 \<cdot> g \<cdot> s$1 = 2 \<cdot> g \<cdot> h + s$2 \<cdot> s$2))"
+  apply(rule order_trans)
+   apply(rule R_loop_mono) defer
+   apply(rule R_loop)
+     apply(rule R_comp)
+  using assms apply(simp_all, force simp: bb_real_arith)
+  apply(rule R_comp_mono) defer
+  apply(rule order_trans)
+    apply(rule R_cond_mono) defer defer
+     apply(rule R_cond) defer
+  using R_bb_assign apply force
+   apply(rule R_skip, clarsimp)
+  by (rule R_g_evol_rule, force simp: bb_real_arith)
 
 no_notation fball ("f")
         and ball_flow ("\<phi>")

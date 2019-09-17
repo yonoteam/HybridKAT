@@ -25,6 +25,7 @@ type_synonym 'a pred = "'a \<Rightarrow> bool"
 no_notation Archimedean_Field.ceiling ("\<lceil>_\<rceil>")
         and Archimedean_Field.floor_ceiling_class.floor ("\<lfloor>_\<rfloor>")
         and tau ("\<tau>")
+        and proto_near_quantale_class.bres (infixr "\<rightarrow>" 60)
 
 notation Id ("skip")
 
@@ -254,8 +255,12 @@ lemma H_g_ode_inv: "rel_kat.Hoare \<lceil>I\<rceil> (x\<acute>= f & G on T S @ t
 
 subsection \<open> Refinement Components \<close>
 
+\<comment> \<open> Skip \<close>
+
 lemma R_skip: "(\<forall>s. P s \<longrightarrow> Q s) \<Longrightarrow> Id \<le> rel_R \<lceil>P\<rceil> \<lceil>Q\<rceil>"
   by (simp add: rel_rkat.R2 rel_kat_H)
+
+\<comment> \<open> Composition \<close>
 
 lemma R_comp: "(rel_R \<lceil>P\<rceil> \<lceil>R\<rceil>) ; (rel_R \<lceil>R\<rceil> \<lceil>Q\<rceil>) \<le> rel_R \<lceil>P\<rceil> \<lceil>Q\<rceil>"
   using rel_rkat.R_seq by blast
@@ -264,6 +269,8 @@ lemma R_comp_rule: "X \<le> rel_R \<lceil>P\<rceil> \<lceil>R\<rceil> \<Longrigh
   unfolding rel_rkat.spec_def by (rule H_comp)
 
 lemmas R_comp_mono = relcomp_mono
+
+\<comment> \<open> Assignment \<close>
 
 lemma R_assign: "(x ::= e) \<le> rel_R \<lceil>\<lambda>s. P (\<chi> j. ((($) s)(x := e s)) j)\<rceil> \<lceil>P\<rceil>"
   unfolding rel_rkat.spec_def by (rule H_assign, clarsimp simp: fun_upd_def)
@@ -279,11 +286,21 @@ lemma R_assignr: "R = (\<lambda>s. Q (\<chi> j. ((($) s)(x := e s)) j)) \<Longri
   apply(rule_tac R=R in R_comp_rule, simp)
   by (rule_tac R_assign_rule, simp)
 
+lemma "(x ::= e) ; rel_R \<lceil>Q\<rceil> \<lceil>Q\<rceil> \<le> rel_R \<lceil>(\<lambda>s. Q (\<chi> j. ((($) s)(x := e s)) j))\<rceil> \<lceil>Q\<rceil>"
+  by (rule R_assignl) simp
+
+lemma "rel_R \<lceil>Q\<rceil> \<lceil>(\<lambda>s. Q (\<chi> j. ((($) s)(x := e s)) j))\<rceil>; (x ::= e) \<le> rel_R \<lceil>Q\<rceil> \<lceil>Q\<rceil>"
+  by (rule R_assignr) simp
+
+\<comment> \<open> Conditional \<close>
+
 lemma R_cond: "(IF B THEN rel_R \<lceil>\<lambda>s. B s \<and> P s\<rceil> \<lceil>Q\<rceil> ELSE rel_R \<lceil>\<lambda>s. \<not> B s \<and> P s\<rceil> \<lceil>Q\<rceil>) \<le> rel_R \<lceil>P\<rceil> \<lceil>Q\<rceil>"
   using rel_rkat.R_cond[of "\<lceil>B\<rceil>" "\<lceil>P\<rceil>" "\<lceil>Q\<rceil>"] by simp
 
 lemma R_cond_mono: "X \<le> X' \<Longrightarrow> Y \<le> Y' \<Longrightarrow> (IF P THEN X ELSE Y) \<le> IF P THEN X' ELSE Y'"
   by (auto simp: rel_kat.ifthenelse_def)
+
+\<comment> \<open> While loop \<close>
 
 lemma R_while: "WHILE Q INV I DO (rel_R \<lceil>\<lambda>s. P s \<and> Q s\<rceil> \<lceil>P\<rceil>) \<le> rel_R \<lceil>P\<rceil> \<lceil>\<lambda>s. P s \<and> \<not> Q s\<rceil>"
   unfolding rel_kat.while_inv_def using rel_rkat.R_while[of "\<lceil>Q\<rceil>" "\<lceil>P\<rceil>"] by simp
@@ -292,28 +309,86 @@ lemma R_while_mono: "X \<le> X' \<Longrightarrow> (WHILE P INV I DO X) \<subsete
   by (simp add: rel_kat.while_inv_def rel_kat.while_def rel_uq.mult_isol 
       rel_uq.mult_isor rel_ka.star_iso)
 
+\<comment> \<open> Finite loop \<close>
+
 lemma R_loop: "X \<le> rel_R \<lceil>I\<rceil> \<lceil>I\<rceil> \<Longrightarrow> \<lceil>P\<rceil> \<le> \<lceil>I\<rceil> \<Longrightarrow> \<lceil>I\<rceil> \<le> \<lceil>Q\<rceil> \<Longrightarrow> LOOP X INV I \<le> rel_R \<lceil>P\<rceil> \<lceil>Q\<rceil>"
   unfolding rel_rkat.spec_def using H_loopI by blast
 
 lemma R_loop_mono: "X \<le> X' \<Longrightarrow> LOOP X INV I \<subseteq> LOOP X' INV I"
   unfolding rel_kat.loopi_def by (simp add: rel_ka.star_iso)
 
+\<comment> \<open> Evolution command (flow) \<close>
+
 lemma R_g_evol: 
   fixes \<phi> :: "('a::preorder) \<Rightarrow> 'b \<Rightarrow> 'b"
-  shows"(\<forall>s. P s \<longrightarrow> (\<forall>t\<in>T. (\<forall>\<tau>\<in>down T t. G (\<phi> \<tau> s)) \<longrightarrow> Q (\<phi> t s))) \<Longrightarrow> 
-  (EVOL \<phi> G T) \<le> rel_R \<lceil>P\<rceil> \<lceil>Q\<rceil>"
+  shows "(EVOL \<phi> G T) \<le> rel_R \<lceil>\<lambda>s. \<forall>t\<in>T. (\<forall>\<tau>\<in>down T t. G (\<phi> \<tau> s)) \<longrightarrow> P (\<phi> t s)\<rceil> \<lceil>P\<rceil>"
+  unfolding rel_rkat.spec_def by (rule H_g_evol, simp)
+
+lemma R_g_evol_rule: 
+  fixes \<phi> :: "('a::preorder) \<Rightarrow> 'b \<Rightarrow> 'b"
+  shows "(\<forall>s. P s \<longrightarrow> (\<forall>t\<in>T. (\<forall>\<tau>\<in>down T t. G (\<phi> \<tau> s)) \<longrightarrow> Q (\<phi> t s))) \<Longrightarrow> (EVOL \<phi> G T) \<le> rel_R \<lceil>P\<rceil> \<lceil>Q\<rceil>"
   unfolding sH_g_evol[symmetric] rel_rkat.spec_def .
 
-lemma (in local_flow) R_g_ode: "(\<forall>s\<in>S. P s \<longrightarrow> (\<forall>t\<in>T. (\<forall>\<tau>\<in>down T t. G (\<phi> \<tau> s)) \<longrightarrow> Q (\<phi> t s))) \<Longrightarrow> 
+lemma R_g_evoll: 
+  fixes \<phi> :: "('a::preorder) \<Rightarrow> 'b \<Rightarrow> 'b"
+  shows "P = (\<lambda>s. \<forall>t\<in>T. (\<forall>\<tau>\<in>down T t. G (\<phi> \<tau> s)) \<longrightarrow> R (\<phi> t s)) \<Longrightarrow> 
+  (EVOL \<phi> G T) ; rel_R \<lceil>R\<rceil> \<lceil>Q\<rceil> \<le> rel_R \<lceil>P\<rceil> \<lceil>Q\<rceil>"
+  apply(rule_tac R=R in R_comp_rule)
+  by (rule_tac R_g_evol_rule, simp_all)
+
+lemma R_g_evolr: 
+  fixes \<phi> :: "('a::preorder) \<Rightarrow> 'b \<Rightarrow> 'b"
+  shows "R = (\<lambda>s. \<forall>t\<in>T. (\<forall>\<tau>\<in>down T t. G (\<phi> \<tau> s)) \<longrightarrow> Q (\<phi> t s)) \<Longrightarrow> 
+  rel_R \<lceil>P\<rceil> \<lceil>R\<rceil>; (EVOL \<phi> G T) \<le> rel_R \<lceil>P\<rceil> \<lceil>Q\<rceil>"
+  apply(rule_tac R=R in R_comp_rule, simp)
+  by (rule_tac R_g_evol_rule, simp)
+
+lemma 
+  fixes \<phi> :: "('a::preorder) \<Rightarrow> 'b \<Rightarrow> 'b"
+  shows "EVOL \<phi> G T ; rel_R \<lceil>Q\<rceil> \<lceil>Q\<rceil> \<le> rel_R \<lceil>\<lambda>s. \<forall>t\<in>T. (\<forall>\<tau>\<in>down T t. G (\<phi> \<tau> s)) \<longrightarrow> Q (\<phi> t s)\<rceil> \<lceil>Q\<rceil>"
+  by (rule R_g_evoll) simp
+
+lemma 
+  fixes \<phi> :: "('a::preorder) \<Rightarrow> 'b \<Rightarrow> 'b"
+  shows "rel_R \<lceil>Q\<rceil> \<lceil>\<lambda>s. \<forall>t\<in>T. (\<forall>\<tau>\<in>down T t. G (\<phi> \<tau> s)) \<longrightarrow> Q (\<phi> t s)\<rceil>; EVOL \<phi> G T \<le> rel_R \<lceil>Q\<rceil> \<lceil>Q\<rceil>"
+  by (rule R_g_evolr) simp
+
+\<comment> \<open> Evolution command (ode) \<close>
+
+context local_flow
+begin
+
+lemma R_g_ode: "(x\<acute>= f & G on T S @ 0) \<le> rel_R \<lceil>\<lambda>s. s\<in>S \<longrightarrow> (\<forall>t\<in>T. (\<forall>\<tau>\<in>down T t. G (\<phi> \<tau> s)) \<longrightarrow> P (\<phi> t s))\<rceil> \<lceil>P\<rceil>"
+  unfolding rel_rkat.spec_def by (rule H_g_ode, simp)
+
+lemma R_g_ode_rule: "(\<forall>s\<in>S. P s \<longrightarrow> (\<forall>t\<in>T. (\<forall>\<tau>\<in>down T t. G (\<phi> \<tau> s)) \<longrightarrow> Q (\<phi> t s))) \<Longrightarrow> 
   (x\<acute>= f & G on T S @ 0) \<le> rel_R \<lceil>P\<rceil> \<lceil>Q\<rceil>"
   unfolding sH_g_ode[symmetric] by (rule rel_rkat.R2)
 
-(* MISSING LEFT AND RIGHT RULES FOR EVOLUTION COMMANDS *)
+lemma R_g_odel: "P = (\<lambda>s. \<forall>t\<in>T. (\<forall>\<tau>\<in>down T t. G (\<phi> \<tau> s)) \<longrightarrow> R (\<phi> t s)) \<Longrightarrow> 
+  (x\<acute>= f & G on T S @ 0) ; rel_R \<lceil>R\<rceil> \<lceil>Q\<rceil> \<le> rel_R \<lceil>P\<rceil> \<lceil>Q\<rceil>"
+  apply(rule_tac R=R in R_comp_rule)
+  by (rule_tac R_g_ode_rule, simp_all)
 
-lemma (in local_flow) R_g_ode_ivl: 
+lemma R_g_oder: "R = (\<lambda>s. \<forall>t\<in>T. (\<forall>\<tau>\<in>down T t. G (\<phi> \<tau> s)) \<longrightarrow> Q (\<phi> t s)) \<Longrightarrow> 
+  rel_R \<lceil>P\<rceil> \<lceil>R\<rceil>; (x\<acute>= f & G on T S @ 0) \<le> rel_R \<lceil>P\<rceil> \<lceil>Q\<rceil>"
+  apply(rule_tac R=R in R_comp_rule, simp)
+  by (rule_tac R_g_ode_rule, simp)
+
+lemma "(x\<acute>= f & G on T S @ 0) ; rel_R \<lceil>Q\<rceil> \<lceil>Q\<rceil> \<le> rel_R \<lceil>\<lambda>s. \<forall>t\<in>T. (\<forall>\<tau>\<in>down T t. G (\<phi> \<tau> s)) \<longrightarrow> Q (\<phi> t s)\<rceil> \<lceil>Q\<rceil>"
+  by (rule R_g_odel) simp
+
+lemma "rel_R \<lceil>Q\<rceil> \<lceil>\<lambda>s. \<forall>t\<in>T. (\<forall>\<tau>\<in>down T t. G (\<phi> \<tau> s)) \<longrightarrow> Q (\<phi> t s)\<rceil>; (x\<acute>= f & G on T S @ 0) \<le> rel_R \<lceil>Q\<rceil> \<lceil>Q\<rceil>"
+  by (rule R_g_oder) simp
+
+lemma R_g_ode_ivl: 
   "\<tau> \<ge> 0 \<Longrightarrow> \<tau> \<in> T \<Longrightarrow> (\<forall>s\<in>S. P s \<longrightarrow> (\<forall>t\<in>{0..\<tau>}. (\<forall>\<tau>\<in>{0..t}. G (\<phi> \<tau> s)) \<longrightarrow> Q (\<phi> t s))) \<Longrightarrow> 
   (x\<acute>= f & G on {0..\<tau>} S @ 0) \<le> rel_R \<lceil>P\<rceil> \<lceil>Q\<rceil>"
   unfolding sH_g_ode_ivl[symmetric] by (rule rel_rkat.R2)
+
+end
+
+\<comment> \<open> Evolution command (invariants) \<close>
 
 lemma R_g_ode_inv: "diff_invariant I f T S t\<^sub>0 G \<Longrightarrow> \<lceil>P\<rceil> \<le> \<lceil>I\<rceil> \<Longrightarrow> \<lceil>\<lambda>s. I s \<and> G s\<rceil> \<le> \<lceil>Q\<rceil> \<Longrightarrow> 
   (x\<acute>=f & G on T S @ t\<^sub>0 DINV I) \<le> rel_R \<lceil>P\<rceil> \<lceil>Q\<rceil>"
