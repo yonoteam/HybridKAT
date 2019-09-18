@@ -166,14 +166,14 @@ semantics. Program verification is then performed at this concrete
 level, but this remains hidden, as tactics generate data-level
 verification conditions automatically and we have programmed
 boiler-plate syntax for programs and correctness specifications.
-
+\jin{I assume below, it's meant ``$\dH$ and $\dR$''}
 Our Isabelle components support the  workflows of $\dL$ in $\dH$
 and $\dL$: we may reason explicitly with solutions to differential
 equations and implicitly with invariant sets. We have formalised a third
 method in which solutions, that is flows, are declared ab initio in
 correctness specifications and need not be certified.
 
-Our verification components have so far be evaluated on a small set of
+Our verification components have so far been evaluated on a small set of
 program construction and verification examples. Some of them are
 discussed in detail in this article to explain the different work
 flows supported by our approach. With Isabelle tactics for automated
@@ -239,8 +239,8 @@ Kleisli composition
 \begin{equation*} 
 (f\circ_K g)\, x = \bigcup\{g\, y\mid y \in f\ x \}, 
 \end{equation*} 
-$0$ as $\lambda x.\ 0$ and $1$ as $\eta_S = \{-\}$.  Stars
-$f^{\ast}  = \bigcup_{i\in\mathbb{N}} f^i$ are defined with
+$0$ as $\lambda x.\ \emptyset$ and $1$ as $\eta_S = \{-\}$.  Stars
+$f^{\ast}\, s  = \bigcup_{i\in\mathbb{N}} f^i\, s$ are defined with
   respect to Kleisli composition using $f^{0} = \eta_S$ and
   $f^{n+1} = f \circ_K f^{n}$. The boolean algebra of tests has
   carrier set $B_S=\{f:S\to \Pow\, S \mid f\le \eta_S\}$, where the
@@ -505,11 +505,42 @@ in this calculus:
 \gin{add example: thermostat (done)}
 
 \begin{example}[Thermostat verification via solutions]\label{ex:therm-sol}
-A thermostat has a chronometer, a thermometer and a switch to turn on and off a heater. 
-At most every \isa{t} minutes, it sets its chronometer to \isa{{\isadigit{0}}}, it registers 
-the room temperature, and it turns the heater on (or off) based on this reading. The temperature 
-follows the ODE \isa{T{\isacharprime}\ {\isacharequal}\ {\isacharminus}\ a\ {\isacharasterisk}\ {\isacharparenleft}T\ {\isacharminus}\ U{\isacharparenright}} where \isa{U} is \isa{L\ {\isasymge}\ {\isadigit{0}}} when the heater 
-is on, and \isa{U\ {\isacharequal}\ {\isadigit{0}}} when it is off. We use \isa{{\isadigit{1}}} to denote the room's temperature, 
+Suppose that a thermostat uses variable $m$ for registering temperature measurements and $b$ for turning its heater on or off. Similarly, $T$ denotes the physical temperature and $t$ is time. At most every $\tau$ minutes, the thermostat sets its chronometer to $0$, registers 
+the room temperature, and it turns the heater on (or off) based on this reading. A hybrid program to model this behavior is 
+\jin{should we remove $\lambda$'s and write a proper hybrid program?}
+\begin{align*}
+	\mathsf{Cntrl} = &\ {t:=(\lambda\, s.\ 0)};{m:=(\lambda\, s.\ s_T)};\\
+				&\ \IF {(\lambda\, s.\ s_b=0 \land s_m\leq T_{min} + 1)} {b:=(\lambda\, s.\ 1)} {}\\
+				&\ \IF {(\lambda\, s.\ s_b=1 \land s_m\geq T_{max} - 1)} {b:=(\lambda\, s.\ 0)} {\mathit{skip}},\\
+	\mathsf{Dyn} = &\ \IF {(\lambda\, s.\ s_b=0)} {x' = f_0\, \&\, G_0} {x' = f_L\, \&\, G_L},\\
+	\mathsf{Thermostat} = &\ (\mathsf{Cntrl}{;}\mathsf{Dyn})^\ast,
+\end{align*}
+where we abbreviate $s_v=s\, v$ for $v\in\{T,t,m,b\}$, $L\geq 0$, $a>0$, $U=[0,\tau]$, and the evolution commands involve vector fields and guards,
+ \begin{equation*}
+    f_c\,
+    \begin{pmatrix}
+      s_T\\
+      s_t\\
+	s_m\\
+	s_b
+    \end{pmatrix}
+=
+\begin{pmatrix}
+  -a\cdot(s_T-c)\\
+  1\\
+  0\\
+  0\\
+\end{pmatrix}\quad\text{and}\quad
+G_c\, s = \left(s_t\leq -\frac{1}{a}\ln\left(\frac{c-\Delta_c}{c-s_m}\right)\right),
+\end{equation*}
+where $\Delta_c=T_{min}$ if $c=0$ and $\Delta_c = T_{max}$ if $c=L$. Its correctness specification is $\{I\}\, \mathsf{Thermostat}\, \{I\}$ where $I\, s=T_{min}\leq s_T\leq T_{max}\land (s_b = 1 \lor s_b=0)$.
+
+The temperature 
+follows the ODE \isa{T{\isacharprime}\ {\isacharequal}\ {\isacharminus}\ a\ {\isacharasterisk}\ {\isacharparenleft}T\ {\isacharminus}\ U{\isacharparenright}} where \isa{U{\isacharequal}L\ {\isasymge}\ {\isadigit{0}}} when the heater is on, and \isa{U\ {\isacharequal}\ {\isadigit{0}}} when it is off. 
+
+
+
+We use \isa{{\isadigit{1}}} to denote the room's temperature, 
 \isa{{\isadigit{2}}} is time as measured by the thermostat's chronometer, and \isa{{\isadigit{3}}} is a variable
 to save temperature measurements. Finally, \isa{{\isadigit{4}}} states whether the heater is on 
 (\isa{s{\isachardollar}{\isadigit{4}}\ {\isacharequal}\ {\isadigit{1}}}) or off (\isa{s{\isachardollar}{\isadigit{4}}\ {\isacharequal}\ {\isadigit{0}}}). We prove that the thermostat keeps the room's 

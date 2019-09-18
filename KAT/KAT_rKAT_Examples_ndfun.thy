@@ -316,7 +316,7 @@ lemmas Hoare_temp_dyn = local_flow.sH_g_ode_ivl[OF local_flow_temp _ UNIV_I]
 lemma thermostat_flow: 
   assumes "0 < a" and "0 \<le> \<tau>" and "0 < Tmin" and "Tmax < L"
   shows "Hoare 
-  \<lceil>\<lambda>s. Tmin \<le> s$1 \<and> s$1 \<le> Tmax \<and> s$4 = 0\<rceil>
+  \<lceil>\<lambda>s. Tmin \<le> s$1 \<and> s$1 \<le> Tmax \<and> (s$4 = 0 \<or> s$4 = 1)\<rceil>
   (LOOP 
     \<comment> \<open>control\<close>
     ((2 ::= (\<lambda>s. 0));(3 ::= (\<lambda>s. s$1));
@@ -326,7 +326,7 @@ lemma thermostat_flow:
     (IF (\<lambda>s. s$4 = 0) THEN (x\<acute>=(f a 0) & (\<lambda>s. s$2 \<le> - (ln (Tmin/s$3))/a) on {0..\<tau>} UNIV @ 0) 
     ELSE (x\<acute>=(f a L) & (\<lambda>s. s$2 \<le> - (ln ((L-Tmax)/(L-s$3)))/a) on {0..\<tau>} UNIV @ 0)) )
   INV (\<lambda>s. Tmin \<le>s$1 \<and> s$1 \<le> Tmax \<and> (s$4 = 0 \<or> s$4 = 1)))
-  \<lceil>\<lambda>s. Tmin \<le> s$1 \<and> s$1 \<le> Tmax\<rceil>"
+  \<lceil>\<lambda>s. Tmin \<le> s$1 \<and> s$1 \<le> Tmax \<and> (s$4 = 0 \<or> s$4 = 1)\<rceil>"
   apply(rule H_loopI)
     apply(rule_tac R="\<lambda>s. Tmin \<le> s$1 \<and> s$1 \<le> Tmax \<and> s$2=0 \<and> s$3 = s$1 \<and> (s$4 = 0 \<or> s$4 = 1)" in H_comp)
      apply(rule_tac R="\<lambda>s. Tmin \<le> s$1 \<and> s$1 \<le> Tmax \<and> s$2=0 \<and> s$3 = s$1 \<and> (s$4 = 0 \<or> s$4 = 1)" in H_comp)
@@ -395,7 +395,9 @@ lemma R_therm_ctrl:
        apply force
   by (rule R_cond)+ auto
 
-lemma R_therm_loop: "Ref \<lceil>\<lambda>s. Tmin \<le> s$1 \<and> s$1 \<le> Tmax \<and> s$4 = 0\<rceil> \<lceil>\<lambda>s. Tmin \<le> s$1 \<and> s$1 \<le> Tmax\<rceil> \<ge> 
+lemma R_therm_loop: "Ref 
+  \<lceil>\<lambda>s. Tmin \<le> s$1 \<and> s$1 \<le> Tmax \<and> (s$4 = 0 \<or> s$4 = 1)\<rceil> 
+  \<lceil>\<lambda>s. Tmin \<le> s$1 \<and> s$1 \<le> Tmax \<and> (s$4 = 0 \<or> s$4 = 1)\<rceil> \<ge> 
   (LOOP 
     Ref 
       \<lceil>\<lambda>s. Tmin \<le> s$1 \<and> s$1 \<le> Tmax \<and> (s$4 = 0 \<or> s$4 = 1)\<rceil> 
@@ -408,7 +410,9 @@ lemma R_therm_loop: "Ref \<lceil>\<lambda>s. Tmin \<le> s$1 \<and> s$1 \<le> Tma
 
 lemma R_thermostat_flow: 
   assumes "a > 0" and "0 \<le> \<tau>" and "0 < Tmin" and "Tmax < L"
-  shows "Ref \<lceil>\<lambda>s. Tmin \<le> s$1 \<and> s$1 \<le> Tmax \<and> s$4 = 0\<rceil> \<lceil>\<lambda>s. Tmin \<le> s$1 \<and> s$1 \<le> Tmax\<rceil> \<ge> 
+  shows "Ref 
+  \<lceil>\<lambda>s. Tmin \<le> s$1 \<and> s$1 \<le> Tmax \<and> (s$4 = 0 \<or> s$4 = 1)\<rceil> 
+  \<lceil>\<lambda>s. Tmin \<le> s$1 \<and> s$1 \<le> Tmax \<and> (s$4 = 0 \<or> s$4 = 1)\<rceil> \<ge> 
   (LOOP 
     \<comment> \<open>control\<close>
     ((2 ::= (\<lambda>s. 0));(3 ::= (\<lambda>s. s$1));
