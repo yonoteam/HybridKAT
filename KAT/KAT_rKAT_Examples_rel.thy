@@ -319,7 +319,7 @@ proof-
     using Thyps and obs by auto
 qed
 
-lemmas Hoare_therm_dyn = local_flow.sH_g_ode_ivl[OF local_flow_therm _ UNIV_I]
+lemmas H_g_ode_therm = local_flow.sH_g_ode_ivl[OF local_flow_therm _ UNIV_I]
 
 lemma thermostat_flow: 
   assumes "0 < a" and "0 \<le> \<tau>" and "0 < Tmin" and "Tmax < L"
@@ -344,7 +344,7 @@ lemma thermostat_flow:
     apply(rule_tac R="\<lambda>s. I Tmin Tmax s \<and> s$2=0 \<and> s$3 = s$1" in H_comp)
      apply(rule_tac R="\<lambda>s. I Tmin Tmax s\<and> s$2=0 \<and> s$3 = s$1" in H_comp)
       apply(rule_tac R="\<lambda>s. I Tmin Tmax s \<and> s$2=0" in H_comp, simp, simp)
-      apply(rule H_cond, simp_all add: Hoare_therm_dyn[OF assms(1,2)])+
+      apply(rule H_cond, simp_all add: H_g_ode_therm[OF assms(1,2)])+
   using therm_dyn_up_real_arith[OF assms(1) _ _ assms(4), of Tmin]
     and therm_dyn_down_real_arith[OF assms(1,3), of _ Tmax] by auto
 
@@ -442,28 +442,29 @@ no_notation therm_vec_field ("f")
         and therm_guard ("G")
         and therm_loop_inv ("I")
 
+
 subsubsection \<open> Water tank \<close>  \<comment> \<open>Variation of Hespanha and \cite{AlurCHHHNOSY95}\<close>
 
-abbreviation tank_vec_field :: "real \<Rightarrow> real \<Rightarrow> real^4 \<Rightarrow> real^4" ("f")
-  where "f c\<^sub>i c\<^sub>o s \<equiv> (\<chi> i. if i = 2 then 1 else (if i = 1 then c\<^sub>i - c\<^sub>o else 0))"
+abbreviation tank_vec_field :: "real \<Rightarrow> real^4 \<Rightarrow> real^4" ("f")
+  where "f k s \<equiv> (\<chi> i. if i = 2 then 1 else (if i = 1 then k else 0))"
 
-abbreviation tank_flow :: "real \<Rightarrow> real \<Rightarrow> real \<Rightarrow> real^4 \<Rightarrow> real^4" ("\<phi>")
-  where "\<phi> c\<^sub>i c\<^sub>o \<tau> s \<equiv> (\<chi> i. if i = 1 then (c\<^sub>i - c\<^sub>o) * \<tau> + s$1 else 
+abbreviation tank_flow :: "real \<Rightarrow> real \<Rightarrow> real^4 \<Rightarrow> real^4" ("\<phi>")
+  where "\<phi> k \<tau> s \<equiv> (\<chi> i. if i = 1 then k * \<tau> + s$1 else 
   (if i = 2 then \<tau> + s$2 else s$i))"
 
-abbreviation tank_guard :: "real \<Rightarrow> real \<Rightarrow> real \<Rightarrow> real \<Rightarrow> real^4 \<Rightarrow> bool" ("G")
-  where "G Hmin Hmax c\<^sub>i c\<^sub>o s \<equiv> s$2 \<le> (if c\<^sub>i = 0 then (s$3 - Hmin)/c\<^sub>o else (Hmax - s$3)/(c\<^sub>i - c\<^sub>o))"
+abbreviation tank_guard :: "real \<Rightarrow> real \<Rightarrow> real^4 \<Rightarrow> bool" ("G")
+  where "G Hm k s \<equiv> s$2 \<le> (Hm - s$3)/k"
 
 abbreviation tank_loop_inv :: "real \<Rightarrow> real \<Rightarrow> real^4 \<Rightarrow> bool" ("I")
   where "I Hmin Hmax s \<equiv> Hmin \<le> s$1 \<and> s$1 \<le> Hmax \<and> (s$4 = 0 \<or> s$4 = 1)"
 
-abbreviation tank_diff_inv :: "real \<Rightarrow> real \<Rightarrow> real \<Rightarrow> real \<Rightarrow> real^4 \<Rightarrow> bool" ("dI")
-  where "dI Hmin Hmax c\<^sub>i c\<^sub>o s \<equiv> s$1 = (c\<^sub>i - c\<^sub>o) \<cdot> s$2 + s$3 \<and> 0 \<le> s$2 \<and> 
+abbreviation tank_diff_inv :: "real \<Rightarrow> real \<Rightarrow> real \<Rightarrow> real^4 \<Rightarrow> bool" ("dI")
+  where "dI Hmin Hmax k s \<equiv> s$1 = k \<cdot> s$2 + s$3 \<and> 0 \<le> s$2 \<and> 
     Hmin \<le> s$3 \<and> s$3 \<le> Hmax \<and> (s$4 =0 \<or> s$4 = 1)"
 
 \<comment> \<open>Verified with the flow \<close>
 
-lemma local_flow_tank: "local_flow (f c\<^sub>i c\<^sub>o) UNIV UNIV (\<phi> c\<^sub>i c\<^sub>o)"
+lemma local_flow_tank: "local_flow (f k) UNIV UNIV (\<phi> k)"
   apply (unfold_locales, unfold local_lipschitz_def lipschitz_on_def, simp_all, clarsimp)
   apply(rule_tac x="1/2" in exI, clarsimp, rule_tac x=1 in exI)
   apply(simp add: dist_norm norm_vec_def L2_set_def, unfold UNIV_4)
@@ -471,10 +472,15 @@ lemma local_flow_tank: "local_flow (f c\<^sub>i c\<^sub>o) UNIV UNIV (\<phi> c\<
 
 lemma tank_arith:
   assumes "0 \<le> (\<tau>::real)" and "0 < c\<^sub>o" and "c\<^sub>o < c\<^sub>i"
-  shows "\<forall>\<tau>\<in>{0..\<tau>}. \<tau> \<le> (y - Hmin) / c\<^sub>o \<Longrightarrow>  Hmin \<le> y - c\<^sub>o * \<tau>"
+  shows "\<forall>\<tau>\<in>{0..\<tau>}. \<tau> \<le> - ((Hmin - y) / c\<^sub>o) \<Longrightarrow>  Hmin \<le> y - c\<^sub>o * \<tau>"
     and "\<forall>\<tau>\<in>{0..\<tau>}. \<tau> \<le> (Hmax - y) / (c\<^sub>i - c\<^sub>o) \<Longrightarrow>  (c\<^sub>i - c\<^sub>o) * \<tau> + y \<le> Hmax"
-  apply (erule_tac x=\<tau> in ballE, simp_all add: le_divide_eq mult.commute assms)
-  by (erule_tac x=\<tau> in ballE, simp_all add: le_divide_eq[where c="c\<^sub>i - c\<^sub>o"] assms)
+    and "Hmin \<le> y \<Longrightarrow> Hmin \<le> (c\<^sub>i - c\<^sub>o) \<cdot> \<tau> + y"
+    and "y \<le> Hmax \<Longrightarrow> y - c\<^sub>o \<cdot> \<tau> \<le> Hmax"
+  apply(simp_all add: field_simps le_divide_eq assms)
+  using assms apply (meson add_mono less_eq_real_def mult_left_mono)
+  using assms by (meson add_increasing2 less_eq_real_def mult_nonneg_nonneg) 
+
+lemmas H_g_ode_tank = local_flow.sH_g_ode_ivl[OF local_flow_tank _ UNIV_I]
 
 lemma tank_flow:
   assumes "0 \<le> \<tau>" and "0 < c\<^sub>o" and "c\<^sub>o < c\<^sub>i"
@@ -485,21 +491,20 @@ lemma tank_flow:
     (IF (\<lambda>s. s$4 = 0 \<and> s$3 \<le> Hmin + 1) THEN (4 ::= (\<lambda>s.1)) ELSE 
     (IF (\<lambda>s. s$4 = 1 \<and> s$3 \<ge> Hmax - 1) THEN (4 ::= (\<lambda>s.0)) ELSE skip));
     \<comment> \<open>dynamics\<close>
-    (IF (\<lambda>s. s$4 = 0) THEN (x\<acute>= f c\<^sub>i c\<^sub>o & G Hmin Hmax c\<^sub>i c\<^sub>o on {0..\<tau>} UNIV @ 0) 
-     ELSE (x\<acute>= f 0 c\<^sub>o & G Hmin Hmax 0 c\<^sub>o on {0..\<tau>} UNIV @ 0)) )
-  INV I Hmin Hmax)
-  \<lceil>I Hmin Hmax\<rceil>"
+    (IF (\<lambda>s. s$4 = 0) THEN (x\<acute>= f (c\<^sub>i-c\<^sub>o) & G Hmax (c\<^sub>i-c\<^sub>o) on {0..\<tau>} UNIV @ 0) 
+     ELSE (x\<acute>= f (-c\<^sub>o) & G Hmin (-c\<^sub>o) on {0..\<tau>} UNIV @ 0)) )
+  INV I Hmin Hmax) \<lceil>I Hmin Hmax\<rceil>"
   apply(rule H_loopI)
     apply(rule_tac R="\<lambda>s. I Hmin Hmax s \<and> s$2=0 \<and> s$3 = s$1" in H_comp)
      apply(rule_tac R="\<lambda>s. I Hmin Hmax s \<and> s$2=0 \<and> s$3 = s$1" in H_comp)
       apply(rule_tac R="\<lambda>s. I Hmin Hmax s \<and> s$2=0" in H_comp, simp, simp)
-     apply(rule H_cond, simp_all add: local_flow.sH_g_ode_ivl[OF local_flow_tank assms(1) UNIV_I])
-  using assms tank_arith[OF _ assms(2,3)] by auto (smt mult_nonneg_nonneg)+
+     apply(rule H_cond, simp_all add: H_g_ode_tank[OF assms(1)])
+  using assms tank_arith[OF _ assms(2,3)] by auto
 
 \<comment> \<open>Verified with differential invariants \<close>
 
 lemma tank_diff_inv:
-  "0 \<le> \<tau> \<Longrightarrow> diff_invariant (dI Hmin Hmax c\<^sub>i c\<^sub>o) (f c\<^sub>i c\<^sub>o) {0..\<tau>} UNIV 0 Guard"
+  "0 \<le> \<tau> \<Longrightarrow> diff_invariant (dI Hmin Hmax k) (f k) {0..\<tau>} UNIV 0 Guard"
   apply(intro diff_invariant_conj_rule)
       apply(force intro!: poly_derivatives diff_invariant_rules)
      apply(rule_tac \<nu>'="\<lambda>t. 0" and \<mu>'="\<lambda>t. 1" in diff_invariant_leq_rule, simp_all)
@@ -521,11 +526,11 @@ proof-
 qed
 
 lemma tank_inv_arith2:
-  assumes "0 \<le> (\<tau>::real)" and "0 < c\<^sub>o" and b: "y\<^sub>0 \<le> Hmax" and g: "\<tau> \<le> (y\<^sub>0 - Hmin) / c\<^sub>o"
+  assumes "0 \<le> (\<tau>::real)" and "0 < c\<^sub>o" and b: "y\<^sub>0 \<le> Hmax" and g: "\<tau> \<le> - ((Hmin - y\<^sub>0) / c\<^sub>o)"
   shows "Hmin \<le> y\<^sub>0 - c\<^sub>o \<cdot> \<tau>" and "y\<^sub>0 - c\<^sub>o \<cdot> \<tau> \<le> Hmax"
 proof-
   have "\<tau> \<cdot> c\<^sub>o \<le> y\<^sub>0 - Hmin"
-    using g \<open>0 < c\<^sub>o\<close> by (metis pos_le_divide_eq) 
+    using g \<open>0 < c\<^sub>o\<close> pos_le_minus_divide_eq by fastforce 
   thus "Hmin \<le> y\<^sub>0 - c\<^sub>o \<cdot> \<tau>"
     by (auto simp: mult.commute)
   show "y\<^sub>0 - c\<^sub>o \<cdot> \<tau> \<le> Hmax" 
@@ -542,11 +547,10 @@ lemma tank_inv:
     (IF (\<lambda>s. s$4 = 1 \<and> s$3 \<ge> Hmax - 1) THEN (4 ::= (\<lambda>s.0)) ELSE skip));
     \<comment> \<open>dynamics\<close>
     (IF (\<lambda>s. s$4 = 0) THEN 
-      (x\<acute>=(f c\<^sub>i c\<^sub>o) & G Hmin Hmax c\<^sub>i c\<^sub>o on {0..\<tau>} UNIV @ 0 DINV (dI Hmin Hmax c\<^sub>i c\<^sub>o)) 
+      (x\<acute>= f (c\<^sub>i-c\<^sub>o) & G Hmax (c\<^sub>i-c\<^sub>o) on {0..\<tau>} UNIV @ 0 DINV (dI Hmin Hmax (c\<^sub>i-c\<^sub>o))) 
      ELSE 
-      (x\<acute>=(f 0 c\<^sub>o) & G Hmin Hmax 0 c\<^sub>o on {0..\<tau>} UNIV @ 0 DINV (dI Hmin Hmax 0 c\<^sub>o))) )
-  INV I Hmin Hmax)
-  \<lceil>I Hmin Hmax\<rceil>"
+      (x\<acute>= f (-c\<^sub>o) & G Hmin (-c\<^sub>o) on {0..\<tau>} UNIV @ 0 DINV (dI Hmin Hmax (-c\<^sub>o)))) )
+  INV I Hmin Hmax) \<lceil>I Hmin Hmax\<rceil>"
   apply(rule H_loopI)
     apply(rule_tac R="\<lambda>s. I Hmin Hmax s \<and> s$2=0 \<and> s$3 = s$1" in H_comp)
      apply(rule_tac R="\<lambda>s. I Hmin Hmax s \<and> s$2=0 \<and> s$3 = s$1" in H_comp)
@@ -557,7 +561,7 @@ lemma tank_inv:
      apply(rule H_g_ode_inv)
   using assms tank_inv_arith1 apply(force simp: tank_diff_inv, simp, clarsimp)
     apply(rule H_g_ode_inv)
-  using assms tank_diff_inv[of _ 0 c\<^sub>o Hmin] tank_inv_arith2 by auto
+  using assms tank_diff_inv[of _ "-c\<^sub>o" Hmin Hmax] tank_inv_arith2 by auto
 
 \<comment> \<open>Refined with differential invariants \<close>
 
@@ -571,9 +575,9 @@ lemma R_tank_inv:
     (IF (\<lambda>s. s$4 = 1 \<and> s$3 \<ge> Hmax - 1) THEN (4 ::= (\<lambda>s.0)) ELSE skip));
     \<comment> \<open>dynamics\<close>
     (IF (\<lambda>s. s$4 = 0) THEN 
-      (x\<acute>=(f c\<^sub>i c\<^sub>o) & G Hmin Hmax c\<^sub>i c\<^sub>o on {0..\<tau>} UNIV @ 0 DINV (dI Hmin Hmax c\<^sub>i c\<^sub>o)) 
+      (x\<acute>= f (c\<^sub>i-c\<^sub>o) & G Hmax (c\<^sub>i-c\<^sub>o) on {0..\<tau>} UNIV @ 0 DINV (dI Hmin Hmax (c\<^sub>i-c\<^sub>o))) 
      ELSE 
-      (x\<acute>=(f 0 c\<^sub>o) & G Hmin Hmax 0 c\<^sub>o on {0..\<tau>} UNIV @ 0 DINV (dI Hmin Hmax 0 c\<^sub>o))) )
+      (x\<acute>= f (-c\<^sub>o) & G Hmin (-c\<^sub>o) on {0..\<tau>} UNIV @ 0 DINV (dI Hmin Hmax (-c\<^sub>o)))) )
   INV I Hmin Hmax)" (is "LOOP (?ctrl;?dyn) INV _ \<le> ?ref")
 proof-
   \<comment> \<open>First we refine the control. \<close>
@@ -596,14 +600,14 @@ proof-
      apply(rule_tac R="\<lambda>s. I Hmin Hmax s \<and> s$2 = 0" in R_comp_rule)
     by (auto intro!: R_assign_rule)
   \<comment> \<open>Then we refine the dynamics. \<close>
-  have dynup: "(x\<acute>=f c\<^sub>i c\<^sub>o & G Hmin Hmax c\<^sub>i c\<^sub>o on {0..\<tau>} UNIV @ 0 DINV (dI Hmin Hmax c\<^sub>i c\<^sub>o)) \<le> 
+  have dynup: "(x\<acute>=f (c\<^sub>i-c\<^sub>o) & G Hmax (c\<^sub>i-c\<^sub>o) on {0..\<tau>} UNIV @ 0 DINV (dI Hmin Hmax (c\<^sub>i-c\<^sub>o))) \<le> 
     rel_R \<lceil>\<lambda>s. s$4 = 0 \<and> ?Icntrl s\<rceil> \<lceil>I Hmin Hmax\<rceil>"
     apply(rule R_g_ode_inv[OF tank_diff_inv[OF assms(1)]])
     using assms by (auto simp: tank_inv_arith1)
-  have dyndown: "(x\<acute>=f 0 c\<^sub>o & G Hmin Hmax 0 c\<^sub>o on {0..\<tau>} UNIV @ 0 DINV (dI Hmin Hmax 0 c\<^sub>o)) \<le> 
+  have dyndown: "(x\<acute>=f (-c\<^sub>o) & G Hmin (-c\<^sub>o) on {0..\<tau>} UNIV @ 0 DINV (dI Hmin Hmax (-c\<^sub>o))) \<le> 
     rel_R \<lceil>\<lambda>s. s$4 \<noteq> 0 \<and> ?Icntrl s\<rceil> \<lceil>I Hmin Hmax\<rceil>"
     apply(rule R_g_ode_inv)
-    using tank_diff_inv[OF assms(1), of 0] assms
+    using tank_diff_inv[OF assms(1), of "-c\<^sub>o"] assms
     by (auto simp: tank_inv_arith2)
   have dyn: "?dyn \<le> rel_R \<lceil>?Icntrl\<rceil> \<lceil>I Hmin Hmax\<rceil>"
     apply(rule order_trans, rule R_cond_mono)
