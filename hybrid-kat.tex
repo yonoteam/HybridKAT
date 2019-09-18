@@ -54,6 +54,8 @@
 \newcommand{\dinvar}[2]{( #1\hbox{ }\mathsf{invariant}\hbox{ }#2)}
 %
 
+\newcommand{\defs}{\triangleq}
+
 \definecolor{scolor}{rgb}{1,0.5,0.5}
 \definecolor{jcolor}{cmyk}{1,0,1,0}
 \definecolor{gcolor}{cmyk}{1,0,0,0}
@@ -64,6 +66,26 @@
 \newcommand{\sfin}[1]{\notein{{\bf SF}}{scolor}{#1}}
 \newcommand{\jin}[1]{\notein{{\bf JHM}}{jcolor}{#1}}
 \newcommand{\gin}[1]{\notein{{\bf GS}}{gcolor}{#1}}
+
+% Lenses
+
+\newcommand{\lput}{\textit{\textsf{put}}}
+\newcommand{\lget}{\textit{\textsf{get}}}
+\newcommand{\lquad}[4]{\left\langle #1 ~\middle|~ #2 ~\middle|~ #3 ~\middle|~ #4 \right\rangle}
+\newcommand{\lcreate}{\textit{\textsf{create}}}
+\newcommand{\lto}{\Longrightarrow}
+\newcommand{\ltto}{\Longmapsto}
+\newcommand{\lbto}{\Longleftrightarrow}
+\newcommand{\lsubseteq}{\preceq}
+\newcommand{\lsupseteq}{\mathop{\supseteq_\lsbs}}
+\newcommand{\lequiv}{\approx}
+\newcommand{\lcomp}{\fatsemi}
+\newcommand{\lplus}{+}
+\newcommand{\lindep}{\mathop{\,\bowtie\,}}
+\newcommand{\lone}{\mathbf{1}}
+\newcommand{\lzero}{\mathbf{0}}
+\newcommand{\lfst}{\textit{\textsf{\textbf{fst}}}}
+\newcommand{\lsnd}{\textit{\textsf{\textbf{snd}}}}
 
 \urlstyle{rm}
 \isabellestyle{it}
@@ -357,6 +379,23 @@ an autonomous system of ordinary differential equations
 modelling boundary conditions or similar restrictions on temporal
 evolutions. % Guards are also known as \emph{evolution domain
   % restrictions}~\cite{DoyenFPP18}.
+
+Formally, we fix a state space $S$ of the hybrid program, for example
+$S\subseteq \reals^n$ and $n\in\mathbb{N}$. Continuous variables are characterised
+algebraically using lenses~\cite{FosterZW16}, to support several state space
+models. A lens, $x : A \lto S$, is a quadruple $x \defs (A, S, \lget, \lput)$, where
+$A$ is the variable type, and $S$ is the state space. Total functions
+$\lget_x : S \to A$ and $\lput_x : S \to A \to S$ query and update the value of $x$
+in a particular state. They are linked together by three intuitive algebraic
+laws. Lenses $x$ and $y$ can also be checked for independence using the predicate
+$x \lindep y$, which allows us to distinguish different variables. Each continuous
+variable is a lens, $x : \real \lto S$. If $S \subseteq \reals^n$, then there are
+$n$ independent lenses, $x_1 \cdots x_n$, that each corresponds to a projection from
+$\reals^n$. However, this is not the only possible state space, and more complex
+state space models --- such as matrices, or infinite Euclidean spaces -- can be
+supported as well.
+
+\sfin{Need to integrate this with what follows}
 
 Formally, vector fields are functions of type $S\to S$ on some open set
 $S\subseteq \reals^n$ and $n\in\mathbb{N}$---the state space of
