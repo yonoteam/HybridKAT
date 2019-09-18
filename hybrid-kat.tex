@@ -504,12 +504,9 @@ in this calculus:
 \item If successful, apply rule~(\ref{eq:h-evl}).
 \end{enumerate}
 
-\gin{add example: thermostat (done)}
-
 \begin{example}[Thermostat verification via solutions]\label{ex:therm-sol}
-Suppose that a thermostat uses variable $m$ for registering temperature measurements and $b$ for turning its heater on or off. Similarly, $T$ denotes the physical temperature and $t$ is time. At most every $\tau$ minutes, the thermostat sets its chronometer to $0$, registers 
-the room temperature, and it turns the heater on (or off) based on this reading. A hybrid program to model this behavior is 
-\jin{should we remove $\lambda$'s and write a proper hybrid program?}
+A thermostat uses variable $m$ for registering temperature measurements and $b$ for turning its heater on or off. Similarly, $T$ denotes the room's temperature and $t$ is time. At most every $\tau$ minutes, the thermostat sets its chronometer to $0$, measures 
+the room's temperature, and turns the heater on (or off) based on this reading. A hybrid program to model this behavior is
 \begin{align*}
 	\mathsf{Cntrl} = &\ {t:=(\lambda\, s.\ 0)};{m:=(\lambda\, s.\ s_T)};\\
 				&\ \IF {(\lambda\, s.\ s_b=0 \land s_m\leq T_{min} + 1)} {b:=(\lambda\, s.\ 1)} {}\\
@@ -517,7 +514,7 @@ the room temperature, and it turns the heater on (or off) based on this reading.
 	\mathsf{Dyn} = &\ \IF {(\lambda\, s.\ s_b=0)} {x' = f_0\, \&\, G_0} {x' = f_L\, \&\, G_L},\\
 	\mathsf{Thermostat} = &\ (\mathsf{Cntrl}{;}\mathsf{Dyn})^\ast,
 \end{align*}
-where we abbreviate $s_v=s\, v$ for $v\in\{T,t,m,b\}$, $L\geq 0$, $a>0$, $U=[0,\tau]$, and the evolution commands involve vector fields and guards,
+where we abbreviate $s_v=s\, v$ for $v\in\{T,t,m,b\}$. We also assume $0<T_{min}$, $T_{max}<L$, $a>0$, $U=[0,\tau]$, and use vector fields and guards
  \begin{equation*}
     f_c\,
     \begin{pmatrix}
@@ -528,49 +525,75 @@ where we abbreviate $s_v=s\, v$ for $v\in\{T,t,m,b\}$, $L\geq 0$, $a>0$, $U=[0,\
     \end{pmatrix}
 =
 \begin{pmatrix}
-  -a\cdot(s_T-c)\\
+  -a(s_T-c)\\
   1\\
   0\\
   0\\
 \end{pmatrix}\quad\text{and}\quad
 G_c\, s = \left(s_t\leq -\frac{1}{a}\ln\left(\frac{c-\Delta_c}{c-s_m}\right)\right),
 \end{equation*}
-where $\Delta_c=T_{min}$ if $c=0$ and $\Delta_c = T_{max}$ if $c=L$. Its correctness specification is $\{I\}\, \mathsf{Thermostat}\, \{I\}$ where $I\, s=T_{min}\leq s_T\leq T_{max}\land (s_b = 1 \lor s_b=0)$.
+where $\Delta_c=T_{min}$ if $c=0$ and $\Delta_c = T_{max}$ if $c=L$. Its correctness specification is $\{I\}\, \mathsf{Thermostat}\, \{I\}$ where $I\, s=\left(T_{min}\leq s_T\leq T_{max}\land (s_b = 1 \lor s_b=0)\right)$.
 
-The temperature 
-follows the ODE \isa{T{\isacharprime}\ {\isacharequal}\ {\isacharminus}\ a\ {\isacharasterisk}\ {\isacharparenleft}T\ {\isacharminus}\ U{\isacharparenright}} where \isa{U{\isacharequal}L\ {\isasymge}\ {\isadigit{0}}} when the heater is on, and \isa{U\ {\isacharequal}\ {\isadigit{0}}} when it is off. 
-
-
-
-We use \isa{{\isadigit{1}}} to denote the room's temperature, 
-\isa{{\isadigit{2}}} is time as measured by the thermostat's chronometer, and \isa{{\isadigit{3}}} is a variable
-to save temperature measurements. Finally, \isa{{\isadigit{4}}} states whether the heater is on 
-(\isa{s{\isachardollar}{\isadigit{4}}\ {\isacharequal}\ {\isadigit{1}}}) or off (\isa{s{\isachardollar}{\isadigit{4}}\ {\isacharequal}\ {\isadigit{0}}}). We prove that the thermostat keeps the room's 
-temperature between \isa{Tmin} and \isa{Tmax}.
+We use Isabelle's real valued vectors $s{\isacharcolon}{\isacharcolon}\mathit{real}{\isacharcircum}4$ for our hybrid store. The notation $s{\isachardollar}i$ represents the $i$th coordinate of a vector $s$ and
+hence the value of store $s$ at variable $i$. In Isabelle, we use \isa{{\isadigit{1}}}, \isa{{\isadigit{2}}}, \isa{{\isadigit{3}}}, and \isa{{\isadigit{4}}} for $T$, $t$, $m$ and $b$ respectively, and denote Hoare triples with \isa{Hoare\ {\isasymlceil}{\isacharminus}{\isasymrceil}\isacharminus{\isasymlceil}{\isacharminus}{\isasymrceil}}. Thus, the formalisation of the correctness specification for $\mathsf{Thermostat}$ is
 
 \begin{isabellebody}
 \isanewline
 \isacommand{lemma}\isamarkupfalse%
 \ thermostat{\isacharunderscore}flow{\isacharcolon}\ \isanewline
 \ \ \isakeyword{assumes}\ {\isachardoublequoteopen}{\isadigit{0}}\ {\isacharless}\ a{\isachardoublequoteclose}\ \isakeyword{and}\ {\isachardoublequoteopen}{\isadigit{0}}\ {\isasymle}\ {\isasymtau}{\isachardoublequoteclose}\ \isakeyword{and}\ {\isachardoublequoteopen}{\isadigit{0}}\ {\isacharless}\ Tmin{\isachardoublequoteclose}\ \isakeyword{and}\ {\isachardoublequoteopen}Tmax\ {\isacharless}\ L{\isachardoublequoteclose}\isanewline
-\ \ \isakeyword{shows}\ {\isachardoublequoteopen}Hoare\ {\isasymlceil}{\isasymlambda}s{\isachardot}\ Tmin\ {\isasymle}\ s{\isachardollar}{\isadigit{1}}\ {\isasymand}\ s{\isachardollar}{\isadigit{1}}\ {\isasymle}\ Tmax\ {\isasymand}\ s{\isachardollar}{\isadigit{4}}\ {\isacharequal}\ {\isadigit{0}}{\isasymrceil}\isanewline
-\ \ {\isacharparenleft}LOOP\ \isanewline
+\ \ \isakeyword{shows}\ {\isachardoublequoteopen}Hoare\ {\isasymlceil}I\ Tmin\ Tmax{\isasymrceil}\isanewline
+\ \ {\isacharparenleft}LOOP\ {\isacharparenleft}\isanewline
 \ \ \ \ %
 \isamarkupcmt{control%
 }\isanewline
-\ \ \ \ {\isacharparenleft}{\isacharparenleft}{\isadigit{2}}\ {\isacharcolon}{\isacharcolon}{\isacharequal}\ {\isacharparenleft}{\isasymlambda}s{\isachardot}\ {\isadigit{0}}{\isacharparenright}{\isacharparenright}{\isacharsemicolon}{\isacharparenleft}{\isadigit{3}}\ {\isacharcolon}{\isacharcolon}{\isacharequal}\ {\isacharparenleft}{\isasymlambda}s{\isachardot}\ s{\isachardollar}{\isadigit{1}}{\isacharparenright}{\isacharparenright}{\isacharsemicolon}\isanewline
-\ \ \ \ {\isacharparenleft}IF\ {\isacharparenleft}{\isasymlambda}s{\isachardot}\ s{\isachardollar}{\isadigit{4}}\ {\isacharequal}\ {\isadigit{0}}\ {\isasymand}\ s{\isachardollar}{\isadigit{3}}\ {\isasymle}\ Tmin\ {\isacharplus}\ {\isadigit{1}}{\isacharparenright}\ THEN\ {\isacharparenleft}{\isadigit{4}}\ {\isacharcolon}{\isacharcolon}{\isacharequal}\ {\isacharparenleft}{\isasymlambda}s{\isachardot}{\isadigit{1}}{\isacharparenright}{\isacharparenright}\ ELSE\ \isanewline
-\ \ \ \ {\isacharparenleft}IF\ {\isacharparenleft}{\isasymlambda}s{\isachardot}\ s{\isachardollar}{\isadigit{4}}\ {\isacharequal}\ {\isadigit{1}}\ {\isasymand}\ s{\isachardollar}{\isadigit{3}}\ {\isasymge}\ Tmax\ {\isacharminus}\ {\isadigit{1}}{\isacharparenright}\ THEN\ {\isacharparenleft}{\isadigit{4}}\ {\isacharcolon}{\isacharcolon}{\isacharequal}\ {\isacharparenleft}{\isasymlambda}s{\isachardot}{\isadigit{0}}{\isacharparenright}{\isacharparenright}\ ELSE\ skip{\isacharparenright}{\isacharparenright}{\isacharsemicolon}\isanewline
+\ \ \ \ {\isacharparenleft}{\isadigit{2}}\ {\isacharcolon}{\isacharcolon}{\isacharequal}\ {\isacharparenleft}{\isasymlambda}s{\isachardot}\ {\isadigit{0}}{\isacharparenright}{\isacharparenright}{\isacharsemicolon}\ {\isacharparenleft}{\isadigit{3}}\ {\isacharcolon}{\isacharcolon}{\isacharequal}\ {\isacharparenleft}{\isasymlambda}s{\isachardot}\ s{\isachardollar}{\isadigit{1}}{\isacharparenright}{\isacharparenright}{\isacharsemicolon}\isanewline
+\ \ \ \ {\isacharparenleft}IF\ {\isacharparenleft}{\isasymlambda}s{\isachardot}\ s{\isachardollar}{\isadigit{4}}\ {\isacharequal}\ {\isadigit{0}}\ {\isasymand}\ s{\isachardollar}{\isadigit{3}}\ {\isasymle}\ Tmin\ {\isacharplus}\ {\isadigit{1}}{\isacharparenright}\ THEN\ {\isacharparenleft}{\isadigit{4}}\ {\isacharcolon}{\isacharcolon}{\isacharequal}\ {\isacharparenleft}{\isasymlambda}s{\isachardot}{\isadigit{1}}{\isacharparenright}{\isacharparenright}\ ELSE\isanewline
+\ \ \ \ \ IF\ {\isacharparenleft}{\isasymlambda}s{\isachardot}\ s{\isachardollar}{\isadigit{4}}\ {\isacharequal}\ {\isadigit{1}}\ {\isasymand}\ s{\isachardollar}{\isadigit{3}}\ {\isasymge}\ Tmax\ {\isacharminus}\ {\isadigit{1}}{\isacharparenright}\ THEN\ {\isacharparenleft}{\isadigit{4}}\ {\isacharcolon}{\isacharcolon}{\isacharequal}\ {\isacharparenleft}{\isasymlambda}s{\isachardot}{\isadigit{0}}{\isacharparenright}{\isacharparenright}\ ELSE\ skip{\isacharparenright}{\isacharsemicolon}\isanewline
 \ \ \ \ %
 \isamarkupcmt{dynamics%
 }\isanewline
-\ \ \ \ {\isacharparenleft}IF\ {\isacharparenleft}{\isasymlambda}s{\isachardot}\ s{\isachardollar}{\isadigit{4}}\ {\isacharequal}\ {\isadigit{0}}{\isacharparenright}\ THEN\ {\isacharparenleft}x{\isasymacute}{\isacharequal}{\isacharparenleft}f\ a\ {\isadigit{0}}{\isacharparenright}\ {\isacharampersand}\ {\isacharparenleft}{\isasymlambda}s{\isachardot}\ s{\isachardollar}{\isadigit{2}}\ {\isasymle}\ {\isacharminus}\ {\isacharparenleft}ln\ {\isacharparenleft}Tmin{\isacharslash}s{\isachardollar}{\isadigit{3}}{\isacharparenright}{\isacharparenright}{\isacharslash}a{\isacharparenright}\ on\ {\isacharbraceleft}{\isadigit{0}}{\isachardot}{\isachardot}{\isasymtau}{\isacharbraceright}\ UNIV\ {\isacharat}\ {\isadigit{0}}{\isacharparenright}\ \isanewline
-\ \ \ \ ELSE\ {\isacharparenleft}x{\isasymacute}{\isacharequal}{\isacharparenleft}f\ a\ L{\isacharparenright}\ {\isacharampersand}\ {\isacharparenleft}{\isasymlambda}s{\isachardot}\ s{\isachardollar}{\isadigit{2}}\ {\isasymle}\ {\isacharminus}\ {\isacharparenleft}ln\ {\isacharparenleft}{\isacharparenleft}L{\isacharminus}Tmax{\isacharparenright}{\isacharslash}{\isacharparenleft}L{\isacharminus}s{\isachardollar}{\isadigit{3}}{\isacharparenright}{\isacharparenright}{\isacharparenright}{\isacharslash}a{\isacharparenright}\ on\ {\isacharbraceleft}{\isadigit{0}}{\isachardot}{\isachardot}{\isasymtau}{\isacharbraceright}\ UNIV\ {\isacharat}\ {\isadigit{0}}{\isacharparenright}{\isacharparenright}\ {\isacharparenright}\isanewline
-\ \ INV\ {\isacharparenleft}{\isasymlambda}s{\isachardot}\ Tmin\ {\isasymle}s{\isachardollar}{\isadigit{1}}\ {\isasymand}\ s{\isachardollar}{\isadigit{1}}\ {\isasymle}\ Tmax\ {\isasymand}\ {\isacharparenleft}s{\isachardollar}{\isadigit{4}}\ {\isacharequal}\ {\isadigit{0}}\ {\isasymor}\ s{\isachardollar}{\isadigit{4}}\ {\isacharequal}\ {\isadigit{1}}{\isacharparenright}{\isacharparenright}{\isacharparenright}\isanewline
-\ \ {\isasymlceil}{\isasymlambda}s{\isachardot}\ Tmin\ {\isasymle}\ s{\isachardollar}{\isadigit{1}}\ {\isasymand}\ s{\isachardollar}{\isadigit{1}}\ {\isasymle}\ Tmax{\isasymrceil}{\isachardoublequoteclose}\isanewline
-\ \ $\langle \isa{proof}\rangle$\isanewline
+\ \ \ \ {\isacharparenleft}IF\ {\isacharparenleft}{\isasymlambda}s{\isachardot}\ s{\isachardollar}{\isadigit{4}}\ {\isacharequal}\ {\isadigit{0}}{\isacharparenright}\ THEN\ {\isacharparenleft}x{\isasymacute}{\isacharequal}\ f\ a\ {\isadigit{0}}\ {\isacharampersand}\ G\ Tmin\ Tmax\ a\ {\isadigit{0}}\ on\ {\isacharbraceleft}{\isadigit{0}}{\isachardot}{\isachardot}{\isasymtau}{\isacharbraceright}\ UNIV\ {\isacharat}\ {\isadigit{0}}{\isacharparenright}\ \isanewline
+\ \ \ \ ELSE\ {\isacharparenleft}x{\isasymacute}{\isacharequal}\ f\ a\ L\ {\isacharampersand}\ G\ Tmin\ Tmax\ a\ L\ on\ {\isacharbraceleft}{\isadigit{0}}{\isachardot}{\isachardot}{\isasymtau}{\isacharbraceright}\ UNIV\ {\isacharat}\ {\isadigit{0}}{\isacharparenright}{\isacharparenright}\isanewline
+\ \ {\isacharparenright}\ INV\ I\ Tmin\ Tmax{\isacharparenright}\ {\isasymlceil}I\ Tmin\ Tmax{\isasymrceil}{\isachardoublequoteclose}\isanewline
+\isacommand{apply}\isamarkupfalse%
+{\isacharparenleft}rule\ H{\isacharunderscore}loopI{\isacharparenright}\isanewline
+\ \ \ \ \isacommand{apply}\isamarkupfalse%
+{\isacharparenleft}rule{\isacharunderscore}tac\ R{\isacharequal}{\isachardoublequoteopen}{\isasymlambda}s{\isachardot}\ I\ Tmin\ Tmax\ s\ {\isasymand}\ s{\isachardollar}{\isadigit{2}}{\isacharequal}{\isadigit{0}}\ {\isasymand}\ s{\isachardollar}{\isadigit{3}}\ {\isacharequal}\ s{\isachardollar}{\isadigit{1}}{\isachardoublequoteclose}\ \isakeyword{in}\ H{\isacharunderscore}comp{\isacharparenright}\isanewline
+\ \ \ \ \ \isacommand{apply}\isamarkupfalse%
+{\isacharparenleft}rule{\isacharunderscore}tac\ R{\isacharequal}{\isachardoublequoteopen}{\isasymlambda}s{\isachardot}\ I\ Tmin\ Tmax\ s{\isasymand}\ s{\isachardollar}{\isadigit{2}}{\isacharequal}{\isadigit{0}}\ {\isasymand}\ s{\isachardollar}{\isadigit{3}}\ {\isacharequal}\ s{\isachardollar}{\isadigit{1}}{\isachardoublequoteclose}\ \isakeyword{in}\ H{\isacharunderscore}comp{\isacharparenright}\isanewline
+\ \ \ \ \ \ \isacommand{apply}\isamarkupfalse%
+{\isacharparenleft}rule{\isacharunderscore}tac\ R{\isacharequal}{\isachardoublequoteopen}{\isasymlambda}s{\isachardot}\ I\ Tmin\ Tmax\ s\ {\isasymand}\ s{\isachardollar}{\isadigit{2}}{\isacharequal}{\isadigit{0}}{\isachardoublequoteclose}\ \isakeyword{in}\ H{\isacharunderscore}comp{\isacharcomma}\ simp{\isacharcomma}\ simp{\isacharparenright}\isanewline
+\ \ \ \ \ \ \isacommand{apply}\isamarkupfalse%
+{\isacharparenleft}rule\ H{\isacharunderscore}cond{\isacharcomma}\ simp{\isacharunderscore}all\ add{\isacharcolon}\ Hoare{\isacharunderscore}therm{\isacharunderscore}dyn{\isacharbrackleft}OF\ assms{\isacharparenleft}{\isadigit{1}}{\isacharcomma}{\isadigit{2}}{\isacharparenright}{\isacharbrackright}{\isacharparenright}{\isacharplus}\isanewline
+\ \ \isacommand{using}\isamarkupfalse%
+\ therm{\isacharunderscore}dyn{\isacharunderscore}up{\isacharunderscore}real{\isacharunderscore}arith{\isacharbrackleft}OF\ assms{\isacharparenleft}{\isadigit{1}}{\isacharparenright}\ {\isacharunderscore}\ {\isacharunderscore}\ assms{\isacharparenleft}{\isadigit{4}}{\isacharparenright}{\isacharcomma}\ of\ Tmin{\isacharbrackright}\isanewline
+\ \ \ \ \isakeyword{and}\ therm{\isacharunderscore}dyn{\isacharunderscore}down{\isacharunderscore}real{\isacharunderscore}arith{\isacharbrackleft}OF\ assms{\isacharparenleft}{\isadigit{1}}{\isacharcomma}{\isadigit{3}}{\isacharparenright}{\isacharcomma}\ of\ {\isacharunderscore}\ Tmax{\isacharbrackright}\ \isacommand{by}\isamarkupfalse%
+\ auto\isanewline
 \end{isabellebody}
+
+The proof follows the structure of $\mathsf{Thermostat}$. The first line applies rule (\ref{eq:h-loop-inv}) while the next three lines do the same with (\ref{eq:h-seq}) and correspond reversely to the three semicolons in the program structure. The fifth line reasons with the conditional and evolution commands by constantly applying (\ref{eq:h-cond}) followed by a simplification using (\ref{eq:h-evl}) until it is not possible to do so any more. This is successful because lemma \isa{Hoare{\isacharunderscore}therm{\isacharunderscore}dyn} includes the fact that the flow for $f_c$ is  
+\begin{equation*}
+\flow\, \tau\, s = 
+	\begin{pmatrix}
+      -e^{-a\cdot\tau}\cdot(c-s_T)+c\\
+      \tau+s_t\\
+	s_m\\
+	s_b
+    \end{pmatrix},
+\end{equation*}
+%\begin{isabellebody}
+%\isacommand{abbreviation}\isamarkupfalse%
+%\ therm{\isacharunderscore}flow\ {\isacharcolon}{\isacharcolon}\ {\isachardoublequoteopen}real\ {\isasymRightarrow}\ real\ {\isasymRightarrow}\ real\ {\isasymRightarrow}\ real{\isacharcircum}{\isadigit{4}}\ {\isasymRightarrow}\ real{\isacharcircum}{\isadigit{4}}{\isachardoublequoteclose}\ {\isacharparenleft}{\isachardoublequoteopen}{\isasymphi}{\isachardoublequoteclose}{\isacharparenright}\isanewline
+%\ \ \isakeyword{where}\ {\isachardoublequoteopen}{\isasymphi}\ a\ L\ {\isasymtau}\ s\ {\isasymequiv}\ {\isacharparenleft}{\isasymchi}\ i{\isachardot}\ if\ i\ {\isacharequal}\ {\isadigit{1}}\ then\ {\isacharminus}\ exp{\isacharparenleft}{\isacharminus}a\ {\isacharasterisk}\ {\isasymtau}{\isacharparenright}\ {\isacharasterisk}\ {\isacharparenleft}L\ {\isacharminus}\ s{\isachardollar}{\isadigit{1}}{\isacharparenright}\ {\isacharplus}\ L\ else\ \isanewline
+%\ \ {\isacharparenleft}if\ i\ {\isacharequal}\ {\isadigit{2}}\ then\ {\isasymtau}\ {\isacharplus}\ s{\isachardollar}{\isadigit{2}}\ else\ s{\isachardollar}i{\isacharparenright}{\isacharparenright}{\isachardoublequoteclose}\isanewline
+%\isanewline
+%\end{isabellebody}
+
+
+for all $\tau\in\reals$. The remaining proof obligations are inequalities of exponentials and logarithms, which are discharged by supplying auxiliary lemmas to Isabelle's \isa{auto} method. \qed
 \end{example}
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -591,7 +614,7 @@ $T\subseteq \reals$ if
 \end{equation*}
 The operation $\bigcup\circ\Pow$ is the Kleisli extension $(-)^\dagger$
 in the powerset monad. Hence we could simply write
-$(\gamma^f_gG)^\dagger\, I \subseteq I$. The definition of invariance
+$(\gamma^f_G)^\dagger\, I \subseteq I$. The definition of invariance
 unfolds to
 \begin{equation*}
   \forall s.\ I\, s \to (\forall X\in\Sols f\, T\, s.\forall t\in T.\ (\forall \tau\in {\downarrow}t.\ G\, (X\, \tau)) \to I\, (X\, t)).
@@ -605,7 +628,7 @@ Invariants for evolution commands are coherent with those in Section~\ref{sec:hl
   $T\subseteq \reals$. Then $I$ is an invariant for $f$ and $G$ \emph{along} $T$ if and only if
 $ \{I\}\, x' = f\, \&\, G\, \{I\}$.
 \end{proposition}
-Hence we can use an instance of (\ref{eq:h-inv}) for verification condition generation:
+Hence we can use a variant of (\ref{eq:h-inv}) for verification condition generation:
 \begin{align}
   P\le I \land \{I\}\, x' = f\, \&\, G\, \{I\}\land (I\cdot G)\le Q\ \rightarrow\
   &\{P\}\, x' = f\, \&\, G\, \{Q\}.\label{eq:h-invg}\tag{h-invg}
@@ -650,31 +673,92 @@ using an invariant.
 \gin{add example: water tank (done)}
 
 \begin{example}[Water tank verification via invariants]\label{ex:tank-inv}
+A controller turns on and off a water pump to keep the level of water $H$ in a tank within a safe region $H_{min}\leq H\leq H_{max}$. As before, we use $t$ for time, $m$ for water-level measurements and $b$ for indicating whether the pump is on or off. A hybrid program to model the controller and the water level in the tank, where we abbreviate $s_v=s\, v$ for $v\in\{H,t,m,b\}$, is
+\begin{align*}
+	\mathsf{Cntrl} = &\ {t:=(\lambda\, s.\ 0)};{m:=(\lambda\, s.\ s_H)};\\
+				&\ \IF {(\lambda\, s.\ s_b=0 \land s_m\leq H_{min} + 1)} {b:=(\lambda\, s.\ 1)} {}\\
+				&\ \IF {(\lambda\, s.\ s_b=1 \land s_m\geq H_{max} - 1)} {b:=(\lambda\, s.\ 0)} {\mathit{skip}},\\
+	\mathsf{Dyn} = &\ \IF {(\lambda\, s.\ s_b=0)} {x' = f_{c_i-c_o}\, \&\, G_{c_i-c_o}} {x' = f_{-c_o}\, \&\, G_{-c_o}},\\
+	\mathsf{Tank} = &\ (\mathsf{Cntrl}{;}\mathsf{Dyn})^\ast.
+\end{align*}
+Here, we just need to assume that
+ \begin{equation*}
+    f_k\,
+    \begin{pmatrix}
+      s_T\\
+      s_t\\
+	s_m\\
+	s_b
+    \end{pmatrix}
+=
+\begin{pmatrix}
+  k\\
+  1\\
+  0\\
+  0\\
+\end{pmatrix}\quad\text{and}\quad
+G_k\, s = \left(s_t\leq \frac{\Delta_k-s_m}{k}\right),
+\end{equation*}
+where $0 < c_o$, $c_o < c_i$, and $\Delta_k=H_{min}$ if $k=-c_o$ and $\Delta_k = H_{max}$ if $k=c_i-c_o$. We need to prove the specification $\{I\}\, \mathsf{Tank}\, \{I\}$ where $I\, s=\left(H_{min}\leq s_H\leq H_{max}\land (s_b = 1 \lor s_b=0)\right)$.
+
+We use Isabelle's real valued vectors $s{\isacharcolon}{\isacharcolon}\mathit{real}{\isacharcircum}4$ for our hybrid store. The notation $s{\isachardollar}i$ represents the $i$th coordinate of a vector $s$ and
+hence the value of store $s$ at variable $i$. In Isabelle, we use \isa{{\isadigit{1}}}, \isa{{\isadigit{2}}}, \isa{{\isadigit{3}}}, and \isa{{\isadigit{4}}} for $T$, $t$, $m$ and $b$ respectively, and denote Hoare triples with \isa{Hoare\ {\isasymlceil}{\isacharminus}{\isasymrceil}\isacharminus{\isasymlceil}{\isacharminus}{\isasymrceil}}. Thus, the formalisation of the correctness specification for $\mathsf{Thermostat}$ is
 \begin{isabellebody}
+\isanewline
 \isacommand{lemma}\isamarkupfalse%
-\ water{\isacharunderscore}tank{\isacharunderscore}inv{\isacharcolon}\isanewline
+\ tank{\isacharunderscore}flow{\isacharcolon}\isanewline
 \ \ \isakeyword{assumes}\ {\isachardoublequoteopen}{\isadigit{0}}\ {\isasymle}\ {\isasymtau}{\isachardoublequoteclose}\ \isakeyword{and}\ {\isachardoublequoteopen}{\isadigit{0}}\ {\isacharless}\ c\isactrlsub o{\isachardoublequoteclose}\ \isakeyword{and}\ {\isachardoublequoteopen}c\isactrlsub o\ {\isacharless}\ c\isactrlsub i{\isachardoublequoteclose}\isanewline
-\ \ \isakeyword{shows}\ {\isachardoublequoteopen}Hoare\ {\isasymlceil}{\isasymlambda}s{\isachardot}\ Hmin\ {\isacharless}\ s{\isachardollar}{\isadigit{1}}\ {\isasymand}\ s{\isachardollar}{\isadigit{1}}\ {\isacharless}\ Hmax\ {\isasymand}\ s{\isachardollar}{\isadigit{3}}\ {\isacharequal}\ {\isadigit{1}}{\isasymrceil}\isanewline
+\ \ \isakeyword{shows}\ {\isachardoublequoteopen}Hoare\ {\isasymlceil}I\ Hmin\ Hmax{\isasymrceil}\isanewline
 \ \ {\isacharparenleft}LOOP\ \isanewline
 \ \ \ \ %
 \isamarkupcmt{control%
 }\isanewline
-\ \ \ \ {\isacharparenleft}{\isacharparenleft}{\isadigit{2}}\ {\isacharcolon}{\isacharcolon}{\isacharequal}{\isacharparenleft}{\isasymlambda}s{\isachardot}{\isadigit{0}}{\isacharparenright}{\isacharparenright}{\isacharsemicolon}{\isacharparenleft}{\isadigit{4}}\ {\isacharcolon}{\isacharcolon}{\isacharequal}{\isacharparenleft}{\isasymlambda}s{\isachardot}\ s{\isachardollar}{\isadigit{1}}{\isacharparenright}{\isacharparenright}{\isacharsemicolon}\isanewline
-\ \ \ \ {\isacharparenleft}IF\ {\isacharparenleft}{\isasymlambda}s{\isachardot}\ s{\isachardollar}{\isadigit{3}}\ {\isacharequal}\ {\isadigit{0}}\ {\isasymand}\ s{\isachardollar}{\isadigit{4}}\ {\isasymle}\ Hmin\ {\isacharplus}\ {\isadigit{1}}{\isacharparenright}\ THEN\ {\isacharparenleft}{\isadigit{3}}\ {\isacharcolon}{\isacharcolon}{\isacharequal}\ {\isacharparenleft}{\isasymlambda}s{\isachardot}{\isadigit{1}}{\isacharparenright}{\isacharparenright}\ ELSE\ \isanewline
-\ \ \ \ {\isacharparenleft}IF\ {\isacharparenleft}{\isasymlambda}s{\isachardot}\ s{\isachardollar}{\isadigit{3}}\ {\isacharequal}\ {\isadigit{1}}\ {\isasymand}\ s{\isachardollar}{\isadigit{4}}\ {\isasymge}\ Hmax\ {\isacharminus}\ {\isadigit{1}}{\isacharparenright}\ THEN\ {\isacharparenleft}{\isadigit{3}}\ {\isacharcolon}{\isacharcolon}{\isacharequal}\ {\isacharparenleft}{\isasymlambda}s{\isachardot}{\isadigit{0}}{\isacharparenright}{\isacharparenright}\ ELSE\ skip{\isacharparenright}{\isacharparenright}{\isacharsemicolon}\isanewline
+\ \ \ \ {\isacharparenleft}{\isacharparenleft}{\isadigit{2}}\ {\isacharcolon}{\isacharcolon}{\isacharequal}{\isacharparenleft}{\isasymlambda}s{\isachardot}{\isadigit{0}}{\isacharparenright}{\isacharparenright}{\isacharsemicolon}{\isacharparenleft}{\isadigit{3}}\ {\isacharcolon}{\isacharcolon}{\isacharequal}{\isacharparenleft}{\isasymlambda}s{\isachardot}\ s{\isachardollar}{\isadigit{1}}{\isacharparenright}{\isacharparenright}{\isacharsemicolon}\isanewline
+\ \ \ \ {\isacharparenleft}IF\ {\isacharparenleft}{\isasymlambda}s{\isachardot}\ s{\isachardollar}{\isadigit{4}}\ {\isacharequal}\ {\isadigit{0}}\ {\isasymand}\ s{\isachardollar}{\isadigit{3}}\ {\isasymle}\ Hmin\ {\isacharplus}\ {\isadigit{1}}{\isacharparenright}\ THEN\ {\isacharparenleft}{\isadigit{4}}\ {\isacharcolon}{\isacharcolon}{\isacharequal}\ {\isacharparenleft}{\isasymlambda}s{\isachardot}{\isadigit{1}}{\isacharparenright}{\isacharparenright}\ ELSE\ \isanewline
+\ \ \ \ {\isacharparenleft}IF\ {\isacharparenleft}{\isasymlambda}s{\isachardot}\ s{\isachardollar}{\isadigit{4}}\ {\isacharequal}\ {\isadigit{1}}\ {\isasymand}\ s{\isachardollar}{\isadigit{3}}\ {\isasymge}\ Hmax\ {\isacharminus}\ {\isadigit{1}}{\isacharparenright}\ THEN\ {\isacharparenleft}{\isadigit{4}}\ {\isacharcolon}{\isacharcolon}{\isacharequal}\ {\isacharparenleft}{\isasymlambda}s{\isachardot}{\isadigit{0}}{\isacharparenright}{\isacharparenright}\ ELSE\ skip{\isacharparenright}{\isacharparenright}{\isacharsemicolon}\isanewline
 \ \ \ \ %
 \isamarkupcmt{dynamics%
 }\isanewline
-\ \ \ \ {\isacharparenleft}IF\ {\isacharparenleft}{\isasymlambda}s{\isachardot}\ s{\isachardollar}{\isadigit{3}}\ {\isacharequal}\ {\isadigit{0}}{\isacharparenright}\ THEN\ \isanewline
-\ \ \ \ \ \ {\isacharparenleft}x{\isasymacute}{\isacharequal}{\isacharparenleft}f\ c\isactrlsub i\ c\isactrlsub o{\isacharparenright}\ {\isacharampersand}\ {\isacharparenleft}{\isasymlambda}s{\isachardot}\ s{\isachardollar}{\isadigit{2}}\ {\isasymle}\ {\isacharparenleft}Hmax\ {\isacharminus}\ s{\isachardollar}{\isadigit{4}}{\isacharparenright}{\isacharslash}{\isacharparenleft}c\isactrlsub i\ {\isacharminus}\ c\isactrlsub o{\isacharparenright}{\isacharparenright}\ on\ {\isacharbraceleft}{\isadigit{0}}{\isachardot}{\isachardot}{\isasymtau}{\isacharbraceright}\ UNIV\ {\isacharat}\ {\isadigit{0}}\isanewline
-\ \ \ \ \ \ \ DINV\ {\isacharparenleft}{\isasymlambda}s{\isachardot}\ s{\isachardollar}{\isadigit{1}}\ {\isacharequal}\ {\isacharparenleft}{\isacharparenleft}c\isactrlsub i\ {\isacharminus}\ c\isactrlsub o{\isacharparenright}{\isacharparenright}\ {\isacharasterisk}\ s{\isachardollar}{\isadigit{2}}\ {\isacharplus}\ s{\isachardollar}{\isadigit{4}}\ {\isasymand}\ s{\isachardollar}{\isadigit{2}}\ {\isasymge}\ {\isadigit{0}}\ {\isasymand}\ Hmin\ {\isasymle}\ s{\isachardollar}{\isadigit{4}}\ {\isasymand}\ s{\isachardollar}{\isadigit{4}}\ {\isasymle}\ Hmax\ {\isasymand}\ {\isacharparenleft}s{\isachardollar}{\isadigit{3}}\ {\isacharequal}{\isadigit{0}}\ {\isasymor}\ s{\isachardollar}{\isadigit{3}}\ {\isacharequal}\ {\isadigit{1}}{\isacharparenright}{\isacharparenright}{\isacharparenright}\ \isanewline
-\ \ \ \ \ ELSE\ \isanewline
-\ \ \ \ \ \ {\isacharparenleft}x{\isasymacute}{\isacharequal}{\isacharparenleft}f\ {\isadigit{0}}\ c\isactrlsub o{\isacharparenright}\ {\isacharampersand}\ {\isacharparenleft}{\isasymlambda}s{\isachardot}\ s{\isachardollar}{\isadigit{2}}\ {\isasymle}\ {\isacharparenleft}s{\isachardollar}{\isadigit{4}}\ {\isacharminus}\ Hmin{\isacharparenright}{\isacharslash}c\isactrlsub o{\isacharparenright}\ on\ {\isacharbraceleft}{\isadigit{0}}{\isachardot}{\isachardot}{\isasymtau}{\isacharbraceright}\ UNIV\ {\isacharat}\ {\isadigit{0}}\isanewline
-\ \ \ \ \ \ \ DINV\ {\isacharparenleft}{\isasymlambda}s{\isachardot}\ s{\isachardollar}{\isadigit{1}}\ {\isacharequal}\ {\isacharparenleft}{\isacharminus}\ c\isactrlsub o{\isacharparenright}\ {\isacharasterisk}\ s{\isachardollar}{\isadigit{2}}\ {\isacharplus}\ s{\isachardollar}{\isadigit{4}}\ {\isasymand}\ s{\isachardollar}{\isadigit{2}}\ {\isasymge}\ {\isadigit{0}}\ {\isasymand}\ Hmin\ {\isasymle}\ s{\isachardollar}{\isadigit{4}}\ {\isasymand}\ s{\isachardollar}{\isadigit{4}}\ {\isasymle}\ Hmax\ {\isasymand}\ {\isacharparenleft}s{\isachardollar}{\isadigit{3}}\ {\isacharequal}{\isadigit{0}}\ {\isasymor}\ s{\isachardollar}{\isadigit{3}}\ {\isacharequal}\ {\isadigit{1}}{\isacharparenright}{\isacharparenright}{\isacharparenright}{\isacharparenright}\ {\isacharparenright}\isanewline
-\ \ INV\ {\isacharparenleft}{\isasymlambda}s{\isachardot}\ Hmin\ {\isasymle}\ s{\isachardollar}{\isadigit{1}}\ {\isasymand}\ s{\isachardollar}{\isadigit{1}}\ {\isasymle}\ Hmax\ {\isasymand}\ {\isacharparenleft}s{\isachardollar}{\isadigit{3}}\ {\isacharequal}{\isadigit{0}}\ {\isasymor}\ s{\isachardollar}{\isadigit{3}}\ {\isacharequal}\ {\isadigit{1}}{\isacharparenright}{\isacharparenright}{\isacharparenright}\isanewline
-\ \ {\isasymlceil}{\isasymlambda}s{\isachardot}\ Hmin\ {\isasymle}\ s{\isachardollar}{\isadigit{1}}\ {\isasymand}\ s{\isachardollar}{\isadigit{1}}\ {\isasymle}\ Hmax{\isasymrceil}{\isachardoublequoteclose}\isanewline
-\ \ $\langle \isa{proof}\rangle$\isanewline
+\ \ \ \ {\isacharparenleft}IF\ {\isacharparenleft}{\isasymlambda}s{\isachardot}\ s{\isachardollar}{\isadigit{4}}\ {\isacharequal}\ {\isadigit{0}}{\isacharparenright}\ THEN\ {\isacharparenleft}x{\isasymacute}{\isacharequal}\ f\ c\isactrlsub i\ c\isactrlsub o\ {\isacharampersand}\ G\ Hmin\ Hmax\ c\isactrlsub i\ c\isactrlsub o\ on\ {\isacharbraceleft}{\isadigit{0}}{\isachardot}{\isachardot}{\isasymtau}{\isacharbraceright}\ UNIV\ {\isacharat}\ {\isadigit{0}}{\isacharparenright}\ \isanewline
+\ \ \ \ \ ELSE\ {\isacharparenleft}x{\isasymacute}{\isacharequal}\ f\ {\isadigit{0}}\ c\isactrlsub o\ {\isacharampersand}\ G\ Hmin\ Hmax\ {\isadigit{0}}\ c\isactrlsub o\ on\ {\isacharbraceleft}{\isadigit{0}}{\isachardot}{\isachardot}{\isasymtau}{\isacharbraceright}\ UNIV\ {\isacharat}\ {\isadigit{0}}{\isacharparenright}{\isacharparenright}\ {\isacharparenright}\isanewline
+\ \ INV\ I\ Hmin\ Hmax{\isacharparenright}\isanewline
+\ \ {\isasymlceil}I\ Hmin\ Hmax{\isasymrceil}{\isachardoublequoteclose}\isanewline
+\isacommand{apply}\isamarkupfalse%
+{\isacharparenleft}rule\ H{\isacharunderscore}loopI{\isacharparenright}\isanewline
+\ \ \ \ \isacommand{apply}\isamarkupfalse%
+{\isacharparenleft}rule{\isacharunderscore}tac\ R{\isacharequal}{\isachardoublequoteopen}{\isasymlambda}s{\isachardot}\ I\ Hmin\ Hmax\ s\ {\isasymand}\ s{\isachardollar}{\isadigit{2}}{\isacharequal}{\isadigit{0}}\ {\isasymand}\ s{\isachardollar}{\isadigit{3}}\ {\isacharequal}\ s{\isachardollar}{\isadigit{1}}{\isachardoublequoteclose}\ \isakeyword{in}\ H{\isacharunderscore}comp{\isacharparenright}\isanewline
+\ \ \ \ \ \isacommand{apply}\isamarkupfalse%
+{\isacharparenleft}rule{\isacharunderscore}tac\ R{\isacharequal}{\isachardoublequoteopen}{\isasymlambda}s{\isachardot}\ I\ Hmin\ Hmax\ s\ {\isasymand}\ s{\isachardollar}{\isadigit{2}}{\isacharequal}{\isadigit{0}}\ {\isasymand}\ s{\isachardollar}{\isadigit{3}}\ {\isacharequal}\ s{\isachardollar}{\isadigit{1}}{\isachardoublequoteclose}\ \isakeyword{in}\ H{\isacharunderscore}comp{\isacharparenright}\isanewline
+\ \ \ \ \ \ \isacommand{apply}\isamarkupfalse%
+{\isacharparenleft}rule{\isacharunderscore}tac\ R{\isacharequal}{\isachardoublequoteopen}{\isasymlambda}s{\isachardot}\ I\ Hmin\ Hmax\ s\ {\isasymand}\ s{\isachardollar}{\isadigit{2}}{\isacharequal}{\isadigit{0}}{\isachardoublequoteclose}\ \isakeyword{in}\ H{\isacharunderscore}comp{\isacharcomma}\ simp{\isacharcomma}\ simp{\isacharparenright}\isanewline
+\ \ \ \ \ \isacommand{apply}\isamarkupfalse%
+{\isacharparenleft}rule\ H{\isacharunderscore}cond{\isacharcomma}\ simp{\isacharunderscore}all\ add{\isacharcolon}\ local{\isacharunderscore}flow{\isachardot}sH{\isacharunderscore}g{\isacharunderscore}ode{\isacharunderscore}ivl{\isacharbrackleft}OF\ local{\isacharunderscore}flow{\isacharunderscore}tank\ assms{\isacharparenleft}{\isadigit{1}}{\isacharparenright}\ UNIV{\isacharunderscore}I{\isacharbrackright}{\isacharparenright}\isanewline
+\ \ \isacommand{using}\isamarkupfalse%
+\ assms\ tank{\isacharunderscore}arith{\isacharbrackleft}OF\ {\isacharunderscore}\ assms{\isacharparenleft}{\isadigit{2}}{\isacharcomma}{\isadigit{3}}{\isacharparenright}{\isacharbrackright}\ \isacommand{by}\isamarkupfalse%
+\ auto\ {\isacharparenleft}smt\ mult{\isacharunderscore}nonneg{\isacharunderscore}nonneg{\isacharparenright}{\isacharplus}\isanewline
+\isanewline
 \end{isabellebody}
+
+The proof follows the structure of $\mathsf{Thermostat}$. The first line applies rule (\ref{eq:h-loop-inv}) while the next three lines do the same with (\ref{eq:h-seq}) and correspond reversely to the three semicolons in the program structure. The fifth line reasons with the conditional and evolution commands by constantly applying (\ref{eq:h-cond}) followed by a simplification using (\ref{eq:h-evl}) until it is not possible to do so any more. This is successful because lemma \isa{Hoare{\isacharunderscore}therm{\isacharunderscore}dyn} includes the fact that the flow for $f_c$ is  
+\begin{equation*}
+\flow\, \tau\, s = 
+	\begin{pmatrix}
+      -e^{-a\cdot\tau}\cdot(c-s_T)+c\\
+      \tau+s_t\\
+	s_m\\
+	s_b
+    \end{pmatrix},
+\end{equation*}
+%\begin{isabellebody}
+%\isacommand{abbreviation}\isamarkupfalse%
+%\ therm{\isacharunderscore}flow\ {\isacharcolon}{\isacharcolon}\ {\isachardoublequoteopen}real\ {\isasymRightarrow}\ real\ {\isasymRightarrow}\ real\ {\isasymRightarrow}\ real{\isacharcircum}{\isadigit{4}}\ {\isasymRightarrow}\ real{\isacharcircum}{\isadigit{4}}{\isachardoublequoteclose}\ {\isacharparenleft}{\isachardoublequoteopen}{\isasymphi}{\isachardoublequoteclose}{\isacharparenright}\isanewline
+%\ \ \isakeyword{where}\ {\isachardoublequoteopen}{\isasymphi}\ a\ L\ {\isasymtau}\ s\ {\isasymequiv}\ {\isacharparenleft}{\isasymchi}\ i{\isachardot}\ if\ i\ {\isacharequal}\ {\isadigit{1}}\ then\ {\isacharminus}\ exp{\isacharparenleft}{\isacharminus}a\ {\isacharasterisk}\ {\isasymtau}{\isacharparenright}\ {\isacharasterisk}\ {\isacharparenleft}L\ {\isacharminus}\ s{\isachardollar}{\isadigit{1}}{\isacharparenright}\ {\isacharplus}\ L\ else\ \isanewline
+%\ \ {\isacharparenleft}if\ i\ {\isacharequal}\ {\isadigit{2}}\ then\ {\isasymtau}\ {\isacharplus}\ s{\isachardollar}{\isadigit{2}}\ else\ s{\isachardollar}i{\isacharparenright}{\isacharparenright}{\isachardoublequoteclose}\isanewline
+%\isanewline
+%\end{isabellebody}
+
+
+for all $\tau\in\reals$. The remaining proof obligations are inequalities of exponentials and logarithms, which are discharged by supplying auxiliary lemmas to Isabelle's \isa{auto} method. \qed
 \end{example}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
