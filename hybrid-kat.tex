@@ -326,6 +326,10 @@ $\alpha^\ast$, we obtain
 \begin{align}
   p\le i \land \{i\}\, \alpha\, \{i\}\land i\le q\ \rightarrow\
   &\{p\}\, \alpha\, \{q\},\label{eq:h-inv}\tag{h-inv}\\
+  \{i\}\, \alpha\, \{i\} \land \{j\}\, \alpha\, \{j\}\rightarrow\
+  &\{i\cdot j\}\, \alpha\, \{i\cdot j\},\label{eq:h-inv-mult}\tag{h-inv-mult}\\
+  \{i\}\, \alpha\, \{i\} \land \{j\}\, \alpha\, \{j\}\rightarrow\
+  &\{i+ j\}\, \alpha\, \{i+ j\},\label{eq:h-inv-plus}\tag{h-inv-plus}\\
   p \le i \wedge \{it\}\, \alpha\, \{i\} \wedge \neg t i\le q\
   \rightarrow \ & \{p\}\, \WHILEI{t}{i}{\alpha}\,  \{q\},\label{eq:h-while-inv}\tag{h-while-inv}\\
    p\le i \land \{i\}\, \alpha\, \{i\}\land i\le q\ \rightarrow\ &
@@ -659,7 +663,7 @@ Hence we can use a variant of (\ref{eq:h-inv}) for verification condition genera
 It remains to check invariance in the antecedent of this rule. The
 following lemma leads to a procedure.
 
-\begin{lemma}\label{P:invrules}
+\begin{lemma}[\cite{MuniveS19}]\label{P:invrules}
   Let $f:S\to S$ be a continuous vector field, $\mu,\nu:S\to\reals$
   differentiable and $T\subseteq \reals$. 
 \begin{enumerate}
@@ -668,25 +672,21 @@ following lemma leads to a procedure.
 \item if $(\mu\circ X)'\, t\leq(\nu\circ X)'\, t$ when $t> 0$, and $(\mu\circ X)'\, t\geq(\nu\circ X)'\, t$ when $t< 0$, for all $X\in \Sols f\, T\, s$,
   then $\{\mu <\nu\}\, x' = f\, \&\, G\, \{\mu <\nu\}$
 \item $\mu\neq \nu$ if and only if $\mu < \nu$ or $\nu < \mu$,
-\item $\mu \not\le \nu$ if and only if $\nu < \mu$,
-\jin{get Hoare triple version in Isabelle}
-\item if $\{I_i\}\, x' = f\, \&\, G\, \{I_i\}$for $i\in\{1,2\}$, then $\{I_1\land I_2\}\, x' = f\, \&\, G\, \{I_1\land I_2\}$ and $\{I_1\lor I_2\}\, x' = f\, \&\, G\, \{I_1\lor I_2\}$.
-%\item if $I_1$ and $I_2$ are differential invariants for $f$ along $T$, then so are $\lambda s.\ I_1\, s \land I_2\, s$ and $\lambda s.\ I_1\, s \lor I_2\, s$.
+\item $\mu \not\le \nu$ if and only if $\nu < \mu$.
 \end{enumerate}
 \end{lemma}
 
 Condition $(1)$ follows from the well known fact that two continuously
 differentiable functions are equal if they intersect at some point and their
-derivatives are equal. Therefore, rule (\ref{eq:h-invg}),
-Proposition~\ref{P:inv-prop} and Lemma~\ref{P:invrules} yield the following
-procedure for verifying a triple $\{P\}\, x' = f\, \&\, G\, \{Q\}$
+derivatives are equal. Therefore, rules (\ref{eq:h-invg}), (\ref{eq:h-inv-mult}), (\ref{eq:h-inv-plus}),
+Proposition~\ref{P:inv-prop} and Lemma~\ref{P:invrules} yield the following procedure for verifying a triple $\{P\}\, x' = f\, \&\, G\, \{Q\}$
 using an invariant.
 \begin{enumerate}
 \item Check whether a candidate predicate $I$ is an invariant for $f$
   along $T$:
 	\begin{enumerate}
 	\item transform $I$ into negation normal form;
-	\item if $I$ is complex, reduce it with Lemma~\ref{P:invrules} (3), (4) and (5);
+	\item reduce $I$ (if complex) with (\ref{eq:h-inv-mult}), (\ref{eq:h-inv-plus}) and Lemma~\ref{P:invrules} (3,4);
 	\item if $I$ is atomic, apply Lemma~\ref{P:invrules} (1) and (2);
 	\end{enumerate}
 (if successful,  $\{I\}\, x' = f\, \&\, G\, \{I\}$ holds by Proposition~\ref{P:inv-prop}),

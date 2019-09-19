@@ -120,14 +120,15 @@ lemma H_loop_inv: "t p \<le> t i \<Longrightarrow> H i x i \<Longrightarrow> t i
 
 \<comment> \<open> Invariants \<close>
 
-lemma "H i x i \<Longrightarrow>  H j x j \<Longrightarrow>  H (i \<cdot> j) x (i \<cdot> j)"
-  unfolding Hoare_def oops
-
-lemma "H i x i \<Longrightarrow>  H j x j \<Longrightarrow>  H (i + j) x (i + j)"
-  unfolding Hoare_def oops
-
 lemma H_inv: "t p \<le> t i \<Longrightarrow> t i \<le> t q \<Longrightarrow> H i x i \<Longrightarrow> H p x q"
   by (rule_tac p'=i and q'=i in H_cons)
+
+lemma H_inv_plus: "t i = i \<Longrightarrow> t j = j \<Longrightarrow> H i x i \<Longrightarrow>  H j x j \<Longrightarrow>  H (i + j) x (i + j)"
+  unfolding Hoare_def using combine_common_factor
+  by (smt add_commute add.left_commute distrib_left join.sup.absorb_iff1 t_add_closed)
+
+lemma H_inv_mult: "t i = i \<Longrightarrow> t j = j \<Longrightarrow> H i x i \<Longrightarrow>  H j x j \<Longrightarrow>  H (i \<cdot> j) x (i \<cdot> j)"
+  unfolding Hoare_def by (smt n_kat_2 n_mult_comm t_mult_closure mult_assoc)
 
 end
 
