@@ -1,4 +1,4 @@
-\documentclass[envcountsame]{llncs}
+\documentclass[envcountsame,envcountsect]{llncs}
 
 \usepackage{isabelle,isabellesym}
 \usepackage{graphicx}
@@ -16,6 +16,7 @@
 \usepackage{tikz}
 \usepackage{tikz-cd}
 \usepackage[colorinlistoftodos]{todonotes}
+
 
 \newcommand{\IF}[3]{\mathbf{if}\ #1\ \mathbf{then}\ #2\ \mathbf{else}\ #3}
 \newcommand{\WHILE}[2]{\mathbf{while}\ #1\ \mathbf{do}\ #2}
@@ -337,7 +338,7 @@ $\alpha^\ast$, we obtain
     \mathbf{inv}\, i\, \{q\}. \label{eq:h-loop-inv}\tag{h-loop-inv}
 \end{align}
 We use (\ref{eq:h-inv}) for invariants for continuous
-evolutions of hybrid systems in Section~\ref{sec:hoare-inv}-\ref{sec:from-flows}. Rule (\ref{eq:h-while-inv})
+evolutions of hybrid systems in Section~\ref{sec:hoare-inv}-\ref{sec:from-flows}. The rules (\ref{eq:h-inv-mult}) and (\ref{eq:h-inv-plus}) are part of a procedure, described in Section~\ref{sec:hoare-inv}. Rule (\ref{eq:h-while-inv})
 is standard for  invariants for while loops;
 (\ref{eq:h-loop-inv}) is specific to loops of hybrid programs (see
 Section~\ref{sec:sta-hybrid}).
@@ -532,37 +533,41 @@ in this calculus:
 \end{enumerate}
 
 \begin{example}[Thermostat verification via solutions]\label{ex:therm-sol}
-A thermostat uses variable $m$ for registering temperature measurements and $b$ for turning its heater on or off. Similarly, $T$ denotes the room's temperature and $t$ is time. At most every $\tau$ minutes, the thermostat sets its chronometer to $0$, measures 
-the room's temperature, and turns the heater on (or off) based on this reading. A hybrid program to model this behavior is
+A thermostat uses variable $T_0$ to store an initial temperature and $\Theta$ to indicate wether the heater is switched on or off. Variable $T$ denotes the room's temperature and $t$ is time. At most every $\tau$ minutes, the thermostat sets its chronometer to $0$, measures 
+the room's temperature, and turns the heater on (or off) according to this measurement. A hybrid program to model this behaviour is
 \begin{align*}
-	\mathsf{Cntrl} = &\ {t:=(\lambda\, s.\ 0)};{m:=(\lambda\, s.\ s_T)};\\
-				&\ \IF {(\lambda\, s.\ s_b=0 \land s_m\leq T_{min} + 1)} {b:=(\lambda\, s.\ 1)} {}\\
-				&\ \IF {(\lambda\, s.\ s_b=1 \land s_m\geq T_{max} - 1)} {b:=(\lambda\, s.\ 0)} {\mathit{skip}},\\
-	\mathsf{Dyn} = &\ \IF {(\lambda\, s.\ s_b=0)} {x' = f_0\, \&\, G_0} {x' = f_L\, \&\, G_L},\\
+	\mathsf{Cntrl} = &\ {t:=(\lambda\, s.\ 0)};{T_0:=(\lambda\, s.\ s_T)};\\
+				&\ \IF {(\lambda\, s.\ s_\Theta=0 \land s_{T0}\leq T_{min} + 1)} {\Theta:=(\lambda\, s.\ 1)} {}\\
+				&\ \IF {(\lambda\, s.\ s_\Theta=1 \land s_{T0}\geq T_{max} - 1)} {\Theta:=(\lambda\, s.\ 0)} {\mathit{skip}},\\
+	\mathsf{Dyn} = &\ \IF {(\lambda\, s.\ s_\Theta=0)} {x' = f_0\, \&\, G_0} {x' = f_L\, \&\, G_L},\\
 	\mathsf{Thermostat} = &\ (\mathsf{Cntrl}{;}\mathsf{Dyn})^\ast,
 \end{align*}
-where we abbreviate $s_v=s\, v$ for $v\in\{T,t,m,b\}$. We also assume $0<T_{min}$, $T_{max}<L$, $a>0$, $U=[0,\tau]$, and use vector fields and guards
- \begin{equation*}
-    f_c\,
-    \begin{pmatrix}
-      s_T\\
-      s_t\\
-	s_m\\
-	s_b
-    \end{pmatrix}
-=
-\begin{pmatrix}
-  -a(s_T-c)\\
-  1\\
-  0\\
-  0\\
-\end{pmatrix}\quad\text{and}\quad
-G_c\, s = \left(s_t\leq -\frac{1}{a}\ln\left(\frac{c-\Delta_c}{c-s_m}\right)\right),
-\end{equation*}
-where $\Delta_c=T_{min}$ if $c=0$ and $\Delta_c = T_{max}$ if $c=L$. Its correctness specification is $\{I\}\, \mathsf{Thermostat}\, \{I\}$ where $I\, s=\left(T_{min}\leq s_T\leq T_{max}\land (s_b = 1 \lor s_b=0)\right)$.
+where $s_v=s\, v$ for $v\in\{T,t,T_0,\Theta\}$. We also assume $0<T_{min}$, $T_{max}<L$, $a>0$, $U=[0,\tau]$ and use vector fields and guards for $c\in\{0,L\}$
+\begin{align*}
+f_c\, (s_T,s_t, s_{T0}, s_\Theta)^\top &= (-a(s_T-c),1,0,0)^\top\\
+G_c\, s  &= \left(s_t\leq -\frac{1}{a}\ln\left(\frac{c-\Delta_c}{c-s_{T0}}\right)\right),
+\end{align*}
+% \begin{equation*}
+%    f_c\,
+%    \begin{pmatrix}
+%      s_T\\
+%      s_t\\
+%	s_{T0}\\
+%	s_\Theta
+%    \end{pmatrix}
+%=
+%\begin{pmatrix}
+%  -a(s_T-c)\\
+%  1\\
+%  0\\
+%  0\\
+%\end{pmatrix}\quad\text{and}\quad
+%G_c\, s = \left(s_t\leq -\frac{1}{a}\ln\left(\frac{c-\Delta_c}{c-s_m}\right)\right),
+%\end{equation*}
+where $\Delta_c=T_{min}$ if $c=0$ and $\Delta_c = T_{max}$ if $c=L$. Its correctness specification is $\{I\}\, \mathsf{Thermostat}\, \{I\}$ where $I\, s=\left(T_{min}\leq s_T\leq T_{max}\land (s_\Theta = 1 \lor s_\Theta=0)\right)$.
 
 We use Isabelle's real valued vectors $s{\isacharcolon}{\isacharcolon}\mathit{real}{\isacharcircum}4$ for our hybrid store. The notation $s{\isachardollar}i$ represents the $i$th coordinate of a vector $s$ and
-hence the value of store $s$ at variable $i$. In Isabelle, we use \isa{{\isadigit{1}}}, \isa{{\isadigit{2}}}, \isa{{\isadigit{3}}}, and \isa{{\isadigit{4}}} for $T$, $t$, $m$ and $b$ respectively, and denote Hoare triples with \isa{Hoare\ {\isasymlceil}{\isacharminus}{\isasymrceil}\isacharminus{\isasymlceil}{\isacharminus}{\isasymrceil}}. Thus, the formalisation of the correctness specification for $\mathsf{Thermostat}$ is
+hence the value of store $s$ at variable $i$. In Isabelle, we use \isa{{\isadigit{1}}}, \isa{{\isadigit{2}}}, \isa{{\isadigit{3}}}, and \isa{{\isadigit{4}}} for $T$, $t$, $T_0$ and $\Theta$ respectively, and denote Hoare triples with \isa{Hoare\ {\isasymlceil}{\isacharminus}{\isasymrceil}\isacharminus{\isasymlceil}{\isacharminus}{\isasymrceil}}. For resemblance of program syntax, we also use a semicolon (\isa{{\isacharsemicolon}}) instead of a dot $(\cdot)$ for multiplication in $\KAT$. Thus, the formalisation of the correctness specification for $\mathsf{Thermostat}$ is
 
 \begin{isabellebody}
 \isanewline
@@ -599,15 +604,15 @@ hence the value of store $s$ at variable $i$. In Isabelle, we use \isa{{\isadigi
 \ auto\isanewline
 \end{isabellebody}
 
-The proof follows the structure of $\mathsf{Thermostat}$. The first line applies rule (\ref{eq:h-loop-inv}) while the next three lines do the same with (\ref{eq:h-seq}) and correspond reversely to the three semicolons in the program structure. The fifth line reasons with the conditional and evolution commands by constantly applying (\ref{eq:h-cond}) followed by a simplification using (\ref{eq:h-evl}) until it is not possible to do so any more. This is successful because lemma \isa{H{\isacharunderscore}g{\isacharunderscore}ode{\isacharunderscore}therm} includes the fact that the flow for $f_c$ is  
+The rule applications decompose the program structure of $\mathsf{Thermostat}$. The first line applies rule (\ref{eq:h-loop-inv}) while the next three lines do the same with (\ref{eq:h-seq}) and correspond reversely to the three semicolons in the program structure. The fifth line reasons with the conditional and evolution commands by constantly applying (\ref{eq:h-cond}) followed by a simplification using (\ref{eq:h-evl}) until it is not possible to do so any more. This is successful because lemma \isa{H{\isacharunderscore}g{\isacharunderscore}ode{\isacharunderscore}therm} includes the fact that the flow for $f_c$ is  
 \begin{equation*}
-\flow\, \tau\, s = 
-	\begin{pmatrix}
-      -e^{-a\cdot\tau}\cdot(c-s_T)+c\\
-      \tau+s_t\\
-	s_m\\
-	s_b
-    \end{pmatrix},
+\flow\, \tau\, s = (-e^{-a\cdot\tau}\cdot(c-s_T)+c, \tau+s_t, s_{T0}, s_\Theta)^\top,
+%	\begin{pmatrix}
+%      -e^{-a\cdot\tau}\cdot(c-s_T)+c\\
+%      \tau+s_t\\
+%	s_m\\
+%	s_b
+%    \end{pmatrix},
 \end{equation*}
 %\begin{isabellebody}
 %\isacommand{abbreviation}\isamarkupfalse%
@@ -694,42 +699,42 @@ using an invariant.
 \end{enumerate}
 
 \begin{example}[Water tank verification via invariants]\label{ex:tank-inv}
-A controller turns on and off a water pump to keep the level of water $H$ in a tank within a safe region $H_{min}\leq H\leq H_{max}$. As in Example~\ref{ex:therm-sol}, we use $t$ for time, $m$ for water-level measurements and $b$ for indicating whether the pump is on or off. A hybrid program to model the controller and the water level in the tank, where we abbreviate $s_v=s\, v$ for $v\in\{H,t,m,b\}$, is
+A controller turns on and off a water pump to keep the level of water $h$ in a tank within a safe region $h_{min}\leq h\leq h_{max}$. As in Example~\ref{ex:therm-sol}, we use $t$ for time, $h_0$ for water-level measurements and $\Pi$ for indicating whether the pump is on or off. A hybrid program to model the controller and the water level in the tank, where we abbreviate $s_v=s\, v$ for $v\in\{h,t,h_0,\Pi\}$, is
 \begin{align*}
-	\mathsf{Cntrl} = &\ {t:=(\lambda\, s.\ 0)};{m:=(\lambda\, s.\ s_H)};\\
-				&\ \IF {(\lambda\, s.\ s_b=0 \land s_m\leq H_{min} + 1)} {b:=(\lambda\, s.\ 1)} {}\\
-				&\ \IF {(\lambda\, s.\ s_b=1 \land s_m\geq H_{max} - 1)} {b:=(\lambda\, s.\ 0)} {\mathit{skip}},\\
-	\mathsf{Dyn} = &\ \IF {(\lambda\, s.\ s_b=0)} {x' = f_{c_i-c_o}\, \&\, G_{c_i-c_o}} {x' = f_{-c_o}\, \&\, G_{-c_o}},\\
+	\mathsf{Cntrl} = &\ {t:=(\lambda\, s.\ 0)};{h_0:=(\lambda\, s.\ s_h)};\\
+				&\ \IF {(\lambda\, s.\ s_\Pi=0 \land s_{h0}\leq h_{min} + 1)} {\Pi:=(\lambda\, s.\ 1)} {}\\
+				&\ \IF {(\lambda\, s.\ s_\Pi=1 \land s_{h0}\geq h_{max} - 1)} {\Pi:=(\lambda\, s.\ 0)} {\mathit{skip}},\\
+	\mathsf{Dyn} = &\ \IF {(\lambda\, s.\ s_\Pi=0)} {x' = f_{c_i-c_o}\, \&\, G_{c_i-c_o}} {x' = f_{-c_o}\, \&\, G_{-c_o}},\\
 	\mathsf{Tank} = &\ (\mathsf{Cntrl}{;}\mathsf{Dyn})^\ast.
 \end{align*}
-Here, we just need to assume that
- \begin{equation*}
-    f_k\,
-    \begin{pmatrix}
-      s_T\\
-      s_t\\
-	s_m\\
-	s_b
-    \end{pmatrix}
-=
-\begin{pmatrix}
-  k\\
-  1\\
-  0\\
-  0\\
-\end{pmatrix}\quad\text{and}\quad
-G_k\, s = \left(s_t\leq \frac{\Delta_k-s_m}{k}\right),
-\end{equation*}
-where $0 < c_o$, $c_o < c_i$, and $\Delta_k=H_{min}$ if $k=-c_o$ and
-$\Delta_k = H_{max}$ if $k=c_i-c_o$. We need to prove the
-specification $\{I\}\, \mathsf{Tank}\, \{I\}$ where
-$I\, s=\left(H_{min}\leq s_H\leq H_{max}\land (s_b = 1 \lor
-  s_b=0)\right)$. For this we use an invariant for $f_k$:
+Here, for $k\in\{-c_o,c_i-c_o\}$ we just need to assume that
 \begin{equation*}
-dI_k\, s = \left(s_H=ks_t+s_m\land 0\leq s_t\land H_{min}\leq s_m\leq H_{max} \land (s_b=0\lor s_b=1)\right).
+	f_k\, (s_h,s_t,s_{h0},s_\Pi)^\top = (k, 1, 0, 0)^\top\text{ and }
+	G_k\, s = \left(s_t\leq \frac{\Delta_k-s_{h0}}{k}\right),
+%    \begin{pmatrix}
+%      s_h\\
+%      s_t\\
+%	s_{h0}\\
+%	s_b
+%    \end{pmatrix}
+%=
+%\begin{pmatrix}
+%  k\\
+%  1\\
+%  0\\
+%  0\\
+%\end{pmatrix}\quad\text{and}\quad
+\end{equation*}
+where $0 < c_o$, $c_o < c_i$, and $\Delta_k=h_{min}$ if $k=-c_o$ and
+$\Delta_k = h_{max}$ if $k=c_i-c_o$. We need to prove the
+specification $\{I\}\, \mathsf{Tank}\, \{I\}$ where
+$I\, s=\left(h_{min}\leq s_h\leq h_{max}\land (s_\Pi = 1 \lor
+  s_\Pi=0)\right)$. For this we use an invariant for $f_k$:
+\begin{equation*}
+dI_k\, s = \left(s_h=ks_t+s_{h0}\land 0\leq s_t\land h_{min}\leq s_{h0}\leq h_{max} \land (s_\Pi=0\lor s_\Pi=1)\right).
 \end{equation*}
 
-As before, in Isabelle we use \isa{{\isadigit{1}}}, \isa{{\isadigit{2}}}, \isa{{\isadigit{3}}}, and \isa{{\isadigit{4}}} for $H$, $t$, $m$ and $b$ respectively, which means that our formalisation for $\{I\}\, \mathsf{Tank}\, \{I\}$ is
+As before, in Isabelle we use \isa{{\isadigit{1}}}, \isa{{\isadigit{2}}}, \isa{{\isadigit{3}}}, and \isa{{\isadigit{4}}} for $h$, $t$, $h_0$ and $\Pi$ respectively, but for this example we use the invariant annotated version of evolution commands, which means that our formalisation for $\{I\}\, \mathsf{Tank}\, \{I\}$ is
 \begin{isabellebody}
 \isanewline
 \isacommand{lemma}\isamarkupfalse%
@@ -774,7 +779,7 @@ As before, in Isabelle we use \isa{{\isadigit{1}}}, \isa{{\isadigit{2}}}, \isa{{
 \ auto\isanewline
 \end{isabellebody}
 
-Up to the fifth line, the proof is the same as that of $\mathsf{Thermostat}$. Then, an application of (\ref{eq:h-cond}) splits the proof obligation giving one for each evolution command. These are discharged by using rule (\ref{eq:h-invg}) followed by the fact that $dI_k$ is an invariant for $f_k$ (\isa{tank{\isacharunderscore}diff{\isacharunderscore}inv}) and some arithmetical properties. \qed
+Up to the fifth line, the proof is the same as that of $\mathsf{Thermostat}$. Then, an application of (\ref{eq:h-cond}) splits the proof obligation giving one for each evolution command. These are discharged using rule (\ref{eq:h-invg}) followed by the fact that $dI_k$ is an invariant for $f_k$ (\isa{tank{\isacharunderscore}diff{\isacharunderscore}inv}) and some arithmetical properties. \qed
 \end{example}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -806,12 +811,12 @@ $\rKAT$~\cite{ArmstrongGS16}.
 \begin{align}
   1 &\le [p,p],\label{eq:r-skip}\tag{r-skip}\\
 [p',q'] &\le [p,q],\qquad \text{ if } p\le p'\text{ and } q'\le q,\label{eq:r-cons}\tag{r-cons}\\
-\alpha & \le [0,1],\\
-[1,0] &\le \alpha,\\
 [p,r]\cdot [r,q] &\le [p,q],\label{eq:r-seq}\tag{r-seq}\\
 \IF{t}{[tp,q]}{[\neg tp,q]} &\le [p,q],\label{eq:r-cond}\tag{r-cond}\\
  \WHILE{t}{[tp,p]} &\le [p,\neg tp]. \label{eq:r-while}\tag{r-while}
 \end{align}
+For the sake of completeness, one can also derive $\alpha \le [0,1]$ and $[1,0] \le \alpha$, but we do not use them in proofs.
+
 For invariants and loops, we obtain the additional refinement laws
 \begin{align}
   [i,i] &\le [p,q],\qquad \text{ if } p\le i \le q,\label{eq:r-inv}\tag{r-inv}\\
@@ -859,7 +864,7 @@ two standard calculi mentioned and much more intricate than the
 approach presented.
 
 \begin{example}[Thermostat refinement via solutions]\label{ex:therm-rsol}
-Here we refine $\mathsf{Thermostat}$ from Example~\ref{ex:therm-sol} in a modular way. To prove $\mathsf{Thermostat}\leq [I,I]$ (in Isabelle, $\mathsf{Thermostat}\leq \isa{Ref\ {\isasymlceil}I\ Tmin\ Tmax{\isasymrceil}\ {\isasymlceil}I\ Tmin\ Tmax{\isasymrceil}}$) we need to show that the body of the loop also refines the specification $[I,I]$. For this we prove a refinement statement for the control and one for the dynamics which we later compose. This implies ensuring that the loop invariant $I$ is a precondition of the control and a postcondition of the dynamics and that whichever the postcondition of the control is, it will be the precondition of the dynamics.
+Here we refine $\mathsf{Thermostat}$ from Example~\ref{ex:therm-sol} in a modular way. To prove $\mathsf{Thermostat}\leq [I,I]$ (in Isabelle, $\mathsf{Thermostat}\leq \isa{Ref\ {\isasymlceil}I\ Tmin\ Tmax{\isasymrceil}\ {\isasymlceil}I\ Tmin\ Tmax{\isasymrceil}}$) we need to show that the body of the loop also refines the specification $[I,I]$. For this we prove a refinement statement for the control and one for the dynamics which we later compose. This implies ensuring that the loop invariant $I$ is a precondition of the control and a postcondition of the dynamics and that any postcondition of the control will be the precondition of the dynamics.
 \begin{isabellebody}
 \isanewline
 \isacommand{lemma}\isamarkupfalse%
@@ -883,7 +888,7 @@ Here we refine $\mathsf{Thermostat}$ from Example~\ref{ex:therm-sol} in a modula
 \ {\isacharparenleft}auto\ intro{\isacharcolon} R{\isacharunderscore}cond{\isacharparenright}\isanewline
 \end{isabellebody}
 
-In particular for the dynamics we used (\ref{eq:r-evl}) to prove that each branch of the if-statement refines the specification (\isa{R{\isacharunderscore}therm{\isacharunderscore}dyn{\isacharunderscore}down/up}). Then we combine them by transitivity and (\ref{eq:r-cond}). Finally, we show that the loop of the composition of the specifications for the control and the dynamics refine $[I,I]$. We use this fact and transitivity to show $\mathsf{Thermostat}\leq [I,I]$.
+In particular for the dynamics we use (\ref{eq:r-evl}) to prove that each branch of the if-statement refines the specification (\isa{R{\isacharunderscore}therm{\isacharunderscore}dyn{\isacharunderscore}down/up}). Then we combine them by transitivity and (\ref{eq:r-cond}). Finally, we show that the loop of the composition of the specifications for the control and the dynamics refine $[I,I]$. We use this fact and transitivity to show $\mathsf{Thermostat}\leq [I,I]$.
 
 \begin{isabellebody}
 \isanewline
@@ -895,6 +900,7 @@ In particular for the dynamics we used (\ref{eq:r-evl}) to prove that each branc
 \ \ INV\ I\ Tmin\ Tmax{\isacharparenright}{\isachardoublequoteclose}\isanewline
 \isacommand{by}\isamarkupfalse%
 \ {\isacharparenleft}intro\ R{\isacharunderscore}loop\ R{\isacharunderscore}seq{\isacharcomma}\ simp{\isacharunderscore}all{\isacharparenright}%
+\isanewline
 \isanewline
 \isacommand{lemma}\isamarkupfalse%
 \ R{\isacharunderscore}thermostat{\isacharunderscore}flow{\isacharcolon}\ \isanewline
@@ -918,7 +924,7 @@ In particular for the dynamics we used (\ref{eq:r-evl}) to prove that each branc
 \ \ \ \ \ \ R{\isacharunderscore}seq{\isacharunderscore}mono\ R{\isacharunderscore}therm{\isacharunderscore}ctrl\ R{\isacharunderscore}therm{\isacharunderscore}dyn{\isacharbrackleft}OF\ assms{\isacharbrackright}{\isacharparenright}\isanewline
 \end{isabellebody}
 
-The proof of \isa{R{\isacharunderscore}therm{\isacharunderscore}loop} is an ordered application of rules (\ref{eq:r-loop}) and (\ref{eq:r-seq}) followed by a simplification. The final result \isa{R{\isacharunderscore}thermostat{\isacharunderscore}flow} is then a combination of the previous lemmas and the rules of our refinement calculus.\qed
+The proof of \isa{R{\isacharunderscore}therm{\isacharunderscore}loop} applies law (\ref{eq:r-loop}), then (\ref{eq:r-seq}) and then a simplification. The final result \isa{R{\isacharunderscore}thermostat{\isacharunderscore}flow} is then a combination of the previous lemmas and the laws of our refinement calculus.\qed
 
 \end{example}
 
@@ -1024,8 +1030,8 @@ for such evolution commands.
     \end{pmatrix}
 =
 \begin{pmatrix}
-  -g\frac{t^2}{2}+s_v t+s_x\\
--g t + s_v
+  s_x+s_v t-\frac{1}{2}gt^2\\
+ s_v-g t
 \end{pmatrix},
 \end{equation*}
 where we abbreviate
@@ -1039,12 +1045,7 @@ program~\cite{Platzer18}
 	\mathsf{Cntrl} &= \IF {(\lambda\, s.\ s_x=0)} {v:=(\lambda\, s.\ - s_v)} \mathit{skip},\\
 	\mathsf{Ball} &= ({\mathbf{evol}\, \flow\, G}\,  {;}\, \mathsf{Cntrl})^\ast.
 \end{align*}
-Its correctness specification is
-\begin{equation*}
-\{P\}\, \mathsf{Ball}\, \{Q\}
-\end{equation*}
-for $P= (\lambda s.\ s_x = h\land s_v = 0)$ and $Q  = (\lambda s.\
-0\leq s_x\leq h)$; its loop invariant
+Its correctness specification is $\{P\}\, \mathsf{Ball}\, \{Q\}$ for $P= (\lambda s.\ s_x = h\land s_v = 0)$ and $Q  = (\lambda s.\ 0\leq s_x\leq h)$; its loop invariant
 \begin{equation*}
       I = \left(\lambda s.\ 0\le s_x \land \frac{1}{2}s_v^2= g(h - s_x)\right).
 \end{equation*}

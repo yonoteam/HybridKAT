@@ -1,0 +1,14 @@
+session KAT = "Ordinary_Differential_Equations" +
+  options [quick_and_dirty, document = pdf, document_output = "Hybrid_KAT_rKAT"]
+  sessions
+    Hybrid_Systems_VCs
+    KAT_and_DRA
+(*theories [document = false]
+    A
+    B*)
+  theories
+    "KAT_rKAT_Examples_ndfun"
+    "KAT_rKAT_Examples_rel"
+  document_files
+    "root.bib"
+    "root.tex"
