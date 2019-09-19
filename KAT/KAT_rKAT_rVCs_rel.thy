@@ -73,10 +73,10 @@ lemma sH_assign[simp]: "rel_kat.Hoare \<lceil>P\<rceil> (x ::= e) \<lceil>Q\<rce
 
 \<comment> \<open> Next, the Hoare rule of the composition \<close>
 
-lemma H_comp: "rel_kat.Hoare \<lceil>P\<rceil> X \<lceil>R\<rceil> \<Longrightarrow> rel_kat.Hoare \<lceil>R\<rceil> Y \<lceil>Q\<rceil> \<Longrightarrow> rel_kat.Hoare \<lceil>P\<rceil> (X ; Y) \<lceil>Q\<rceil>"
+lemma H_seq: "rel_kat.Hoare \<lceil>P\<rceil> X \<lceil>R\<rceil> \<Longrightarrow> rel_kat.Hoare \<lceil>R\<rceil> Y \<lceil>Q\<rceil> \<Longrightarrow> rel_kat.Hoare \<lceil>P\<rceil> (X ; Y) \<lceil>Q\<rceil>"
   by (auto intro: rel_kat.H_seq)
 
-lemma sH_comp: 
+lemma sH_seq: 
   "rel_kat.Hoare \<lceil>P\<rceil> (X ; Y) \<lceil>Q\<rceil> = rel_kat.Hoare \<lceil>P\<rceil> (X) \<lceil>\<lambda>s. \<forall>s'. (s, s') \<in> Y \<longrightarrow> Q s'\<rceil>"
   unfolding rel_kat_H by auto
 
@@ -262,13 +262,13 @@ lemma R_skip: "(\<forall>s. P s \<longrightarrow> Q s) \<Longrightarrow> Id \<le
 
 \<comment> \<open> Composition \<close>
 
-lemma R_comp: "(rel_R \<lceil>P\<rceil> \<lceil>R\<rceil>) ; (rel_R \<lceil>R\<rceil> \<lceil>Q\<rceil>) \<le> rel_R \<lceil>P\<rceil> \<lceil>Q\<rceil>"
+lemma R_seq: "(rel_R \<lceil>P\<rceil> \<lceil>R\<rceil>) ; (rel_R \<lceil>R\<rceil> \<lceil>Q\<rceil>) \<le> rel_R \<lceil>P\<rceil> \<lceil>Q\<rceil>"
   using rel_rkat.R_seq by blast
 
-lemma R_comp_rule: "X \<le> rel_R \<lceil>P\<rceil> \<lceil>R\<rceil> \<Longrightarrow> Y \<le> rel_R \<lceil>R\<rceil> \<lceil>Q\<rceil> \<Longrightarrow> X; Y \<le> rel_R \<lceil>P\<rceil> \<lceil>Q\<rceil>"
-  unfolding rel_rkat.spec_def by (rule H_comp)
+lemma R_seq_rule: "X \<le> rel_R \<lceil>P\<rceil> \<lceil>R\<rceil> \<Longrightarrow> Y \<le> rel_R \<lceil>R\<rceil> \<lceil>Q\<rceil> \<Longrightarrow> X; Y \<le> rel_R \<lceil>P\<rceil> \<lceil>Q\<rceil>"
+  unfolding rel_rkat.spec_def by (rule H_seq)
 
-lemmas R_comp_mono = relcomp_mono
+lemmas R_seq_mono = relcomp_mono
 
 \<comment> \<open> Assignment \<close>
 
@@ -279,11 +279,11 @@ lemma R_assign_rule: "(\<forall>s. P s \<longrightarrow> Q (\<chi> j. ((($) s)(x
   unfolding sH_assign[symmetric] by (rule rel_rkat.R2)
 
 lemma R_assignl: "P = (\<lambda>s. R (\<chi> j. ((($) s)(x := e s)) j)) \<Longrightarrow> (x ::= e) ; rel_R \<lceil>R\<rceil> \<lceil>Q\<rceil> \<le> rel_R \<lceil>P\<rceil> \<lceil>Q\<rceil>"
-  apply(rule_tac R=R in R_comp_rule)
+  apply(rule_tac R=R in R_seq_rule)
   by (rule_tac R_assign_rule, simp_all)
 
 lemma R_assignr: "R = (\<lambda>s. Q (\<chi> j. ((($) s)(x := e s)) j)) \<Longrightarrow> rel_R \<lceil>P\<rceil> \<lceil>R\<rceil>; (x ::= e) \<le> rel_R \<lceil>P\<rceil> \<lceil>Q\<rceil>"
-  apply(rule_tac R=R in R_comp_rule, simp)
+  apply(rule_tac R=R in R_seq_rule, simp)
   by (rule_tac R_assign_rule, simp)
 
 lemma "(x ::= e) ; rel_R \<lceil>Q\<rceil> \<lceil>Q\<rceil> \<le> rel_R \<lceil>(\<lambda>s. Q (\<chi> j. ((($) s)(x := e s)) j))\<rceil> \<lceil>Q\<rceil>"
@@ -333,14 +333,14 @@ lemma R_g_evoll:
   fixes \<phi> :: "('a::preorder) \<Rightarrow> 'b \<Rightarrow> 'b"
   shows "P = (\<lambda>s. \<forall>t\<in>T. (\<forall>\<tau>\<in>down T t. G (\<phi> \<tau> s)) \<longrightarrow> R (\<phi> t s)) \<Longrightarrow> 
   (EVOL \<phi> G T) ; rel_R \<lceil>R\<rceil> \<lceil>Q\<rceil> \<le> rel_R \<lceil>P\<rceil> \<lceil>Q\<rceil>"
-  apply(rule_tac R=R in R_comp_rule)
+  apply(rule_tac R=R in R_seq_rule)
   by (rule_tac R_g_evol_rule, simp_all)
 
 lemma R_g_evolr: 
   fixes \<phi> :: "('a::preorder) \<Rightarrow> 'b \<Rightarrow> 'b"
   shows "R = (\<lambda>s. \<forall>t\<in>T. (\<forall>\<tau>\<in>down T t. G (\<phi> \<tau> s)) \<longrightarrow> Q (\<phi> t s)) \<Longrightarrow> 
   rel_R \<lceil>P\<rceil> \<lceil>R\<rceil>; (EVOL \<phi> G T) \<le> rel_R \<lceil>P\<rceil> \<lceil>Q\<rceil>"
-  apply(rule_tac R=R in R_comp_rule, simp)
+  apply(rule_tac R=R in R_seq_rule, simp)
   by (rule_tac R_g_evol_rule, simp)
 
 lemma 
@@ -367,12 +367,12 @@ lemma R_g_ode_rule: "(\<forall>s\<in>S. P s \<longrightarrow> (\<forall>t\<in>T.
 
 lemma R_g_odel: "P = (\<lambda>s. \<forall>t\<in>T. (\<forall>\<tau>\<in>down T t. G (\<phi> \<tau> s)) \<longrightarrow> R (\<phi> t s)) \<Longrightarrow> 
   (x\<acute>= f & G on T S @ 0) ; rel_R \<lceil>R\<rceil> \<lceil>Q\<rceil> \<le> rel_R \<lceil>P\<rceil> \<lceil>Q\<rceil>"
-  apply(rule_tac R=R in R_comp_rule)
+  apply(rule_tac R=R in R_seq_rule)
   by (rule_tac R_g_ode_rule, simp_all)
 
 lemma R_g_oder: "R = (\<lambda>s. \<forall>t\<in>T. (\<forall>\<tau>\<in>down T t. G (\<phi> \<tau> s)) \<longrightarrow> Q (\<phi> t s)) \<Longrightarrow> 
   rel_R \<lceil>P\<rceil> \<lceil>R\<rceil>; (x\<acute>= f & G on T S @ 0) \<le> rel_R \<lceil>P\<rceil> \<lceil>Q\<rceil>"
-  apply(rule_tac R=R in R_comp_rule, simp)
+  apply(rule_tac R=R in R_seq_rule, simp)
   by (rule_tac R_g_ode_rule, simp)
 
 lemma "(x\<acute>= f & G on T S @ 0) ; rel_R \<lceil>Q\<rceil> \<lceil>Q\<rceil> \<le> rel_R \<lceil>\<lambda>s. \<forall>t\<in>T. (\<forall>\<tau>\<in>down T t. G (\<phi> \<tau> s)) \<longrightarrow> Q (\<phi> t s)\<rceil> \<lceil>Q\<rceil>"
