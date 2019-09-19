@@ -537,6 +537,7 @@ where $\Delta_c=T_{min}$ if $c=0$ and $\Delta_c = T_{max}$ if $c=L$. Its correct
 We use Isabelle's real valued vectors $s{\isacharcolon}{\isacharcolon}\mathit{real}{\isacharcircum}4$ for our hybrid store. The notation $s{\isachardollar}i$ represents the $i$th coordinate of a vector $s$ and
 hence the value of store $s$ at variable $i$. In Isabelle, we use \isa{{\isadigit{1}}}, \isa{{\isadigit{2}}}, \isa{{\isadigit{3}}}, and \isa{{\isadigit{4}}} for $T$, $t$, $m$ and $b$ respectively, and denote Hoare triples with \isa{Hoare\ {\isasymlceil}{\isacharminus}{\isasymrceil}\isacharminus{\isasymlceil}{\isacharminus}{\isasymrceil}}. Thus, the formalisation of the correctness specification for $\mathsf{Thermostat}$ is
 
+\jin{Change the name of h-comp}
 \begin{isabellebody}
 \isanewline
 \isacommand{lemma}\isamarkupfalse%
@@ -948,7 +949,7 @@ with respect to the guarded orbit of $\flow_s$ along $T$ in $s$. It
 then remains to derive a Hoare-style axiom and a refinement law
 for such evolution commands. This is straightforward.
 \begin{lemma}\label{P:hr-evlfl}
-Let $\flow:T\to S\to S$, \gin{what is $S$?} where $T$ is a preorder. Then, for $G,P,Q:S\to \bools$,
+Let $\flow:T\to S\to S$, where $T$ is a preorder and $S$ is a set. Then, for $G,P,Q:S\to \bools$,
 \begin{gather*}
 \{\lambda s\in S.\forall t\in T.\ (\forall
 \tau\in {\downarrow}t.\ G\, (\flow_s\, \tau)) \rightarrow P\,

@@ -608,15 +608,13 @@ proof-
     apply(rule order_trans, rule R_cond_mono)
     using dynup dyndown by (auto intro!: R_cond)
   \<comment> \<open>Finally we put everything together. \<close>
-  have pre_inv: "\<lceil>I Hmin Hmax\<rceil> \<le> \<lceil>I Hmin Hmax\<rceil>"
-    by simp
-  have inv_pos: "\<lceil>I Hmin Hmax\<rceil> \<le> \<lceil>\<lambda>s. Hmin \<le> s$1 \<and> s$1 \<le> Hmax\<rceil>"
+  have pre_pos: "\<lceil>I Hmin Hmax\<rceil> \<le> \<lceil>I Hmin Hmax\<rceil>"
     by simp
   have inv_inv: "Ref \<lceil>I Hmin Hmax\<rceil> \<lceil>?Icntrl\<rceil>; (Ref \<lceil>?Icntrl\<rceil> \<lceil>I Hmin Hmax\<rceil>) \<le> Ref \<lceil>I Hmin Hmax\<rceil> \<lceil>I Hmin Hmax\<rceil>"
     by (rule R_comp)
   have loopref: "LOOP Ref \<lceil>I Hmin Hmax\<rceil> \<lceil>?Icntrl\<rceil>; (Ref \<lceil>?Icntrl\<rceil> \<lceil>I Hmin Hmax\<rceil>) INV I Hmin Hmax \<le> ?ref"
     apply(rule R_loop)
-    using pre_inv inv_inv inv_pos by auto
+    using pre_pos inv_inv by auto
   have obs: "?ctrl;?dyn \<le> Ref \<lceil>I Hmin Hmax\<rceil> \<lceil>?Icntrl\<rceil>; (Ref \<lceil>?Icntrl\<rceil> \<lceil>I Hmin Hmax\<rceil>)"
     apply(rule R_comp_mono)
     using ctrl dyn by auto
