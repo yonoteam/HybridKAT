@@ -13,7 +13,7 @@ theory KAT_rKAT_rVCs_ndfun
   imports 
     KAT_rKAT_Models
     "Hybrid_Systems_VCs.HS_ODEs"
-
+    "UTP.utp_subst"
 begin
 
 
