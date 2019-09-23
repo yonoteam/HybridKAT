@@ -76,7 +76,7 @@ lemma sH_assign[simp]: "Hoare \<lceil>P\<rceil> (x ::= e) \<lceil>Q\<rceil> \<lo
 
 \<comment> \<open> Next, the Hoare rule of the composition \<close>
 
-abbreviation seq_seq :: "'a nd_fun \<Rightarrow> 'a nd_fun \<Rightarrow> 'a nd_fun" (infixl ";" 75)
+abbreviation seq_comp :: "'a nd_fun \<Rightarrow> 'a nd_fun \<Rightarrow> 'a nd_fun" (infixl ";" 75)
   where "f ; g \<equiv> f \<cdot> g"
 
 lemma H_seq: "Hoare \<lceil>P\<rceil> X \<lceil>R\<rceil> \<Longrightarrow> Hoare \<lceil>R\<rceil> Y \<lceil>Q\<rceil> \<Longrightarrow> Hoare \<lceil>P\<rceil> (X ; Y) \<lceil>Q\<rceil>"
