@@ -11,8 +11,15 @@ theory KAT_rKAT_Prelims
   imports
   KAT_and_DRA.PHL_KAT
   "Transformer_Semantics.Kleisli_Quantale"
+  "UTP.utp_pred_laws"
+  "UTP.utp_lift_parser"
+  "UTP.utp_lift_pretty"
+begin recall_syntax
 
-begin
+purge_notation Lattices.inf (infixl "\<squnion>" 70)
+notation Lattices.inf (infixl "\<sqinter>" 70)
+purge_notation Lattices.sup (infixl "\<sqinter>" 65)
+notation Lattices.sup (infixl "\<squnion>" 65)
 
 subsection \<open> Hoare logic derivation \<close> 
 

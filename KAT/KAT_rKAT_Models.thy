@@ -69,16 +69,26 @@ lemma RdL_is_rRKAT: "(\<forall>x. {(x,x)}; R1 \<subseteq> {(x,x)}; R2) = (R1 \<s
 
 subsection \<open> State transformer model \<close>
 
-notation Abs_nd_fun ("_\<^sup>\<bullet>" [101] 100) 
-     and Rep_nd_fun ("_\<^sub>\<bullet>" [101] 100)
+notation Abs_nd_fun ("_\<^sup>\<bullet>" [101] 100)
+notation Rep_nd_fun ("_\<^sub>\<bullet>" [101] 100)
+
+definition uexpr_nd_fun :: "('a set, 'a) uexpr \<Rightarrow> 'a nd_fun" ("_\<^sup>\<circ>" [101] 100)  where
+[upred_defs]: "uexpr_nd_fun e = Abs_nd_fun \<lbrakk>e\<rbrakk>\<^sub>e"
+
+lift_definition nd_fun_uexpr :: "'a nd_fun \<Rightarrow> ('a set, 'a) uexpr" ("_\<^sub>\<circ>" [101] 100) is Rep_nd_fun .
 
 declare Abs_nd_fun_inverse [simp]
+
+update_uexpr_rep_eq_thms
+
+lemma uexpr_nd_fun_inverse [simp]: "(P\<^sup>\<circ>)\<^sub>\<circ> = P"
+  by (pred_auto)
 
 lemma nd_fun_ext: "(\<And>x. (f\<^sub>\<bullet>) x = (g\<^sub>\<bullet>) x) \<Longrightarrow> f = g"
   apply(subgoal_tac "Rep_nd_fun f = Rep_nd_fun g")
   using Rep_nd_fun_inject 
    apply blast
-  by(rule ext, simp)
+  by blast
 
 lemma nd_fun_eq_iff: "(f = g) = (\<forall>x. (f\<^sub>\<bullet>) x = (g\<^sub>\<bullet>) x)"
   by (auto simp: nd_fun_ext)
