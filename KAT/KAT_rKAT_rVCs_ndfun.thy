@@ -34,19 +34,20 @@ definition p2ndf :: "'a upred \<Rightarrow> 'a nd_fun" ("(1\<lceil>_\<rceil>)")
   where "\<lceil>Q\<rceil> \<equiv> (\<lambda> x::'a. {s::'a. s = x \<and> \<lbrakk>Q\<rbrakk>\<^sub>e s})\<^sup>\<bullet>"
 
 lemma p2ndf_simps[simp]: 
-  "\<lceil>P\<rceil> \<le> \<lceil>Q\<rceil> = (\<forall>s. \<lbrakk>P\<rbrakk>\<^sub>e s \<longrightarrow> \<lbrakk>Q\<rbrakk>\<^sub>e s)"
-  "(\<lceil>P\<rceil> = \<lceil>Q\<rceil>) = (\<forall>s. \<lbrakk>P\<rbrakk>\<^sub>e s = \<lbrakk>Q\<rbrakk>\<^sub>e s)"
+  "\<lceil>P\<rceil> \<le> \<lceil>Q\<rceil> = `P \<Rightarrow> Q`"
+  "(\<lceil>P\<rceil> = \<lceil>Q\<rceil>) = `P \<Leftrightarrow> Q`"
   "(\<lceil>P\<rceil> \<cdot> \<lceil>Q\<rceil>) = \<lceil>P \<and> Q\<rceil>"
   "(\<lceil>P\<rceil> + \<lceil>Q\<rceil>) = \<lceil>P \<or> Q\<rceil>"
   "t \<lceil>P\<rceil> = \<lceil>P\<rceil>"
   "n \<lceil>P\<rceil> = \<lceil>\<not> P\<rceil>"
   unfolding p2ndf_def one_nd_fun_def less_eq_nd_fun_def times_nd_fun_def plus_nd_fun_def 
-  by (auto simp add: nd_fun_eq_iff kcomp_def le_fun_def n_op_nd_fun_def conj_upred_def inf_uexpr.rep_eq disj_upred_def sup_uexpr.rep_eq not_upred_def uminus_uexpr_def uexpr_appl.rep_eq lit.rep_eq)
-
+  by (auto simp add: nd_fun_eq_iff kcomp_def le_fun_def n_op_nd_fun_def conj_upred_def 
+      inf_uexpr.rep_eq disj_upred_def sup_uexpr.rep_eq not_upred_def uminus_uexpr_def 
+      impl.rep_eq uexpr_appl.rep_eq lit.rep_eq taut.rep_eq iff_upred.rep_eq)
 
 \<comment> \<open> Meaning of the state-transformer Hoare triple \<close>
 
-lemma ndfun_kat_H: "Hoare \<lceil>P\<rceil> X \<lceil>Q\<rceil> \<longleftrightarrow> (\<forall>s s'. \<lbrakk>P\<rbrakk>\<^sub>e s \<longrightarrow> s' \<in> (X\<^sub>\<bullet>) s \<longrightarrow> \<lbrakk>Q\<rbrakk>\<^sub>e s')"
+lemma ndfun_kat_H: "H \<lceil>P\<rceil> X \<lceil>Q\<rceil> \<longleftrightarrow> (\<forall>s s'. \<lbrakk>P\<rbrakk>\<^sub>e s \<longrightarrow> s' \<in> (X\<^sub>\<bullet>) s \<longrightarrow> \<lbrakk>Q\<rbrakk>\<^sub>e s')"
   unfolding Hoare_def p2ndf_def less_eq_nd_fun_def times_nd_fun_def kcomp_def 
   by (auto simp add: le_fun_def n_op_nd_fun_def)
 
@@ -54,26 +55,27 @@ lemma ndfun_kat_H: "Hoare \<lceil>P\<rceil> X \<lceil>Q\<rceil> \<longleftrighta
 
 abbreviation "skip \<equiv> (1::'a nd_fun)"
 
-lemma H_skip: "Hoare \<lceil>P\<rceil> skip \<lceil>P\<rceil>"
+lemma H_skip: "H \<lceil>P\<rceil> skip \<lceil>P\<rceil>"
   using H_skip by blast
 
-lemma sH_skip[simp]: "Hoare \<lceil>P\<rceil> skip \<lceil>Q\<rceil> \<longleftrightarrow> \<lceil>P\<rceil> \<le> \<lceil>Q\<rceil>"
-  unfolding ndfun_kat_H by (simp add: one_nd_fun_def)
+lemma sH_skip[simp]: "H \<lceil>P\<rceil> skip \<lceil>Q\<rceil> \<longleftrightarrow> `P \<Rightarrow> Q`"
+  unfolding ndfun_kat_H by (simp add: one_nd_fun_def impl.rep_eq taut.rep_eq)
 
 \<comment> \<open> We introduce assignments and compute derive their rule of Hoare logic. \<close>
 
 definition assigns :: "'s usubst \<Rightarrow> 's nd_fun" where
 [upred_defs]: "assigns \<sigma> = (\<lambda> s. {\<lbrakk>\<sigma>\<rbrakk>\<^sub>e s})\<^sup>\<bullet>"
 
-definition vec_upd :: "('a^'b) \<Rightarrow> 'b \<Rightarrow> 'a \<Rightarrow> 'a^'b"
-  where "vec_upd s i a = (\<chi> j. ((($) s)(i := a)) j)"
-
 (*
 definition assign :: "'b \<Rightarrow> ('a^'b \<Rightarrow> 'a) \<Rightarrow> ('a^'b) nd_fun" ("(2_ ::= _)" [70, 65] 61) 
   where "(x ::= e) = (\<lambda>s. {vec_upd s x (e s)})\<^sup>\<bullet>"
 *)
 
-abbreviation assign ("(2_ ::= _)" [70, 65] 61) where "assign x e \<equiv> assigns [&x \<mapsto>\<^sub>s e]"
+abbreviation assign ("(2_ ::= _)" [70, 65] 61) 
+  where "assign x e \<equiv> assigns [&x \<mapsto>\<^sub>s e]"
+
+lemma H_assigns: "P = (\<sigma> \<dagger> Q) \<Longrightarrow> H \<lceil>P\<rceil> (assigns \<sigma>) \<lceil>Q\<rceil>"
+  unfolding ndfun_kat_H by (simp add: assigns_def, pred_auto)
 
 lemma H_assign: "P = Q\<lbrakk>e/x\<rbrakk> \<Longrightarrow> H \<lceil>P\<rceil> (x ::= e) \<lceil>Q\<rceil>"
   unfolding ndfun_kat_H by (simp add: assigns_def, pred_auto)
@@ -165,6 +167,12 @@ lemma H_g_evol:
   assumes "P = (\<^bold>\<forall> t\<in>\<guillemotleft>T\<guillemotright> \<bullet> (\<^bold>\<forall>\<tau>\<in>\<guillemotleft>down T t\<guillemotright> \<bullet> G\<lbrakk>\<phi> \<tau>/&\<^bold>v\<rbrakk>) \<Rightarrow> Q\<lbrakk>\<phi> t/&\<^bold>v\<rbrakk>)"
   shows "Hoare \<lceil>P\<rceil> (EVOL \<phi> G T) \<lceil>Q\<rceil>"
   unfolding ndfun_kat_H g_evol_def g_orbit_eq by (simp add: assms, pred_auto)
+
+lemma H_g_evol_alt: 
+  fixes \<phi> :: "('a::preorder) \<Rightarrow> 'b usubst"
+  assumes "P = (\<^bold>\<forall> t\<in>\<guillemotleft>T\<guillemotright> \<bullet> (\<^bold>\<forall>\<tau>\<in>\<guillemotleft>down T t\<guillemotright> \<bullet> \<phi> \<tau> \<dagger> G) \<Rightarrow> Q\<lbrakk>\<phi> t/&\<^bold>v\<rbrakk>)"
+  shows "Hoare \<lceil>P\<rceil> (EVOL \<phi> G T) \<lceil>Q\<rceil>"
+  using assms by (rule_tac H_g_evol, pred_auto)
 
 (*
 lemma sH_g_evol[simp]:  
