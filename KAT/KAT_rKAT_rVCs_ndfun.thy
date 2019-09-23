@@ -82,12 +82,12 @@ utp_lift_notation assign (1)
 lemma H_assigns: "P = (\<sigma> \<dagger> Q) \<Longrightarrow> H \<lceil>P\<rceil> (assigns \<sigma>) \<lceil>Q\<rceil>"
   unfolding ndfun_kat_H by (simp add: assigns_def, pred_auto)
 
-lemma H_assign: "P = Q\<lbrakk>e/x\<rbrakk> \<Longrightarrow> H \<lceil>P\<rceil> (x ::= e) \<lceil>Q\<rceil>"
+lemma H_assign: "P = Q\<lbrakk>e/&x\<rbrakk> \<Longrightarrow> H \<lceil>P\<rceil> (x ::= e) \<lceil>Q\<rceil>"
   unfolding ndfun_kat_H by (simp add: assigns_def, pred_auto)
 
 (* lemma H_assign: "(\<lambda>s. Q (\<chi> j. ((($) s)(x := (e s))) j)) \<Longrightarrow> Hoare \<lceil>P\<rceil> (x ::= e) \<lceil>Q\<rceil>" *)
 
-lemma sH_assign[simp]: "\<^bold>{P\<^bold>} x ::= e \<^bold>{Q\<^bold>} = (\<forall>s. \<lbrakk>P\<rbrakk>\<^sub>e s \<longrightarrow> \<lbrakk>Q\<lbrakk>e/x\<rbrakk>\<rbrakk>\<^sub>e s)"
+lemma sH_assign[simp]: "\<^bold>{P\<^bold>} x ::= e \<^bold>{Q\<^bold>} = (\<forall>s. \<lbrakk>P\<rbrakk>\<^sub>e s \<longrightarrow> \<lbrakk>Q\<lbrakk>e/&x\<rbrakk>\<rbrakk>\<^sub>e s)"
   unfolding ndfun_kat_H by (pred_auto)
 
 lemma sH_assign_alt: "\<^bold>{P\<^bold>}x ::= e\<^bold>{Q\<^bold>} \<longleftrightarrow> `P \<Rightarrow> Q\<lbrakk>e/x\<rbrakk>`"
@@ -174,38 +174,39 @@ lemma sH_g_evol[simp]:
   shows "\<^bold>{P\<^bold>} EVOL \<phi> G T \<^bold>{Q\<^bold>} = `P \<Rightarrow> (\<^bold>\<forall> t\<in>\<guillemotleft>T\<guillemotright> \<bullet> (\<^bold>\<forall>\<tau>\<in>\<guillemotleft>down T t\<guillemotright> \<bullet> G\<lbrakk>\<phi> \<tau>/&\<^bold>v\<rbrakk>) \<Rightarrow> Q\<lbrakk>\<phi> t/&\<^bold>v\<rbrakk>)`"
   unfolding ndfun_kat_H g_evol_def g_orbit_eq by (pred_auto)
 
-(****** SDF: Adapted this far *****)
-
 \<comment> \<open>Verification by providing solutions\<close>
 
-definition ivp_sols' :: "(('a::real_normed_vector) usubst) \<Rightarrow> real set \<Rightarrow> 'a set \<Rightarrow> 
+definition ivp_sols' :: "(('a::real_normed_vector) \<Rightarrow> 'a) \<Rightarrow> real set \<Rightarrow> 'a set \<Rightarrow> 
   real \<Rightarrow> ((real \<Rightarrow> 'a) set, 'a) uexpr" where
-[upred_defs]: "ivp_sols' \<sigma> T S t\<^sub>0 = mk\<^sub>e (ivp_sols (\<lambda>t. \<lbrakk>\<sigma>\<rbrakk>\<^sub>e) T S t\<^sub>0)"
+[upred_defs]: "ivp_sols' \<sigma> T S t\<^sub>0 = mk\<^sub>e (ivp_sols (\<lambda>t. \<sigma>) T S t\<^sub>0)"
 
-definition g_ode ::"(('a::banach) usubst) \<Rightarrow> 'a upred \<Rightarrow> real set \<Rightarrow> 'a set \<Rightarrow> 
+definition g_ode ::"(('a::banach) \<Rightarrow> 'a) \<Rightarrow> 'a upred \<Rightarrow> real set \<Rightarrow> 'a set \<Rightarrow> 
   real \<Rightarrow> 'a nd_fun" ("(1x\<acute>= _ & _ on _ _ @ _)") 
-  where "(x\<acute>= f & G on T S @ t\<^sub>0) \<equiv> (\<lambda> s. g_orbital \<lbrakk>f\<rbrakk>\<^sub>e \<lbrakk>G\<rbrakk>\<^sub>e T S t\<^sub>0 s)\<^sup>\<bullet>"
-
+  where "(x\<acute>= f & G on T S @ t\<^sub>0) \<equiv> (\<lambda> s. g_orbital f \<lbrakk>G\<rbrakk>\<^sub>e T S t\<^sub>0 s)\<^sup>\<bullet>"
 
 lemma H_g_orbital: 
-  "P = (\<^bold>\<forall> X\<in>ivp_sols' f T S t\<^sub>0 \<bullet> (\<^bold>\<forall>t\<in>\<guillemotleft>T\<guillemotright> \<bullet> (\<^bold>\<forall> \<tau> \<in> \<guillemotleft>down T t\<guillemotright> \<bullet> G\<lbrakk>\<guillemotleft>X \<tau>\<guillemotright>/&\<^bold>v\<rbrakk>) \<Rightarrow> Q\<lbrakk>\<guillemotleft>X t\<guillemotright>/&\<^bold>v\<rbrakk>)) \<Longrightarrow> 
+  "P = (\<^bold>\<forall> X\<in>(\<guillemotleft>ivp_sols (\<lambda> t. f) T S t\<^sub>0\<guillemotright> |> &\<^bold>v) \<bullet> (\<^bold>\<forall>t\<in>\<guillemotleft>T\<guillemotright> \<bullet> (\<^bold>\<forall> \<tau> \<in> \<guillemotleft>down T t\<guillemotright> \<bullet> G\<lbrakk>\<guillemotleft>X \<tau>\<guillemotright>/&\<^bold>v\<rbrakk>) \<Rightarrow> Q\<lbrakk>\<guillemotleft>X t\<guillemotright>/&\<^bold>v\<rbrakk>)) \<Longrightarrow> 
   \<^bold>{P\<^bold>} x\<acute>= f & G on T S @ t\<^sub>0 \<^bold>{Q\<^bold>}"
   unfolding ndfun_kat_H g_ode_def g_orbital_eq by pred_simp
 
+(*
 lemma H_g_orbital: 
   "P = (\<lambda>s. (\<forall>X\<in>ivp_sols (\<lambda>t. f) T S t\<^sub>0 s. \<forall>t\<in>T. (\<forall>\<tau>\<in>down T t. G (X \<tau>)) \<longrightarrow> Q (X t))) \<Longrightarrow> 
   Hoare \<lceil>P\<rceil> (x\<acute>= f & G on T S @ t\<^sub>0) \<lceil>Q\<rceil>"
   unfolding ndfun_kat_H g_ode_def g_orbital_eq by clarsimp
+*)
 
-lemma sH_g_orbital: "Hoare \<lceil>P\<rceil> (x\<acute>= f & G on T S @ t\<^sub>0) \<lceil>Q\<rceil> = 
-  (\<forall>s. P s \<longrightarrow> (\<forall>X\<in>ivp_sols (\<lambda>t. f) T S t\<^sub>0 s. \<forall>t\<in>T. (\<forall>\<tau>\<in>down T t. G (X \<tau>)) \<longrightarrow> Q (X t)))"
-  unfolding g_orbital_eq g_ode_def ndfun_kat_H by auto
+lemma sH_g_orbital: "\<^bold>{P\<^bold>} x\<acute>= f & G on T S @ t\<^sub>0 \<^bold>{Q\<^bold>} = 
+  `P \<Rightarrow> (\<^bold>\<forall> X\<in>ivp_sols' f T S t\<^sub>0 \<bullet> (\<^bold>\<forall>t\<in>\<guillemotleft>T\<guillemotright> \<bullet> (\<^bold>\<forall> \<tau> \<in> \<guillemotleft>down T t\<guillemotright> \<bullet> G\<lbrakk>\<guillemotleft>X \<tau>\<guillemotright>/&\<^bold>v\<rbrakk>) \<Rightarrow> Q\<lbrakk>\<guillemotleft>X t\<guillemotright>/&\<^bold>v\<rbrakk>))`"
+  unfolding g_orbital_eq g_ode_def ndfun_kat_H by (pred_auto)
+
+(****** SDF: Adapted this far *****)
 
 context local_flow
 begin
 
 lemma H_g_ode:
-  assumes "P = (\<lambda>s. s \<in> S \<longrightarrow> (\<forall>t\<in>T. (\<forall>\<tau>\<in>down T t. G (\<phi> \<tau> s)) \<longrightarrow> Q (\<phi> t s)))" 
+  assumes "P = (U(&\<^bold>v \<in> \<guillemotleft>S\<guillemotright>) \<Rightarrow> (\<^bold>\<forall>t\<in>\<guillemotleft>T\<guillemotright> \<bullet> (\<^bold>\<forall> \<tau> \<in> \<guillemotleft>down T t\<guillemotright> \<bullet> G\<lbrakk>\<guillemotleft>X \<tau>\<guillemotright>/&\<^bold>v\<rbrakk>) \<Rightarrow> Q\<lbrakk>\<guillemotleft>X t\<guillemotright>/&\<^bold>v\<rbrakk>))" 
   shows "Hoare \<lceil>P\<rceil> (x\<acute>= f & G on T S @ 0) \<lceil>Q\<rceil>"
 proof(unfold ndfun_kat_H g_ode_def g_orbital_eq assms, clarsimp)
   fix s t X
