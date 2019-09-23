@@ -77,6 +77,8 @@ definition uexpr_nd_fun :: "('a set, 'a) uexpr \<Rightarrow> 'a nd_fun" ("_\<^su
 
 lift_definition nd_fun_uexpr :: "'a nd_fun \<Rightarrow> ('a set, 'a) uexpr" ("_\<^sub>\<circ>" [101] 100) is Rep_nd_fun .
 
+no_utp_lift nd_fun_uexpr
+
 declare Abs_nd_fun_inverse [simp]
 
 update_uexpr_rep_eq_thms
