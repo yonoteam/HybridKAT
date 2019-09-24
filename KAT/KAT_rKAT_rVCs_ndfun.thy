@@ -118,7 +118,7 @@ lemma sH_seq: "\<^bold>{P\<^bold>} X ; Y \<^bold>{Q\<^bold>} =  \<^bold>{P\<^bol
 abbreviation cond_sugar :: "'a upred \<Rightarrow> 'a nd_fun \<Rightarrow> 'a nd_fun \<Rightarrow> 'a nd_fun" ("IF _ THEN _ ELSE _" [64,64] 63) 
   where "IF B THEN X ELSE Y \<equiv> ifthenelse \<lceil>B\<rceil> X Y"
 
-lemma H_cond: " \<^bold>{P \<and> B\<^bold>} X \<^bold>{Q\<^bold>} \<Longrightarrow> \<^bold>{P \<and> \<not> B\<^bold>} Y \<^bold>{Q\<^bold>} \<Longrightarrow> \<^bold>{P\<^bold>} IF B THEN X ELSE Y \<^bold>{Q\<^bold>}"
+lemma H_cond: "\<^bold>{P \<and> B\<^bold>} X \<^bold>{Q\<^bold>} \<Longrightarrow> \<^bold>{P \<and> \<not> B\<^bold>} Y \<^bold>{Q\<^bold>} \<Longrightarrow> \<^bold>{P\<^bold>} IF B THEN X ELSE Y \<^bold>{Q\<^bold>}"
   by (rule H_cond, simp_all)
 
 lemma sH_cond[simp]: "\<^bold>{P\<^bold>} IF B THEN X ELSE Y \<^bold>{Q\<^bold>} = (\<^bold>{P \<and> B\<^bold>} X \<^bold>{Q\<^bold>} \<and> \<^bold>{P \<and> \<not> B\<^bold>} Y \<^bold>{Q\<^bold>})"

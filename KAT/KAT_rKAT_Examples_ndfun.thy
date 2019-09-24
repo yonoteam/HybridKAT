@@ -395,39 +395,48 @@ lemma local_flow_therm: "a > 0 \<Longrightarrow> local_flow \<lbrakk>f a L\<rbra
 
 lemmas H_g_ode_therm = local_flow.sH_g_ode_ivl[OF local_flow_therm _ UNIV_I]
 
+(* Could not put "I Tmin Tmax" in the {_}_{_} notation nor the _tac rules in the proof. *)
+
 lemma thermostat_flow: 
   assumes "0 < a" and "0 \<le> \<tau>" and "0 < Tmin" and "Tmax < L"
   shows "Hoare \<lceil>I Tmin Tmax\<rceil>
   (LOOP (
     \<comment> \<open>control\<close>
-    (2 ::= (\<lambda>s. 0));
-    (3 ::= (\<lambda>s. s$1));
-    (IF (\<lambda>s. s$4 = 0 \<and> s$3 \<le> Tmin + 1) THEN 
-      (4 ::= (\<lambda>s.1)) 
-     ELSE IF (\<lambda>s. s$4 = 1 \<and> s$3 \<ge> Tmax - 1) THEN 
-      (4 ::= (\<lambda>s.0)) 
+    (t ::= 0);
+    (T\<^sub>0 ::= T);
+    (IF U(\<Theta> = 0 \<and> T\<^sub>0 \<le> Tmin + 1) THEN 
+      (\<Theta> ::= 1) 
+     ELSE IF U(\<Theta> = 1 \<and> T\<^sub>0 \<ge> Tmax - 1) THEN 
+      (\<Theta> ::= 0) 
      ELSE skip);
     \<comment> \<open>dynamics\<close>
-    (IF (\<lambda>s. s$4 = 0) THEN 
-      (x\<acute>= f a 0 & G Tmin Tmax a 0 on {0..\<tau>} UNIV @ 0) 
+    (IF U(\<Theta> = 0) THEN 
+      (x\<acute>= \<lbrakk>f a 0\<rbrakk>\<^sub>e & G Tmin Tmax a 0 on {0..\<tau>} UNIV @ 0) 
     ELSE 
-      (x\<acute>= f a L & G Tmin Tmax a L on {0..\<tau>} UNIV @ 0))
+      (x\<acute>= \<lbrakk>f a L\<rbrakk>\<^sub>e & G Tmin Tmax a L on {0..\<tau>} UNIV @ 0))
   ) INV I Tmin Tmax)
   \<lceil>I Tmin Tmax\<rceil>"
   apply(rule H_loopI)
-    apply(rule_tac R="\<lambda>s. I Tmin Tmax s \<and> s$2=0 \<and> s$3 = s$1" in H_seq)
-     apply(rule_tac R="\<lambda>s. I Tmin Tmax s\<and> s$2=0 \<and> s$3 = s$1" in H_seq)
-      apply(rule_tac R="\<lambda>s. I Tmin Tmax s \<and> s$2 = 0" in H_seq, simp, simp)
-      apply(rule H_cond, simp_all add: H_g_ode_therm[OF assms(1,2)])+
+    apply(rule_tac R="U(Tmin \<le> T \<and> T \<le> Tmax \<and> (\<Theta> = 0 \<or> \<Theta> = 1) \<and> t=0 \<and> T\<^sub>0 = T)" in H_seq)
+     apply(rule_tac R="U(Tmin \<le> T \<and> T \<le> Tmax \<and> (\<Theta> = 0 \<or> \<Theta> = 1) \<and> t=0 \<and> T\<^sub>0 = T)" in H_seq)
+      apply(rule_tac R="U(Tmin \<le> T \<and> T \<le> Tmax \<and> (\<Theta> = 0 \<or> \<Theta> = 1) \<and> t=0)" in H_seq)
+  apply(simp, pred_simp, simp, pred_simp)
+     apply(rule H_cond, simp add: H_g_ode_therm[OF assms(1,2)], pred_simp)+
+     apply(simp, pred_simp)
+    apply(rule H_cond, simp_all only: H_g_ode_therm[OF assms(1,2)], pred_simp)
+  using therm_dyn_down_real_arith[OF assms(1,3), of _ Tmax] apply force
+  apply pred_simp
   using therm_dyn_up_real_arith[OF assms(1) _ _ assms(4), of Tmin]
     and therm_dyn_down_real_arith[OF assms(1,3), of _ Tmax] by auto
+
+(* Stopped here. *)
 
 \<comment> \<open>Refined with the flow \<close>
 
 lemma R_therm_dyn_down: 
   assumes "a > 0" and "0 \<le> \<tau>" and "0 < Tmin" and "Tmax < L"
-  shows "Ref \<lceil>\<lambda>s. s$4 = 0 \<and> I Tmin Tmax s \<and> s$2 = 0 \<and> s$3 = s$1\<rceil> \<lceil>I Tmin Tmax\<rceil> \<ge> 
-    (x\<acute>= f a 0 & G Tmin Tmax a 0 on {0..\<tau>} UNIV @ 0)"
+  shows "Ref \<lceil>U(\<Theta> = 0 \<and> Tmin \<le> T \<and> T \<le> Tmax \<and> (\<Theta> = 0 \<or> \<Theta> = 1) \<and> t = 0 \<and> T\<^sub>0 = T)\<rceil> \<lceil>I Tmin Tmax\<rceil> \<ge> 
+    (x\<acute>= \<lbrakk>f a 0\<rbrakk>\<^sub>e & G Tmin Tmax a 0 on {0..\<tau>} UNIV @ 0)"
   apply(rule local_flow.R_g_ode_ivl[OF local_flow_therm])
   using assms therm_dyn_down_real_arith[OF assms(1,3), of _ Tmax] by auto
 
