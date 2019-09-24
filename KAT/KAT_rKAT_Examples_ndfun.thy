@@ -13,6 +13,130 @@ theory KAT_rKAT_Examples_ndfun
 
 begin
 
+(* Some theorems' notation clashes with the introduced abbreviations for lens-variables. Is there a 
+way to remove the declared abbreviations, e.g. "x" and "y"? Should we move every example to its own 
+file? I tried to rename the abbreviations and introduce notation for them but then the parser 
+clashes in other declarations and lemmas. *)
+
+\<comment> \<open>Facts about real arithmetic. \<close> 
+
+(* This theorem was originally after the comment "verified with invariants" in the bouncing ball 
+section. *)
+
+named_theorems bb_real_arith "real arithmetic properties for the bouncing ball."
+
+lemma [bb_real_arith]: 
+  assumes "0 > g" and inv: "2 \<cdot> g \<cdot> x - 2 \<cdot> g \<cdot> h = v \<cdot> v"
+  shows "(x::real) \<le> h"
+proof-
+  have "v \<cdot> v = 2 \<cdot> g \<cdot> x - 2 \<cdot> g \<cdot> h \<and> 0 > g" 
+    using inv and \<open>0 > g\<close> by auto
+  hence obs:"v \<cdot> v = 2 \<cdot> g \<cdot> (x - h) \<and> 0 > g \<and> v \<cdot> v \<ge> 0" 
+    using left_diff_distrib mult.commute by (metis zero_le_square) 
+  hence "(v \<cdot> v)/(2 \<cdot> g) = (x - h)" 
+    by auto 
+  also from obs have "(v \<cdot> v)/(2 \<cdot> g) \<le> 0"
+    using divide_nonneg_neg by fastforce 
+  ultimately have "h - x \<ge> 0" 
+    by linarith
+  thus ?thesis by auto
+qed
+
+(* The following two theorems were originally after the comment "Verified with annotated dynamics" 
+in the bouncing ball section. *)
+
+lemma [bb_real_arith]:
+  assumes invar: "2 \<cdot> g \<cdot> x = 2 \<cdot> g \<cdot> h + v \<cdot> v"
+    and pos: "g \<cdot> \<tau>\<^sup>2 / 2 + v \<cdot> \<tau> + (x::real) = 0"
+  shows "2 \<cdot> g \<cdot> h + (- (g \<cdot> \<tau>) - v) \<cdot> (- (g \<cdot> \<tau>) - v) = 0"
+    and "2 \<cdot> g \<cdot> h + (g \<cdot> \<tau> \<cdot> (g \<cdot> \<tau> + v) + v \<cdot> (g \<cdot> \<tau> + v)) = 0"
+proof-
+  from pos have "g \<cdot> \<tau>\<^sup>2  + 2 \<cdot> v \<cdot> \<tau> + 2 \<cdot> x = 0" by auto
+  then have "g\<^sup>2  \<cdot> \<tau>\<^sup>2  + 2 \<cdot> g \<cdot> v \<cdot> \<tau> + 2 \<cdot> g \<cdot> x = 0"
+    by (metis (mono_tags, hide_lams) Groups.mult_ac(1,3) mult_zero_right
+        monoid_mult_class.power2_eq_square semiring_class.distrib_left)
+  hence "g\<^sup>2 \<cdot> \<tau>\<^sup>2 + 2 \<cdot> g \<cdot> v \<cdot> \<tau> + v\<^sup>2 + 2 \<cdot> g \<cdot> h = 0"
+    using invar by (simp add: monoid_mult_class.power2_eq_square) 
+  hence obs: "(g \<cdot> \<tau> + v)\<^sup>2 + 2 \<cdot> g \<cdot> h = 0"
+    apply(subst power2_sum) by (metis (no_types, hide_lams) Groups.add_ac(2, 3) 
+        Groups.mult_ac(2, 3) monoid_mult_class.power2_eq_square nat_distrib(2))
+  thus "2 \<cdot> g \<cdot> h + (g \<cdot> \<tau> \<cdot> (g \<cdot> \<tau> + v) + v \<cdot> (g \<cdot> \<tau> + v)) = 0"
+    by (simp add: monoid_mult_class.power2_eq_square)
+  have  "2 \<cdot> g \<cdot> h + (- ((g \<cdot> \<tau>) + v))\<^sup>2 = 0"
+    using obs by (metis Groups.add_ac(2) power2_minus)
+  thus "2 \<cdot> g \<cdot> h + (- (g \<cdot> \<tau>) - v) \<cdot> (- (g \<cdot> \<tau>) - v) = 0"
+    by (simp add: monoid_mult_class.power2_eq_square)
+qed
+
+lemma [bb_real_arith]:
+  assumes invar: "2 \<cdot> g \<cdot> x = 2 \<cdot> g \<cdot> h + v \<cdot> v"
+  shows "2 \<cdot> g \<cdot> (g \<cdot> \<tau>\<^sup>2 / 2 + v \<cdot> \<tau> + (x::real)) = 
+  2 \<cdot> g \<cdot> h + (g \<cdot> \<tau> \<cdot> (g \<cdot> \<tau> + v) + v \<cdot> (g \<cdot> \<tau> + v))" (is "?lhs = ?rhs")
+proof-
+  have "?lhs = g\<^sup>2 \<cdot> \<tau>\<^sup>2 + 2 \<cdot> g \<cdot> v \<cdot> \<tau> + 2 \<cdot> g \<cdot> x" 
+      apply(subst Rat.sign_simps(18))+ 
+      by(auto simp: semiring_normalization_rules(29))
+    also have "... = g\<^sup>2 \<cdot> \<tau>\<^sup>2 + 2 \<cdot> g \<cdot> v \<cdot> \<tau> + 2 \<cdot> g \<cdot> h + v \<cdot> v" (is "... = ?middle")
+      by(subst invar, simp)
+    finally have "?lhs = ?middle".
+  moreover 
+  {have "?rhs = g \<cdot> g \<cdot> (\<tau> \<cdot> \<tau>) + 2 \<cdot> g \<cdot> v \<cdot> \<tau> + 2 \<cdot> g \<cdot> h + v \<cdot> v"
+    by (simp add: Groups.mult_ac(2,3) semiring_class.distrib_left)
+  also have "... = ?middle"
+    by (simp add: semiring_normalization_rules(29))
+  finally have "?rhs = ?middle".}
+  ultimately show ?thesis by auto
+qed
+
+(* These two were after local_flow_therm. *)
+
+lemma therm_dyn_down_real_arith:
+  assumes "a > 0" and Thyps: "0 < Tmin" "Tmin \<le> T" "T \<le> Tmax"
+    and thyps: "0 \<le> (\<tau>::real)" "\<forall>\<tau>\<in>{0..\<tau>}. \<tau> \<le> - (ln (Tmin / T) / a) "
+  shows "Tmin \<le> exp (-a * \<tau>) * T" and "exp (-a * \<tau>) * T \<le> Tmax"
+proof-
+  have "0 \<le> \<tau> \<and> \<tau> \<le> - (ln (Tmin / T) / a)"
+    using thyps by auto
+  hence "ln (Tmin / T) \<le> - a * \<tau> \<and> - a * \<tau> \<le> 0"
+    using assms(1) divide_le_cancel by fastforce
+  also have "Tmin / T > 0"
+    using Thyps by auto
+  ultimately have obs: "Tmin / T \<le> exp (-a * \<tau>)" "exp (-a * \<tau>) \<le> 1"
+    using exp_ln exp_le_one_iff by (metis exp_less_cancel_iff not_less, simp)
+  thus "Tmin \<le> exp (-a * \<tau>) * T"
+    using Thyps by (simp add: pos_divide_le_eq)
+  show "exp (-a * \<tau>) * T \<le> Tmax"
+    using Thyps mult_left_le_one_le[OF _ exp_ge_zero obs(2), of T] 
+      less_eq_real_def order_trans_rules(23) by blast
+qed
+
+lemma therm_dyn_up_real_arith:
+  assumes "a > 0" and Thyps: "Tmin \<le> T" "T \<le> Tmax" "Tmax < (L::real)"
+    and thyps: "0 \<le> \<tau>" "\<forall>\<tau>\<in>{0..\<tau>}. \<tau> \<le> - (ln ((L - Tmax) / (L - T)) / a) "
+  shows "L - Tmax \<le> exp (-(a * \<tau>)) * (L - T)" 
+    and "L - exp (-(a * \<tau>)) * (L - T) \<le> Tmax" 
+    and "Tmin \<le> L - exp (-(a * \<tau>)) * (L - T)"
+proof-
+  have "0 \<le> \<tau> \<and> \<tau> \<le> - (ln ((L - Tmax) / (L - T)) / a)"
+    using thyps by auto
+  hence "ln ((L - Tmax) / (L - T)) \<le> - a * \<tau> \<and> - a * \<tau> \<le> 0"
+    using assms(1) divide_le_cancel by fastforce
+  also have "(L - Tmax) / (L - T) > 0"
+    using Thyps by auto
+  ultimately have "(L - Tmax) / (L - T) \<le> exp (-a * \<tau>) \<and> exp (-a * \<tau>) \<le> 1"
+    using exp_ln exp_le_one_iff by (metis exp_less_cancel_iff not_less)
+  moreover have "L - T > 0"
+    using Thyps by auto
+  ultimately have obs: "(L - Tmax) \<le> exp (-a * \<tau>) * (L - T) \<and> exp (-a * \<tau>) * (L - T) \<le> (L - T)"
+    by (simp add: pos_divide_le_eq)
+  thus "(L - Tmax) \<le> exp (-(a * \<tau>)) * (L - T)"
+    by auto
+  thus "L - exp (-(a * \<tau>)) * (L - T) \<le> Tmax"
+    by auto
+  show "Tmin \<le> L - exp (-(a * \<tau>)) * (L - T)"
+    using Thyps and obs by auto
+qed
+
 utp_lit_vars
 
 definition vec_lens :: "'i \<Rightarrow> ('a \<Longrightarrow> 'a^'i)" where
@@ -67,18 +191,17 @@ lemma pendulum_inv: "\<^bold>{r\<^sup>2 = x\<^sup>2 + y\<^sup>2\<^bold>} (x\<acu
   
 \<comment> \<open>Verified with the flow \<close>
 
-lemma local_flow_pend: "local_flow f UNIV UNIV \<phi>"
+lemma local_flow_pend: "local_flow \<lbrakk>f\<rbrakk>\<^sub>e UNIV UNIV (\<lambda> t. \<lbrakk>\<phi> t\<rbrakk>\<^sub>e)"
   apply(unfold_locales, simp_all add: local_lipschitz_def lipschitz_on_def vec_eq_iff, clarsimp)
-  apply(rule_tac x="1" in exI, clarsimp, rule_tac x=1 in exI)
+  apply(rule_tac x="1" in exI, clarsimp, rule_tac x=1 in exI, pred_simp)
     apply(simp add: dist_norm norm_vec_def L2_set_def power2_commute UNIV_2)
-  by (auto simp: forall_2 intro!: poly_derivatives)
+  by (simp add: forall_2, pred_simp, force intro!: poly_derivatives, pred_simp)
 
-lemma pendulum_flow: "Hoare \<lceil>\<lambda>s. r\<^sup>2 = (s$1)\<^sup>2 + (s$2)\<^sup>2\<rceil> (x\<acute>=f & G) \<lceil>\<lambda>s. r\<^sup>2 = (s$1)\<^sup>2 + (s$2)\<^sup>2\<rceil>"
-  by (simp only: local_flow.sH_g_ode[OF local_flow_pend], simp)
+lemma pendulum_flow: "\<^bold>{r\<^sup>2 = x\<^sup>2 + y\<^sup>2\<^bold>} (x\<acute>= \<lbrakk>f\<rbrakk>\<^sub>e & G) \<^bold>{r\<^sup>2 = x\<^sup>2 + y\<^sup>2\<^bold>}"
+  by (simp only: local_flow.sH_g_ode[OF local_flow_pend], pred_simp)
 
 no_notation fpend ("f")
         and pend_flow ("\<phi>")
-
 
 subsubsection \<open> Bouncing Ball \<close>
 
@@ -89,155 +212,109 @@ flips the velocity, thus it is a completely elastic collision with the ground. W
 to ball's height and @{text "s$2"} for its velocity. We prove that the ball remains above ground
 and below its initial resting position. \<close>
 
-abbreviation fball :: "real \<Rightarrow> real^2 \<Rightarrow> real^2" ("f") 
-  where "f g s \<equiv> (\<chi> i. if i=1 then s$2 else g)"
+abbreviation v :: "real \<Longrightarrow> real^2" where "v \<equiv> vec_lens 2"
 
-abbreviation ball_flow :: "real \<Rightarrow> real \<Rightarrow> real^2 \<Rightarrow> real^2" ("\<phi>") 
-  where "\<phi> g \<tau> s \<equiv> (\<chi> i. if i=1 then g \<cdot> \<tau> ^ 2/2 + s$2 \<cdot> \<tau> + s$1 else g \<cdot> \<tau> + s$2)"
+abbreviation fball :: "real \<Rightarrow> (real^2) usubst" ("f") 
+  where "fball g \<equiv> [x \<mapsto>\<^sub>s v, v \<mapsto>\<^sub>s g]"
+
+(* abbreviation fball :: "real \<Rightarrow> real^2 \<Rightarrow> real^2" ("f") 
+  where "f g s \<equiv> (\<chi> i. if i=1 then s$2 else g)" *)
+
+abbreviation ball_flow :: "real \<Rightarrow> real \<Rightarrow> (real^2) usubst" ("\<phi>") where
+"ball_flow g \<tau> \<equiv> [  x \<mapsto>\<^sub>s g \<cdot> \<tau> ^ 2/2 + v \<cdot> \<tau> + x
+                 ,  v \<mapsto>\<^sub>s g \<cdot> \<tau> + v]"
+
+(*abbreviation ball_flow :: "real \<Rightarrow> real \<Rightarrow> real^2 \<Rightarrow> real^2" ("\<phi>") 
+  where "\<phi> g \<tau> s \<equiv> (\<chi> i. if i=1 then g \<cdot> \<tau> ^ 2/2 + s$2 \<cdot> \<tau> + s$1 else g \<cdot> \<tau> + s$2)"*)
 
 \<comment> \<open>Verified with differential invariants \<close>
 
-named_theorems bb_real_arith "real arithmetic properties for the bouncing ball."
-
-lemma [bb_real_arith]: 
-  assumes "0 > g" and inv: "2 \<cdot> g \<cdot> x - 2 \<cdot> g \<cdot> h = v \<cdot> v"
-  shows "(x::real) \<le> h"
-proof-
-  have "v \<cdot> v = 2 \<cdot> g \<cdot> x - 2 \<cdot> g \<cdot> h \<and> 0 > g" 
-    using inv and \<open>0 > g\<close> by auto
-  hence obs:"v \<cdot> v = 2 \<cdot> g \<cdot> (x - h) \<and> 0 > g \<and> v \<cdot> v \<ge> 0" 
-    using left_diff_distrib mult.commute by (metis zero_le_square) 
-  hence "(v \<cdot> v)/(2 \<cdot> g) = (x - h)" 
-    by auto 
-  also from obs have "(v \<cdot> v)/(2 \<cdot> g) \<le> 0"
-    using divide_nonneg_neg by fastforce 
-  ultimately have "h - x \<ge> 0" 
-    by linarith
-  thus ?thesis by auto
-qed
-
 lemma fball_invariant: 
-  fixes g h :: real
-  defines dinv: "I \<equiv> (\<lambda>s. 2 \<cdot> g \<cdot> s$1 - 2 \<cdot> g \<cdot> h - (s$2 \<cdot> s$2) = 0)"
-  shows "diff_invariant I (f g) UNIV UNIV 0 G"
-  unfolding dinv apply(rule diff_invariant_rules, simp, simp, clarify)
+  fixes g h :: real   
+  defines dinv: "I \<equiv> U(2 \<cdot> \<guillemotleft>g\<guillemotright> \<cdot> x - 2 \<cdot> \<guillemotleft>g\<guillemotright> \<cdot> \<guillemotleft>h\<guillemotright> - (v \<cdot> v) = 0)"
+  shows "diff_invariant \<lbrakk>I\<rbrakk>\<^sub>e \<lbrakk>f g\<rbrakk>\<^sub>e UNIV UNIV 0 \<lbrakk>G\<rbrakk>\<^sub>e"
+  unfolding dinv apply(pred_simp, rule diff_invariant_rules, simp, simp, clarify)
   by(auto intro!: poly_derivatives)
 
-lemma bouncing_ball_inv: "g < 0 \<Longrightarrow> h \<ge> 0 \<Longrightarrow> Hoare
-  \<lceil>\<lambda>s. s$1 = h \<and> s$2 = 0\<rceil>
+lemma bouncing_ball_inv: "g < 0 \<Longrightarrow> h \<ge> 0 \<Longrightarrow> 
+  \<^bold>{x = h \<and> v = 0\<^bold>} 
   (LOOP 
-      ((x\<acute>= f g & (\<lambda> s. s$1 \<ge> 0) DINV (\<lambda>s. 2 \<cdot> g \<cdot> s$1 - 2 \<cdot> g \<cdot> h - s$2 \<cdot> s$2 = 0));
-       (IF (\<lambda> s. s$1 = 0) THEN (2 ::= (\<lambda>s. - s$2)) ELSE skip)) 
-    INV (\<lambda>s. 0 \<le> s$1 \<and> 2 \<cdot> g \<cdot> s$1 = 2 \<cdot> g \<cdot> h + s$2 \<cdot> s$2)
-  ) \<lceil>\<lambda>s. 0 \<le> s$1 \<and> s$1 \<le> h\<rceil>"
+      ((x\<acute>= \<lbrakk>f g\<rbrakk>\<^sub>e & U(x \<ge> 0) DINV U(2 \<cdot> g \<cdot> x - 2 \<cdot> g \<cdot> h - v \<cdot> v = 0));
+       (IF U(v = 0) THEN (v ::= -v) ELSE skip)) 
+    INV U(0 \<le> x \<and> 2 \<cdot> g \<cdot> x = 2 \<cdot> g \<cdot> h + v \<cdot> v)
+  ) \<^bold>{0 \<le> x \<and> x \<le> h\<^bold>}"
   apply(rule H_loopI)
-    apply(rule H_seq[where R="\<lambda>s. 0 \<le> s$1 \<and> 2 \<cdot> g \<cdot> s$1 = 2 \<cdot> g \<cdot> h + s$2 \<cdot> s$2"])
+    apply(rule H_seq[where R="U(0 \<le> x \<and> 2 \<cdot> g \<cdot> x = 2 \<cdot> g \<cdot> h + v \<cdot> v)"])
      apply(rule H_g_ode_inv)
-  by (auto simp: bb_real_arith intro!: poly_derivatives diff_invariant_rules)
+       apply (pred_simp, force intro!: poly_derivatives diff_invariant_rules)
+      apply(simp, pred_simp)+ 
+  by (auto simp: bb_real_arith)
 
 \<comment> \<open>Verified with annotated dynamics \<close>
 
-lemma [bb_real_arith]:
-  assumes invar: "2 \<cdot> g \<cdot> x = 2 \<cdot> g \<cdot> h + v \<cdot> v"
-    and pos: "g \<cdot> \<tau>\<^sup>2 / 2 + v \<cdot> \<tau> + (x::real) = 0"
-  shows "2 \<cdot> g \<cdot> h + (- (g \<cdot> \<tau>) - v) \<cdot> (- (g \<cdot> \<tau>) - v) = 0"
-    and "2 \<cdot> g \<cdot> h + (g \<cdot> \<tau> \<cdot> (g \<cdot> \<tau> + v) + v \<cdot> (g \<cdot> \<tau> + v)) = 0"
-proof-
-  from pos have "g \<cdot> \<tau>\<^sup>2  + 2 \<cdot> v \<cdot> \<tau> + 2 \<cdot> x = 0" by auto
-  then have "g\<^sup>2  \<cdot> \<tau>\<^sup>2  + 2 \<cdot> g \<cdot> v \<cdot> \<tau> + 2 \<cdot> g \<cdot> x = 0"
-    by (metis (mono_tags, hide_lams) Groups.mult_ac(1,3) mult_zero_right
-        monoid_mult_class.power2_eq_square semiring_class.distrib_left)
-  hence "g\<^sup>2 \<cdot> \<tau>\<^sup>2 + 2 \<cdot> g \<cdot> v \<cdot> \<tau> + v\<^sup>2 + 2 \<cdot> g \<cdot> h = 0"
-    using invar by (simp add: monoid_mult_class.power2_eq_square) 
-  hence obs: "(g \<cdot> \<tau> + v)\<^sup>2 + 2 \<cdot> g \<cdot> h = 0"
-    apply(subst power2_sum) by (metis (no_types, hide_lams) Groups.add_ac(2, 3) 
-        Groups.mult_ac(2, 3) monoid_mult_class.power2_eq_square nat_distrib(2))
-  thus "2 \<cdot> g \<cdot> h + (g \<cdot> \<tau> \<cdot> (g \<cdot> \<tau> + v) + v \<cdot> (g \<cdot> \<tau> + v)) = 0"
-    by (simp add: monoid_mult_class.power2_eq_square)
-  have  "2 \<cdot> g \<cdot> h + (- ((g \<cdot> \<tau>) + v))\<^sup>2 = 0"
-    using obs by (metis Groups.add_ac(2) power2_minus)
-  thus "2 \<cdot> g \<cdot> h + (- (g \<cdot> \<tau>) - v) \<cdot> (- (g \<cdot> \<tau>) - v) = 0"
-    by (simp add: monoid_mult_class.power2_eq_square)
-qed
-
-lemma [bb_real_arith]:
-  assumes invar: "2 \<cdot> g \<cdot> x = 2 \<cdot> g \<cdot> h + v \<cdot> v"
-  shows "2 \<cdot> g \<cdot> (g \<cdot> \<tau>\<^sup>2 / 2 + v \<cdot> \<tau> + (x::real)) = 
-  2 \<cdot> g \<cdot> h + (g \<cdot> \<tau> \<cdot> (g \<cdot> \<tau> + v) + v \<cdot> (g \<cdot> \<tau> + v))" (is "?lhs = ?rhs")
-proof-
-  have "?lhs = g\<^sup>2 \<cdot> \<tau>\<^sup>2 + 2 \<cdot> g \<cdot> v \<cdot> \<tau> + 2 \<cdot> g \<cdot> x" 
-      apply(subst Rat.sign_simps(18))+ 
-      by(auto simp: semiring_normalization_rules(29))
-    also have "... = g\<^sup>2 \<cdot> \<tau>\<^sup>2 + 2 \<cdot> g \<cdot> v \<cdot> \<tau> + 2 \<cdot> g \<cdot> h + v \<cdot> v" (is "... = ?middle")
-      by(subst invar, simp)
-    finally have "?lhs = ?middle".
-  moreover 
-  {have "?rhs = g \<cdot> g \<cdot> (\<tau> \<cdot> \<tau>) + 2 \<cdot> g \<cdot> v \<cdot> \<tau> + 2 \<cdot> g \<cdot> h + v \<cdot> v"
-    by (simp add: Groups.mult_ac(2,3) semiring_class.distrib_left)
-  also have "... = ?middle"
-    by (simp add: semiring_normalization_rules(29))
-  finally have "?rhs = ?middle".}
-  ultimately show ?thesis by auto
-qed
-
-lemma bouncing_ball_dyn: "g < 0 \<Longrightarrow> h \<ge> 0 \<Longrightarrow> Hoare
-  \<lceil>\<lambda>s. s$1 = h \<and> s$2 = 0\<rceil>
+lemma bouncing_ball_dyn: "g < 0 \<Longrightarrow> h \<ge> 0 \<Longrightarrow>
+  \<^bold>{x = h \<and> v = 0\<^bold>} 
   (LOOP 
-      ((EVOL (\<phi> g) (\<lambda> s. s$1 \<ge> 0) T);
-       (IF (\<lambda> s. s$1 = 0) THEN (2 ::= (\<lambda>s. - s$2)) ELSE skip)) 
-    INV (\<lambda>s. 0 \<le> s$1 \<and> 2 \<cdot> g \<cdot> s$1 = 2 \<cdot> g \<cdot> h + s$2 \<cdot> s$2)
-  ) \<lceil>\<lambda>s. 0 \<le> s$1 \<and> s$1 \<le> h\<rceil>"
-  apply(rule H_loopI, rule H_seq[where R="\<lambda>s. 0 \<le> s$1 \<and> 2 \<cdot> g \<cdot> s$1 = 2 \<cdot> g \<cdot> h + s$2 \<cdot> s$2"])
-  by (auto simp: bb_real_arith)
+      ((EVOL (\<phi> g) U(x \<ge> 0) T);
+       (IF U(v = 0) THEN (v ::= -v) ELSE skip)) 
+    INV U(0 \<le> x \<and> 2 \<cdot> g \<cdot> x = 2 \<cdot> g \<cdot> h + v \<cdot> v)
+  ) \<^bold>{0 \<le> x \<and> x \<le> h\<^bold>}"
+  apply(rule H_loopI, rule H_seq[where R="U(0 \<le> x \<and> 2 \<cdot> g \<cdot> x = 2 \<cdot> g \<cdot> h + v \<cdot> v)"])
+     apply(simp, pred_simp, force simp: bb_real_arith)
+    apply(simp, pred_simp)+
+  by (force simp: bb_real_arith)
+
 
 \<comment> \<open>Verified with the flow \<close>
 
-lemma local_flow_ball: "local_flow (f g) UNIV UNIV (\<phi> g)"
+lemma local_flow_ball: "local_flow \<lbrakk>f g\<rbrakk>\<^sub>e UNIV UNIV (\<lambda> t. \<lbrakk>\<phi> g t\<rbrakk>\<^sub>e)"
   apply(unfold_locales, simp_all add: local_lipschitz_def lipschitz_on_def vec_eq_iff, clarsimp)
-  apply(rule_tac x="1/2" in exI, clarsimp, rule_tac x=1 in exI)
+  apply(rule_tac x="1/2" in exI, clarsimp, rule_tac x=1 in exI, pred_simp)
     apply(simp add: dist_norm norm_vec_def L2_set_def UNIV_2)
-  by (auto simp: forall_2 intro!: poly_derivatives)
+  by (simp add: forall_2, pred_simp, force intro!: poly_derivatives, pred_simp)
 
-lemma bouncing_ball_flow: "g < 0 \<Longrightarrow> h \<ge> 0 \<Longrightarrow> Hoare
-  \<lceil>\<lambda>s. s$1 = h \<and> s$2 = 0\<rceil>
+lemma bouncing_ball_flow: "g < 0 \<Longrightarrow> h \<ge> 0 \<Longrightarrow>
+  \<^bold>{x = h \<and> v = 0\<^bold>} 
   (LOOP 
-      ((x\<acute>= f g & (\<lambda> s. s$1 \<ge> 0));
-       (IF (\<lambda> s. s$1 = 0) THEN (2 ::= (\<lambda>s. - s$2)) ELSE skip)) 
-    INV (\<lambda>s. 0 \<le> s$1 \<and> 2 \<cdot> g \<cdot> s$1 = 2 \<cdot> g \<cdot> h + s$2 \<cdot> s$2)
-  ) \<lceil>\<lambda>s. 0 \<le> s$1 \<and> s$1 \<le> h\<rceil>"
-  apply(rule H_loopI)
-    apply(rule H_seq[where R="\<lambda>s. 0 \<le> s$1 \<and> 2 \<cdot> g \<cdot> s$1 = 2 \<cdot> g \<cdot> h + s$2 \<cdot> s$2"])
-     apply(subst local_flow.sH_g_ode[OF local_flow_ball])
+      ((x\<acute>= \<lbrakk>f g\<rbrakk>\<^sub>e & U(x \<ge> 0));
+       (IF U(v = 0) THEN (v ::= -v) ELSE skip)) 
+    INV U(0 \<le> x \<and> 2 \<cdot> g \<cdot> x = 2 \<cdot> g \<cdot> h + v \<cdot> v)
+  ) \<^bold>{0 \<le> x \<and> x \<le> h\<^bold>}"
+  apply(rule H_loopI, rule H_seq[where R="U(0 \<le> x \<and> 2 \<cdot> g \<cdot> x = 2 \<cdot> g \<cdot> h + v \<cdot> v)"])
+     apply(subst local_flow.sH_g_ode[OF local_flow_ball], pred_simp)
      apply(force simp: bb_real_arith)
-  by (rule H_cond) (auto simp: bb_real_arith)
+    apply(rule H_cond, simp)
+     apply(pred_simp, simp)+
+  by (pred_simp, force simp: bb_real_arith)
 
 \<comment> \<open>Refined with annotated dynamics \<close>
 
 lemma R_bb_assign: "g < (0::real) \<Longrightarrow> 0 \<le> h \<Longrightarrow> 
-  2 ::= (\<lambda>s. - s$2) \<le> Ref 
-    \<lceil>\<lambda>s. s$1 = 0 \<and> 0 \<le> s$1 \<and> 2 \<cdot> g \<cdot> s$1 = 2 \<cdot> g \<cdot> h + s$2 \<cdot> s$2\<rceil> 
-    \<lceil>\<lambda>s. 0 \<le> s$1 \<and> 2 \<cdot> g \<cdot> s$1 = 2 \<cdot> g \<cdot> h + s$2 \<cdot> s$2\<rceil>"
-  by (rule R_assign_rule, auto)
+  (v ::=  - v) \<le> Ref 
+    \<lceil>U(v = 0 \<and> 0 \<le> x \<and> 2 \<cdot> g \<cdot> x = 2 \<cdot> g \<cdot> h + v \<cdot> v)\<rceil> 
+    \<lceil>U(0 \<le> x \<and> 2 \<cdot> g \<cdot> x = 2 \<cdot> g \<cdot> h + v \<cdot> v)\<rceil>"
+  by (rule R_assign_rule, pred_simp)
 
 lemma R_bouncing_ball_dyn:
   assumes "g < 0" and "h \<ge> 0"
-  shows "Ref \<lceil>\<lambda>s. s$1 = h \<and> s$2 = 0\<rceil> \<lceil>\<lambda>s. 0 \<le> s$1 \<and> s$1 \<le> h\<rceil> \<ge> 
+  shows "Ref \<lceil>U(x = h \<and> v = 0)\<rceil> \<lceil>U(0 \<le> x \<and> x \<le> h)\<rceil> \<ge> 
   (LOOP 
-      ((EVOL (\<phi> g) (\<lambda> s. s$1 \<ge> 0) T);
-       (IF (\<lambda> s. s$1 = 0) THEN (2 ::= (\<lambda>s. - s$2)) ELSE skip)) 
-    INV (\<lambda>s. 0 \<le> s$1 \<and> 2 \<cdot> g \<cdot> s$1 = 2 \<cdot> g \<cdot> h + s$2 \<cdot> s$2))"
+      ((EVOL (\<phi> g) U(x \<ge> 0) T);
+       (IF U(v = 0) THEN (v ::= -v) ELSE skip)) 
+    INV U(0 \<le> x \<and> 2 \<cdot> g \<cdot> x = 2 \<cdot> g \<cdot> h + v \<cdot> v))"
   apply(rule order_trans)
    apply(rule R_loop_mono) defer
    apply(rule R_loop)
      apply(rule R_seq)
-  using assms apply(simp_all, force simp: bb_real_arith)
+  using assms apply(simp, pred_simp)
+  using assms apply(simp, pred_simp, force simp: bb_real_arith)
   apply(rule R_seq_mono) defer
   apply(rule order_trans)
     apply(rule R_cond_mono) defer defer
      apply(rule R_cond) defer
-  using R_bb_assign apply force
-   apply(rule R_skip, clarsimp)
-  by (rule R_g_evol_rule, force simp: bb_real_arith)
+  apply(rule R_bb_assign, simp_all add: assms)
+   apply(rule R_skip, pred_simp)
+  by (rule R_g_evol_rule, pred_simp, force simp: bb_real_arith)
 
 no_notation fball ("f")
         and ball_flow ("\<phi>")
@@ -251,97 +328,70 @@ the room temperature, and it turns the heater on (or off) based on this reading.
 follows the ODE @{text "T' = - a * (T - U)"} where @{text "U = L \<ge> 0"} when the heater 
 is on, and @{text "U = 0"} when it is off. We use @{term "1::4"} to denote the room's temperature, 
 @{term "2::4"} is time as measured by the thermostat's chronometer, and @{term "3::4"} is a variable
-to save temperature measurements. Finally, @{term "4::5"} states whether the heater is on 
+to save temperature measurements. Finally, @{term "4::4"} states whether the heater is on 
 (@{text "s$4 = 1"}) or off (@{text "s$4 = 0"}). We prove that the thermostat keeps the room's 
 temperature between @{text "Tmin"} and @{text "Tmax"}. \<close>
 
-abbreviation therm_vec_field :: "real \<Rightarrow> real \<Rightarrow> real^4 \<Rightarrow> real^4" ("f")
-  where "f a L s \<equiv> (\<chi> i. if i = 2 then 1 else (if i = 1 then - a * (s$1 - L) else 0))"
+abbreviation T :: "real \<Longrightarrow> real^4" where "T \<equiv> vec_lens 1"
+abbreviation t :: "real \<Longrightarrow> real^4" where "t \<equiv> vec_lens 2"
+abbreviation T\<^sub>0 :: "real \<Longrightarrow> real^4" where "T\<^sub>0 \<equiv> vec_lens 3"
+abbreviation \<Theta> :: "real \<Longrightarrow> real^4" where "\<Theta> \<equiv> vec_lens 4"
 
-abbreviation therm_guard :: "real \<Rightarrow> real \<Rightarrow> real \<Rightarrow> real \<Rightarrow> real^4 \<Rightarrow> bool" ("G")
-  where "G Tmin Tmax a L s \<equiv> (s$2 \<le> - (ln ((L-(if L=0 then Tmin else Tmax))/(L-s$3)))/a)"
+abbreviation ftherm :: "real \<Rightarrow> real \<Rightarrow> (real^4) usubst" ("f")
+  where "f a L \<equiv> [T \<mapsto>\<^sub>s - a * (T - L), t \<mapsto>\<^sub>s 1, T\<^sub>0 \<mapsto>\<^sub>s 0, \<Theta> \<mapsto>\<^sub>s 0]"
 
-abbreviation therm_loop_inv :: "real \<Rightarrow> real \<Rightarrow> real^4 \<Rightarrow> bool" ("I")
-  where "I Tmin Tmax s \<equiv> Tmin \<le> s$1 \<and> s$1 \<le> Tmax \<and> (s$4 = 0 \<or> s$4 = 1)"
+(* abbreviation therm_vec_field :: "real \<Rightarrow> real \<Rightarrow> real^4 \<Rightarrow> real^4" ("f")
+  where "f a L s \<equiv> (\<chi> i. if i = 2 then 1 else (if i = 1 then - a * (s$1 - L) else 0))" *)
 
-abbreviation therm_flow :: "real \<Rightarrow> real \<Rightarrow> real \<Rightarrow> real^4 \<Rightarrow> real^4" ("\<phi>")
+abbreviation therm_guard :: "real \<Rightarrow> real \<Rightarrow> real \<Rightarrow> real \<Rightarrow> (real^4) upred" ("G")
+  where "G Tmin Tmax a L \<equiv> U(t \<le> - (ln ((L-(if L=0 then Tmin else Tmax))/(L-T\<^sub>0)))/a)"
+
+(*abbreviation therm_guard :: "real \<Rightarrow> real \<Rightarrow> real \<Rightarrow> real \<Rightarrow> real^4 \<Rightarrow> bool" ("G")
+  where "G Tmin Tmax a L s \<equiv> (s$2 \<le> - (ln ((L-(if L=0 then Tmin else Tmax))/(L-s$3)))/a)" *)
+
+abbreviation therm_loop_inv :: "real \<Rightarrow> real \<Rightarrow> (real^4) upred" ("I")
+  where "I Tmin Tmax \<equiv> U(Tmin \<le> T \<and> T \<le> Tmax \<and> (\<Theta> = 0 \<or> \<Theta> = 1))"
+
+(* abbreviation therm_loop_inv :: "real \<Rightarrow> real \<Rightarrow> real^4 \<Rightarrow> bool" ("I")
+  where "I Tmin Tmax s \<equiv> Tmin \<le> s$1 \<and> s$1 \<le> Tmax \<and> (s$4 = 0 \<or> s$4 = 1)" *)
+
+abbreviation therm_flow :: "real \<Rightarrow> real \<Rightarrow> real \<Rightarrow> (real^4) usubst" ("\<phi>") 
+  where "therm_flow a L \<tau> \<equiv> [T \<mapsto>\<^sub>s - exp(-a * \<tau>) * (L - T) + L, t \<mapsto>\<^sub>s \<tau> + t, T\<^sub>0 \<mapsto>\<^sub>s T\<^sub>0, \<Theta> \<mapsto>\<^sub>s \<Theta>]"
+
+(*abbreviation therm_flow :: "real \<Rightarrow> real \<Rightarrow> real \<Rightarrow> real^4 \<Rightarrow> real^4" ("\<phi>")
   where "\<phi> a L \<tau> s \<equiv> (\<chi> i. if i = 1 then - exp(-a * \<tau>) * (L - s$1) + L else 
-  (if i = 2 then \<tau> + s$2 else s$i))"
+  (if i = 2 then \<tau> + s$2 else s$i))"*)
 
 \<comment> \<open>Verified with the flow \<close>
 
-lemma norm_diff_therm_dyn: "0 < a \<Longrightarrow> \<parallel>f a L s\<^sub>1 - f a L s\<^sub>2\<parallel> = \<bar>a\<bar> * \<bar>s\<^sub>1$1 - s\<^sub>2$1\<bar>"
-proof(simp add: norm_vec_def L2_set_def, unfold UNIV_4, simp)
+lemma norm_diff_therm_dyn: "0 < (a::real) \<Longrightarrow> (a \<cdot> (s\<^sub>2$1 - L) - a \<cdot> (s\<^sub>1$1 - L))\<^sup>2
+       \<le> (a \<cdot> sqrt ((s\<^sub>1$1 - s\<^sub>2$1)\<^sup>2 + ((s\<^sub>1$2 - s\<^sub>2$2)\<^sup>2 + ((s\<^sub>1$3 - s\<^sub>2$3)\<^sup>2 + (s\<^sub>1$4 - s\<^sub>2$4)\<^sup>2))))\<^sup>2"
+proof(simp add: field_simps)
   assume a1: "0 < a"
-  have f2: "\<And>r ra. \<bar>(r::real) + - ra\<bar> = \<bar>ra + - r\<bar>"
-    by (metis abs_minus_commute minus_real_def)
-  have "\<And>r ra rb. (r::real) * ra + - (r * rb) = r * (ra + - rb)"
-    by (metis minus_real_def right_diff_distrib)
-  hence "\<bar>a * (s\<^sub>1$1 + - L) + - (a * (s\<^sub>2$1 + - L))\<bar> = a * \<bar>s\<^sub>1$1 + - s\<^sub>2$1\<bar>"
-    using a1 by (simp add: abs_mult)
-  thus "\<bar>a * (s\<^sub>2$1 - L) - a * (s\<^sub>1$1 - L)\<bar> = a * \<bar>s\<^sub>1$1 - s\<^sub>2$1\<bar>"
-    using f2 minus_real_def by presburger
+  have "(a \<cdot> s\<^sub>2$1 - a \<cdot> s\<^sub>1$1)\<^sup>2 = a\<^sup>2 \<cdot> (s\<^sub>2$1 - s\<^sub>1$1)\<^sup>2"
+    by (metis (mono_tags, hide_lams) Rings.ring_distribs(4) mult.left_commute 
+        semiring_normalization_rules(18) semiring_normalization_rules(29))
+  moreover have "(s\<^sub>2$1 - s\<^sub>1$1)\<^sup>2 \<le> (s\<^sub>1$1 - s\<^sub>2$1)\<^sup>2 + ((s\<^sub>1$2 - s\<^sub>2$2)\<^sup>2 + ((s\<^sub>1$3 - s\<^sub>2$3)\<^sup>2 + (s\<^sub>1$4 - s\<^sub>2$4)\<^sup>2))"
+    using zero_le_power2 by (simp add: power2_commute) 
+  thus "(a \<cdot> s\<^sub>2 $ 1 - a \<cdot> s\<^sub>1 $ 1)\<^sup>2
+    \<le> a\<^sup>2 \<cdot> (s\<^sub>1 $ 1 - s\<^sub>2 $ 1)\<^sup>2 + (a\<^sup>2 \<cdot> (s\<^sub>1 $ 2 - s\<^sub>2 $ 2)\<^sup>2 + (a\<^sup>2 \<cdot> (s\<^sub>1 $ 3 - s\<^sub>2 $ 3)\<^sup>2 + a\<^sup>2 \<cdot> (s\<^sub>1 $ 4 - s\<^sub>2 $ 4)\<^sup>2))"
+    using a1 by (simp add: Groups.algebra_simps(18)[symmetric] calculation)
 qed
 
 lemma local_lipschitz_therm_dyn:
   assumes "0 < (a::real)"
-  shows "local_lipschitz UNIV UNIV (\<lambda>t::real. f a L)"
+  shows "local_lipschitz UNIV UNIV (\<lambda>t::real. \<lbrakk>f a L\<rbrakk>\<^sub>e)"
   apply(unfold local_lipschitz_def lipschitz_on_def dist_norm)
-  apply(clarsimp, rule_tac x=1 in exI, clarsimp, rule_tac x=a in exI)
-  using assms apply(simp_all add: norm_diff_therm_dyn)
-  apply(simp add: norm_vec_def L2_set_def, unfold UNIV_4, clarsimp)
-  unfolding real_sqrt_abs[symmetric] by (rule real_le_lsqrt) auto
+  apply(clarsimp, rule_tac x=1 in exI, clarsimp, rule_tac x=a in exI, pred_simp)
+  using assms apply(simp add: norm_vec_def L2_set_def, unfold UNIV_4, pred_simp)
+  unfolding real_sqrt_abs[symmetric] apply (rule real_le_lsqrt)
+  by (simp_all add: norm_diff_therm_dyn)
 
-lemma local_flow_therm: "a > 0 \<Longrightarrow> local_flow (f a L) UNIV UNIV (\<phi> a L)"
-  by (unfold_locales, auto intro!: poly_derivatives local_lipschitz_therm_dyn 
-      simp: forall_4 vec_eq_iff)
-
-lemma therm_dyn_down_real_arith:
-  assumes "a > 0" and Thyps: "0 < Tmin" "Tmin \<le> T" "T \<le> Tmax"
-    and thyps: "0 \<le> (\<tau>::real)" "\<forall>\<tau>\<in>{0..\<tau>}. \<tau> \<le> - (ln (Tmin / T) / a) "
-  shows "Tmin \<le> exp (-a * \<tau>) * T" and "exp (-a * \<tau>) * T \<le> Tmax"
-proof-
-  have "0 \<le> \<tau> \<and> \<tau> \<le> - (ln (Tmin / T) / a)"
-    using thyps by auto
-  hence "ln (Tmin / T) \<le> - a * \<tau> \<and> - a * \<tau> \<le> 0"
-    using assms(1) divide_le_cancel by fastforce
-  also have "Tmin / T > 0"
-    using Thyps by auto
-  ultimately have obs: "Tmin / T \<le> exp (-a * \<tau>)" "exp (-a * \<tau>) \<le> 1"
-    using exp_ln exp_le_one_iff by (metis exp_less_cancel_iff not_less, simp)
-  thus "Tmin \<le> exp (-a * \<tau>) * T"
-    using Thyps by (simp add: pos_divide_le_eq)
-  show "exp (-a * \<tau>) * T \<le> Tmax"
-    using Thyps mult_left_le_one_le[OF _ exp_ge_zero obs(2), of T] 
-      less_eq_real_def order_trans_rules(23) by blast
-qed
-
-lemma therm_dyn_up_real_arith:
-  assumes "a > 0" and Thyps: "Tmin \<le> T" "T \<le> Tmax" "Tmax < (L::real)"
-    and thyps: "0 \<le> \<tau>" "\<forall>\<tau>\<in>{0..\<tau>}. \<tau> \<le> - (ln ((L - Tmax) / (L - T)) / a) "
-  shows "L - Tmax \<le> exp (-(a * \<tau>)) * (L - T)" 
-    and "L - exp (-(a * \<tau>)) * (L - T) \<le> Tmax" 
-    and "Tmin \<le> L - exp (-(a * \<tau>)) * (L - T)"
-proof-
-  have "0 \<le> \<tau> \<and> \<tau> \<le> - (ln ((L - Tmax) / (L - T)) / a)"
-    using thyps by auto
-  hence "ln ((L - Tmax) / (L - T)) \<le> - a * \<tau> \<and> - a * \<tau> \<le> 0"
-    using assms(1) divide_le_cancel by fastforce
-  also have "(L - Tmax) / (L - T) > 0"
-    using Thyps by auto
-  ultimately have "(L - Tmax) / (L - T) \<le> exp (-a * \<tau>) \<and> exp (-a * \<tau>) \<le> 1"
-    using exp_ln exp_le_one_iff by (metis exp_less_cancel_iff not_less)
-  moreover have "L - T > 0"
-    using Thyps by auto
-  ultimately have obs: "(L - Tmax) \<le> exp (-a * \<tau>) * (L - T) \<and> exp (-a * \<tau>) * (L - T) \<le> (L - T)"
-    by (simp add: pos_divide_le_eq)
-  thus "(L - Tmax) \<le> exp (-(a * \<tau>)) * (L - T)"
-    by auto
-  thus "L - exp (-(a * \<tau>)) * (L - T) \<le> Tmax"
-    by auto
-  show "Tmin \<le> L - exp (-(a * \<tau>)) * (L - T)"
-    using Thyps and obs by auto
-qed
+lemma local_flow_therm: "a > 0 \<Longrightarrow> local_flow \<lbrakk>f a L\<rbrakk>\<^sub>e UNIV UNIV (\<lambda> t. \<lbrakk>\<phi> a L t\<rbrakk>\<^sub>e)"
+  apply (unfold_locales, simp_all)
+  using local_lipschitz_therm_dyn apply(pred_simp)
+   apply(simp add: forall_4, pred_simp, force intro!: poly_derivatives)
+  by (pred_simp, force simp: vec_eq_iff)
 
 lemmas H_g_ode_therm = local_flow.sH_g_ode_ivl[OF local_flow_therm _ UNIV_I]
 
