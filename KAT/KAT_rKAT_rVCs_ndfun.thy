@@ -174,6 +174,11 @@ lemma sH_g_evol[simp]:
   shows "\<^bold>{P\<^bold>} EVOL \<phi> G T \<^bold>{Q\<^bold>} = `P \<Rightarrow> (\<^bold>\<forall> t\<in>\<guillemotleft>T\<guillemotright> \<bullet> (\<^bold>\<forall>\<tau>\<in>\<guillemotleft>down T t\<guillemotright> \<bullet> G\<lbrakk>\<phi> \<tau>/&\<^bold>v\<rbrakk>) \<Rightarrow> Q\<lbrakk>\<phi> t/&\<^bold>v\<rbrakk>)`"
   unfolding ndfun_kat_H g_evol_def g_orbit_eq by (pred_auto)
 
+lemma sH_g_evol_alt[simp]:  
+  fixes \<phi> :: "('a::preorder) \<Rightarrow> 'b usubst"
+  shows "\<^bold>{P\<^bold>} EVOL \<phi> G T \<^bold>{Q\<^bold>} = `P \<Rightarrow> (\<^bold>\<forall> t\<in>\<guillemotleft>T\<guillemotright> \<bullet> (\<^bold>\<forall>\<tau>\<in>\<guillemotleft>down T t\<guillemotright> \<bullet> \<phi> \<tau> \<dagger> G) \<Rightarrow> \<phi> t \<dagger> Q)`"
+  unfolding ndfun_kat_H g_evol_def g_orbit_eq by (pred_auto)
+
 \<comment> \<open>Verification by providing solutions\<close>
 
 definition ivp_sols' :: "(('a::real_normed_vector) \<Rightarrow> 'a) \<Rightarrow> real set \<Rightarrow> 'a set \<Rightarrow> 
@@ -200,64 +205,62 @@ lemma sH_g_orbital: "\<^bold>{P\<^bold>} x\<acute>= f & G on T S @ t\<^sub>0 \<^
   `P \<Rightarrow> (\<^bold>\<forall> X\<in>ivp_sols' f T S t\<^sub>0 \<bullet> (\<^bold>\<forall>t\<in>\<guillemotleft>T\<guillemotright> \<bullet> (\<^bold>\<forall> \<tau> \<in> \<guillemotleft>down T t\<guillemotright> \<bullet> G\<lbrakk>\<guillemotleft>X \<tau>\<guillemotright>/&\<^bold>v\<rbrakk>) \<Rightarrow> Q\<lbrakk>\<guillemotleft>X t\<guillemotright>/&\<^bold>v\<rbrakk>))`"
   unfolding g_orbital_eq g_ode_def ndfun_kat_H by (pred_auto)
 
-(****** SDF: Adapted this far *****)
-
 context local_flow
 begin
 
 lemma H_g_ode:
-  assumes "P = (U(&\<^bold>v \<in> \<guillemotleft>S\<guillemotright>) \<Rightarrow> (\<^bold>\<forall>t\<in>\<guillemotleft>T\<guillemotright> \<bullet> (\<^bold>\<forall> \<tau> \<in> \<guillemotleft>down T t\<guillemotright> \<bullet> G\<lbrakk>\<guillemotleft>X \<tau>\<guillemotright>/&\<^bold>v\<rbrakk>) \<Rightarrow> Q\<lbrakk>\<guillemotleft>X t\<guillemotright>/&\<^bold>v\<rbrakk>))" 
+  assumes "P = (U(&\<^bold>v \<in> \<guillemotleft>S\<guillemotright>) \<Rightarrow> (\<^bold>\<forall>t\<in>\<guillemotleft>T\<guillemotright> \<bullet> (\<^bold>\<forall> \<tau> \<in> \<guillemotleft>down T t\<guillemotright> \<bullet> G\<lbrakk>\<guillemotleft>\<phi> \<tau>\<guillemotright> |> &\<^bold>v/&\<^bold>v\<rbrakk>) \<Rightarrow> Q\<lbrakk>\<guillemotleft>\<phi> t\<guillemotright> |> &\<^bold>v/&\<^bold>v\<rbrakk>))" 
   shows "Hoare \<lceil>P\<rceil> (x\<acute>= f & G on T S @ 0) \<lceil>Q\<rceil>"
-proof(unfold ndfun_kat_H g_ode_def g_orbital_eq assms, clarsimp)
+proof(unfold ndfun_kat_H g_ode_def g_orbital_eq assms, pred_simp)       
   fix s t X
-  assume hyps: "t \<in> T" "\<forall>x. x \<in> T \<and> x \<le> t \<longrightarrow> G (X x)" "X \<in> Sols (\<lambda>t. f) T S 0 s"
-     and main: "s \<in> S \<longrightarrow> (\<forall>t\<in>T. (\<forall>\<tau>. \<tau> \<in> T \<and> \<tau> \<le> t \<longrightarrow> G (\<phi> \<tau> s)) \<longrightarrow> Q (\<phi> t s))"
+  assume hyps: "t \<in> T" "\<forall>x. x \<in> T \<and> x \<le> t \<longrightarrow> \<lbrakk>G\<rbrakk>\<^sub>e (X x)" "X \<in> Sols (\<lambda>t. f) T S 0 s"
+     and main: "s \<in> S \<longrightarrow> (\<forall>t. t \<in> T \<longrightarrow> (\<forall>\<tau>. \<tau> \<in> T \<and> \<tau> \<le> t \<longrightarrow> \<lbrakk>G\<rbrakk>\<^sub>e (\<phi> \<tau> s)) \<longrightarrow> \<lbrakk>Q\<rbrakk>\<^sub>e (\<phi> t s))"
   have "s \<in> S"
     using ivp_solsD[OF hyps(3)] init_time by auto
   hence "\<forall>\<tau>\<in>down T t. X \<tau> = \<phi> \<tau> s"
     using eq_solution hyps by blast
-  thus "Q (X t)"
+  thus "\<lbrakk>Q\<rbrakk>\<^sub>e (X t)"
     using main \<open>s \<in> S\<close> hyps by fastforce
 qed
 
 lemma sH_g_ode: "Hoare \<lceil>P\<rceil> (x\<acute>= f & G on T S @ 0) \<lceil>Q\<rceil> = 
-  (\<forall>s\<in>S. P s \<longrightarrow> (\<forall>t\<in>T. (\<forall>\<tau>\<in>down T t. G (\<phi> \<tau> s)) \<longrightarrow> Q (\<phi> t s)))"
-proof(unfold sH_g_orbital, clarsimp, safe)
+  (\<forall>s\<in>S. \<lbrakk>P\<rbrakk>\<^sub>e s \<longrightarrow> (\<forall>t\<in>T. (\<forall>\<tau>\<in>down T t. \<lbrakk>G\<rbrakk>\<^sub>e (\<phi> \<tau> s)) \<longrightarrow> \<lbrakk>Q\<rbrakk>\<^sub>e (\<phi> t s)))"
+proof(unfold sH_g_orbital, rel_simp, safe)
   fix s t
-  assume hyps: "s \<in> S" "P s" "t\<in>T" "\<forall>\<tau>. \<tau> \<in> T \<and> \<tau> \<le> t \<longrightarrow> G (\<phi> \<tau> s)"
-    and main: "\<forall>s. P s \<longrightarrow> (\<forall>X\<in>Sols (\<lambda>t. f) T S 0 s. \<forall>t\<in>T. (\<forall>\<tau>. \<tau> \<in> T \<and> \<tau> \<le> t \<longrightarrow> G (X \<tau>)) \<longrightarrow> Q (X t))"
+  assume hyps: "s \<in> S" "\<lbrakk>P\<rbrakk>\<^sub>e s" "t\<in>T" "\<forall>\<tau>. \<tau> \<in> T \<and> \<tau> \<le> t \<longrightarrow> \<lbrakk>G\<rbrakk>\<^sub>e (\<phi> \<tau> s)"
+    and main: "\<forall>s. \<lbrakk>P\<rbrakk>\<^sub>e s \<longrightarrow> (\<forall>X. X\<in>Sols (\<lambda>t. f) T S 0 s \<longrightarrow> (\<forall>t. t\<in>T \<longrightarrow> (\<forall>\<tau>. \<tau> \<in> T \<and> \<tau> \<le> t \<longrightarrow> \<lbrakk>G\<rbrakk>\<^sub>e (X \<tau>)) \<longrightarrow> \<lbrakk>Q\<rbrakk>\<^sub>e (X t)))"
   hence "(\<lambda>t. \<phi> t s) \<in> Sols (\<lambda>t. f) T S 0 s"
     using in_ivp_sols by blast
-  thus "Q (\<phi> t s)"
+  thus "\<lbrakk>Q\<rbrakk>\<^sub>e (\<phi> t s)"
     using main hyps by fastforce
 next
   fix s X t
-  assume hyps: "P s" "X \<in> Sols (\<lambda>t. f) T S 0 s" "t \<in> T"  "\<forall>\<tau>. \<tau> \<in> T \<and> \<tau> \<le> t \<longrightarrow> G (X \<tau>)"
-    and main: "\<forall>s\<in>S. P s \<longrightarrow> (\<forall>t\<in>T. (\<forall>\<tau>. \<tau> \<in> T \<and> \<tau> \<le> t \<longrightarrow> G (\<phi> \<tau> s)) \<longrightarrow> Q (\<phi> t s))"
+  assume hyps: "\<lbrakk>P\<rbrakk>\<^sub>e s" "X \<in> Sols (\<lambda>t. f) T S 0 s" "t \<in> T"  "\<forall>\<tau>. \<tau> \<in> T \<and> \<tau> \<le> t \<longrightarrow> \<lbrakk>G\<rbrakk>\<^sub>e (X \<tau>)"
+    and main: "\<forall>s\<in>S. \<lbrakk>P\<rbrakk>\<^sub>e s \<longrightarrow> (\<forall>t\<in>T. (\<forall>\<tau>. \<tau> \<in> T \<and> \<tau> \<le> t \<longrightarrow> \<lbrakk>G\<rbrakk>\<^sub>e (\<phi> \<tau> s)) \<longrightarrow> \<lbrakk>Q\<rbrakk>\<^sub>e (\<phi> t s))"
   hence obs: "s \<in> S"
     using ivp_sols_def[of "\<lambda>t. f"] init_time by auto
   hence "\<forall>\<tau>\<in>down T t. X \<tau> = \<phi> \<tau> s"
     using eq_solution hyps by blast
-  thus "Q (X t)"
+  thus "\<lbrakk>Q\<rbrakk>\<^sub>e (X t)"
     using hyps main obs by auto
 qed
 
 lemma sH_g_ode_ivl: "\<tau> \<ge> 0 \<Longrightarrow> \<tau> \<in> T \<Longrightarrow> Hoare \<lceil>P\<rceil> (x\<acute>= f & G on {0..\<tau>} S @ 0) \<lceil>Q\<rceil> = 
-  (\<forall>s\<in>S. P s \<longrightarrow> (\<forall>t\<in>{0..\<tau>}. (\<forall>\<tau>\<in>{0..t}. G (\<phi> \<tau> s)) \<longrightarrow> Q (\<phi> t s)))"
-proof(unfold sH_g_orbital, clarsimp, safe)
+  (\<forall>s\<in>S. \<lbrakk>P\<rbrakk>\<^sub>e s \<longrightarrow> (\<forall>t\<in>{0..\<tau>}. (\<forall>\<tau>\<in>{0..t}. \<lbrakk>G\<rbrakk>\<^sub>e (\<phi> \<tau> s)) \<longrightarrow> \<lbrakk>Q\<rbrakk>\<^sub>e (\<phi> t s)))"
+proof(unfold sH_g_orbital, rel_simp, safe)
   fix s t
-  assume hyps: "0 \<le> \<tau>" "\<tau> \<in> T" "s \<in> S" "P s" "t \<in> {0..\<tau>}" "\<forall>\<tau>\<in>{0..t}. G (\<phi> \<tau> s)"
-    and main: "\<forall>s. P s \<longrightarrow> (\<forall>X\<in>Sols (\<lambda>t. f) {0..\<tau>} S 0 s. \<forall>t\<in>{0..\<tau>}. 
-  (\<forall>\<tau>'. 0 \<le> \<tau>' \<and> \<tau>' \<le> \<tau> \<and> \<tau>' \<le> t \<longrightarrow> G (X \<tau>')) \<longrightarrow> Q (X t))"
+  assume hyps: "0 \<le> \<tau>" "\<tau> \<in> T" "s \<in> S" "\<lbrakk>P\<rbrakk>\<^sub>e s" "t \<in> {0..\<tau>}" "\<forall>\<tau>\<in>{0..t}. \<lbrakk>G\<rbrakk>\<^sub>e (\<phi> \<tau> s)"
+    and main: "\<forall>s. \<lbrakk>P\<rbrakk>\<^sub>e s \<longrightarrow> (\<forall>X. X\<in>Sols (\<lambda>t. f) {0..\<tau>} S 0 s \<longrightarrow> (\<forall>t. 0 \<le> t \<and> t \<le> \<tau> \<longrightarrow>
+  (\<forall>\<tau>'. 0 \<le> \<tau>' \<and> \<tau>' \<le> \<tau> \<and> \<tau>' \<le> t \<longrightarrow> \<lbrakk>G\<rbrakk>\<^sub>e (X \<tau>')) \<longrightarrow> \<lbrakk>Q\<rbrakk>\<^sub>e (X t)))"
   hence "(\<lambda>t. \<phi> t s) \<in> Sols (\<lambda>t. f) {0..\<tau>} S 0 s"
     using in_ivp_sols_ivl closed_segment_eq_real_ivl[of 0 \<tau>] by force
-  thus "Q (\<phi> t s)"
+  thus "\<lbrakk>Q\<rbrakk>\<^sub>e (\<phi> t s)"
     using main hyps by fastforce
 next
   fix s X t
-  assume hyps: "0 \<le> \<tau>" "\<tau> \<in> T" "P s" "X \<in> Sols (\<lambda>t. f) {0..\<tau>} S 0 s" "t \<in> {0..\<tau>}"  
-    "\<forall>\<tau>'. 0 \<le> \<tau>' \<and> \<tau>' \<le> \<tau> \<and> \<tau>' \<le> t \<longrightarrow> G (X \<tau>')"
-    and main: "\<forall>s\<in>S. P s \<longrightarrow> (\<forall>t\<in>{0..\<tau>}. (\<forall>\<tau>\<in>{0..t}. G (\<phi> \<tau> s)) \<longrightarrow> Q (\<phi> t s))"
+  assume hyps: "0 \<le> \<tau>" "\<tau> \<in> T" "\<lbrakk>P\<rbrakk>\<^sub>e s" "X \<in> Sols (\<lambda>t. f) {0..\<tau>} S 0 s" "0 \<le> t" "t \<le> \<tau>"  
+    "\<forall>\<tau>'. 0 \<le> \<tau>' \<and> \<tau>' \<le> \<tau> \<and> \<tau>' \<le> t \<longrightarrow> \<lbrakk>G\<rbrakk>\<^sub>e (X \<tau>')"
+    and main: "\<forall>s\<in>S. \<lbrakk>P\<rbrakk>\<^sub>e s \<longrightarrow> (\<forall>t\<in>{0..\<tau>}. (\<forall>\<tau>\<in>{0..t}. \<lbrakk>G\<rbrakk>\<^sub>e (\<phi> \<tau> s)) \<longrightarrow> \<lbrakk>Q\<rbrakk>\<^sub>e (\<phi> t s))"
   hence "s \<in> S"
     using ivp_sols_def[of "\<lambda>t. f"] init_time by auto
   have obs1: "\<forall>\<tau>\<in>down {0..\<tau>} t. D X = (\<lambda>t. f (X t)) on {0--\<tau>}"
@@ -270,25 +273,25 @@ next
   hence "\<forall>\<tau>\<in>down {0..\<tau>} t. X \<tau> = \<phi> \<tau> s"
     using obs1 obs2 apply(clarsimp)
     by (rule eq_solution_ivl) (auto simp: closed_segment_eq_real_ivl)
-  thus "Q (X t)"
+  thus "\<lbrakk>Q\<rbrakk>\<^sub>e (X t)"
     using hyps main \<open>s \<in> S\<close> by auto
 qed
 
-lemma sH_orbit: "Hoare \<lceil>P\<rceil> (\<gamma>\<^sup>\<phi>\<^sup>\<bullet>) \<lceil>Q\<rceil> = (\<forall>s \<in> S. P s \<longrightarrow> (\<forall> t \<in> T. Q (\<phi> t s)))"
-  using sH_g_ode unfolding orbit_def g_ode_def by auto
+lemma sH_orbit: "Hoare \<lceil>P\<rceil> (\<gamma>\<^sup>\<phi>\<^sup>\<bullet>) \<lceil>Q\<rceil> = (\<forall>s \<in> S. \<lbrakk>P\<rbrakk>\<^sub>e s \<longrightarrow> (\<forall> t \<in> T. \<lbrakk>Q\<rbrakk>\<^sub>e (\<phi> t s)))"
+  using sH_g_ode[of P "true_upred" Q] unfolding orbit_def g_ode_def by pred_simp
 
 end
 
 \<comment> \<open> Verification with differential invariants \<close>
 
-definition g_ode_inv :: "(('a::banach)\<Rightarrow>'a) \<Rightarrow> 'a pred \<Rightarrow> real set \<Rightarrow> 'a set \<Rightarrow> 
-  real \<Rightarrow> 'a pred \<Rightarrow> 'a nd_fun" ("(1x\<acute>=_ & _ on _ _ @ _ DINV _ )") 
+definition g_ode_inv :: "(('a::banach)\<Rightarrow>'a) \<Rightarrow> 'a upred \<Rightarrow> real set \<Rightarrow> 'a set \<Rightarrow> 
+  real \<Rightarrow> 'a upred \<Rightarrow> 'a nd_fun" ("(1x\<acute>=_ & _ on _ _ @ _ DINV _ )") 
   where "(x\<acute>= f & G on T S @ t\<^sub>0 DINV I) = (x\<acute>= f & G on T S @ t\<^sub>0)"
 
 lemma sH_g_orbital_guard: 
-  assumes "R = (\<lambda>s. G s \<and> Q s)"
+  assumes "R = (G \<and> Q)"
   shows "Hoare \<lceil>P\<rceil> (x\<acute>= f & G on T S @ t\<^sub>0) \<lceil>Q\<rceil> = Hoare \<lceil>P\<rceil> (x\<acute>= f & G on T S @ t\<^sub>0) \<lceil>R\<rceil>" 
-  using assms unfolding g_orbital_eq ndfun_kat_H ivp_sols_def g_ode_def by auto
+  unfolding g_orbital_eq ndfun_kat_H ivp_sols_def g_ode_def assms by (pred_auto)
 
 lemma sH_g_orbital_inv:
   assumes "\<lceil>P\<rceil> \<le> \<lceil>I\<rceil>" and "Hoare \<lceil>I\<rceil> (x\<acute>= f & G on T S @ t\<^sub>0) \<lceil>I\<rceil>" and "\<lceil>I\<rceil> \<le> \<lceil>Q\<rceil>"
@@ -297,13 +300,13 @@ lemma sH_g_orbital_inv:
   using assms(3) apply(rule_tac q'="\<lceil>I\<rceil>" in H_consr, simp)
   using assms(2) by simp
 
-lemma sH_diff_inv[simp]: "Hoare \<lceil>I\<rceil> (x\<acute>= f & G on T S @ t\<^sub>0) \<lceil>I\<rceil> = diff_invariant I f T S t\<^sub>0 G"
+lemma sH_diff_inv[simp]: "Hoare \<lceil>I\<rceil> (x\<acute>= f & G on T S @ t\<^sub>0) \<lceil>I\<rceil> = diff_invariant \<lbrakk>I\<rbrakk>\<^sub>e f T S t\<^sub>0 \<lbrakk>G\<rbrakk>\<^sub>e"
   unfolding diff_invariant_eq ndfun_kat_H g_orbital_eq g_ode_def by auto
 
 lemma H_g_ode_inv: "Hoare \<lceil>I\<rceil> (x\<acute>= f & G on T S @ t\<^sub>0) \<lceil>I\<rceil> \<Longrightarrow> \<lceil>P\<rceil> \<le> \<lceil>I\<rceil> \<Longrightarrow> 
-  \<lceil>\<lambda>s. I s \<and> G s\<rceil> \<le> \<lceil>Q\<rceil> \<Longrightarrow> Hoare \<lceil>P\<rceil> (x\<acute>= f & G on T S @ t\<^sub>0 DINV I) \<lceil>Q\<rceil>"
-  unfolding g_ode_inv_def apply(rule_tac q'="\<lceil>\<lambda>s. I s \<and> G s\<rceil>" in H_consr, simp)
-  apply(subst sH_g_orbital_guard[symmetric], force)
+  \<lceil>I \<and> G\<rceil> \<le> \<lceil>Q\<rceil> \<Longrightarrow> Hoare \<lceil>P\<rceil> (x\<acute>= f & G on T S @ t\<^sub>0 DINV I) \<lceil>Q\<rceil>"
+  unfolding g_ode_inv_def apply(rule_tac q'="\<lceil>I \<and> G\<rceil>" in H_consr, simp)
+  apply(subst sH_g_orbital_guard[of _ "G" "I", symmetric], pred_auto)
   by (rule_tac I="I" in sH_g_orbital_inv, simp_all)
 
 
@@ -311,8 +314,8 @@ subsection \<open> Refinement Components \<close>
 
 \<comment> \<open> Skip \<close>
 
-lemma R_skip: "(\<forall>s. P s \<longrightarrow> Q s) \<Longrightarrow> 1 \<le> Ref \<lceil>P\<rceil> \<lceil>Q\<rceil>"
-  by (auto simp: spec_def ndfun_kat_H one_nd_fun_def)
+lemma R_skip: "`P \<Rightarrow> Q` \<Longrightarrow> 1 \<le> Ref \<lceil>P\<rceil> \<lceil>Q\<rceil>"
+  by (auto simp: spec_def ndfun_kat_H one_nd_fun_def, pred_auto)
 
 \<comment> \<open> Composition \<close>
 
@@ -326,29 +329,29 @@ lemmas R_seq_mono = mult_isol_var
 
 \<comment> \<open> Assignment \<close>
 
-lemma R_assign: "(x ::= e) \<le> Ref \<lceil>\<lambda>s. P (\<chi> j. ((($) s)(x := e s)) j)\<rceil> \<lceil>P\<rceil>"
+lemma R_assign: "(x ::= e) \<le> Ref \<lceil>P\<lbrakk>e/&x\<rbrakk>\<rceil> \<lceil>P\<rceil>"
   unfolding spec_def by (rule H_assign, clarsimp simp: fun_eq_iff fun_upd_def)
 
-lemma R_assign_rule: "(\<forall>s. P s \<longrightarrow> Q (\<chi> j. ((($) s)(x := (e s))) j)) \<Longrightarrow> (x ::= e) \<le> Ref \<lceil>P\<rceil> \<lceil>Q\<rceil>"
-  unfolding sH_assign[symmetric] spec_def .
+lemma R_assign_rule: "`P \<Rightarrow> Q\<lbrakk>e/&x\<rbrakk>` \<Longrightarrow> (x ::= e) \<le> Ref \<lceil>P\<rceil> \<lceil>Q\<rceil>"
+  unfolding sH_assign[symmetric] spec_def by (metis pr_var_def sH_assign_alt) 
 
-lemma R_assignl: "P = (\<lambda>s. R (\<chi> j. ((($) s)(x := e s)) j)) \<Longrightarrow> (x ::= e) ; Ref \<lceil>R\<rceil> \<lceil>Q\<rceil> \<le> Ref \<lceil>P\<rceil> \<lceil>Q\<rceil>"
+lemma R_assignl: "P = R\<lbrakk>e/&x\<rbrakk> \<Longrightarrow> (x ::= e) ; Ref \<lceil>R\<rceil> \<lceil>Q\<rceil> \<le> Ref \<lceil>P\<rceil> \<lceil>Q\<rceil>"
   apply(rule_tac R=R in R_seq_rule)
   by (rule_tac R_assign_rule, simp_all)
 
-lemma R_assignr: "R = (\<lambda>s. Q (\<chi> j. ((($) s)(x := e s)) j)) \<Longrightarrow> Ref \<lceil>P\<rceil> \<lceil>R\<rceil>; (x ::= e) \<le> Ref \<lceil>P\<rceil> \<lceil>Q\<rceil>"
+lemma R_assignr: "R = Q\<lbrakk>e/&x\<rbrakk> \<Longrightarrow> Ref \<lceil>P\<rceil> \<lceil>R\<rceil>; (x ::= e) \<le> Ref \<lceil>P\<rceil> \<lceil>Q\<rceil>"
   apply(rule_tac R=R in R_seq_rule, simp)
   by (rule_tac R_assign_rule, simp)
 
-lemma "(x ::= e) ; Ref \<lceil>Q\<rceil> \<lceil>Q\<rceil> \<le> Ref \<lceil>(\<lambda>s. Q (\<chi> j. ((($) s)(x := e s)) j))\<rceil> \<lceil>Q\<rceil>"
+lemma "(x ::= e) ; Ref \<lceil>Q\<rceil> \<lceil>Q\<rceil> \<le> Ref \<lceil>Q\<lbrakk>e/&x\<rbrakk>\<rceil> \<lceil>Q\<rceil>"
   by (rule R_assignl) simp
 
-lemma "Ref \<lceil>Q\<rceil> \<lceil>(\<lambda>s. Q (\<chi> j. ((($) s)(x := e s)) j))\<rceil>; (x ::= e) \<le> Ref \<lceil>Q\<rceil> \<lceil>Q\<rceil>"
+lemma "Ref \<lceil>Q\<rceil> \<lceil>Q\<lbrakk>e/&x\<rbrakk>\<rceil>; (x ::= e) \<le> Ref \<lceil>Q\<rceil> \<lceil>Q\<rceil>"
   by (rule R_assignr) simp
 
 \<comment> \<open> Conditional \<close>
 
-lemma R_cond: "(IF B THEN Ref \<lceil>\<lambda>s. B s \<and> P s\<rceil> \<lceil>Q\<rceil> ELSE Ref \<lceil>\<lambda>s. \<not> B s \<and> P s\<rceil> \<lceil>Q\<rceil>) \<le> Ref \<lceil>P\<rceil> \<lceil>Q\<rceil>"
+lemma R_cond: "(IF B THEN Ref \<lceil>B \<and> P\<rceil> \<lceil>Q\<rceil> ELSE Ref \<lceil>\<not> B \<and> P\<rceil> \<lceil>Q\<rceil>) \<le> Ref \<lceil>P\<rceil> \<lceil>Q\<rceil>"
   using R_cond[of "\<lceil>B\<rceil>" "\<lceil>P\<rceil>" "\<lceil>Q\<rceil>"] by simp
 
 lemma R_cond_mono: "X \<le> X' \<Longrightarrow> Y \<le> Y' \<Longrightarrow> (IF P THEN X ELSE Y) \<le> IF P THEN X' ELSE Y'"
@@ -357,7 +360,7 @@ lemma R_cond_mono: "X \<le> X' \<Longrightarrow> Y \<le> Y' \<Longrightarrow> (I
 
 \<comment> \<open> While loop \<close>
 
-lemma R_while: "WHILE Q INV I DO (Ref \<lceil>\<lambda>s. P s \<and> Q s\<rceil> \<lceil>P\<rceil>) \<le> Ref \<lceil>P\<rceil> \<lceil>\<lambda>s. P s \<and> \<not> Q s\<rceil>"
+lemma R_while: "WHILE Q INV I DO (Ref \<lceil>P \<and> Q\<rceil> \<lceil>P\<rceil>) \<le> Ref \<lceil>P\<rceil> \<lceil>P \<and> \<not> Q\<rceil>"
   unfolding while_inv_def using R_while[of "\<lceil>Q\<rceil>" "\<lceil>P\<rceil>"] by simp
 
 lemma R_while_mono: "X \<le> X' \<Longrightarrow> (WHILE P INV I DO X) \<le> WHILE P INV I DO X'"
@@ -374,40 +377,42 @@ lemma R_loop_mono: "X \<le> X' \<Longrightarrow> LOOP X INV I \<le> LOOP X' INV 
 \<comment> \<open> Evolution command (flow) \<close>
 
 lemma R_g_evol: 
-  fixes \<phi> :: "('a::preorder) \<Rightarrow> 'b \<Rightarrow> 'b"
-  shows "(EVOL \<phi> G T) \<le> Ref \<lceil>\<lambda>s. \<forall>t\<in>T. (\<forall>\<tau>\<in>down T t. G (\<phi> \<tau> s)) \<longrightarrow> P (\<phi> t s)\<rceil> \<lceil>P\<rceil>"
-  unfolding spec_def by (rule H_g_evol, simp)
+  fixes \<phi> :: "('a::preorder) \<Rightarrow> 'b usubst"
+  shows "(EVOL \<phi> G T) \<le> Ref \<lceil>\<^bold>\<forall>t\<in>\<guillemotleft>T\<guillemotright> \<bullet> (\<^bold>\<forall>\<tau>\<in>\<guillemotleft>down T t\<guillemotright> \<bullet> \<phi> \<tau> \<dagger> G) \<Rightarrow> \<phi> t \<dagger> P\<rceil> \<lceil>P\<rceil>"
+  unfolding spec_def by (rule H_g_evol, rel_simp)
 
 lemma R_g_evol_rule: 
-  fixes \<phi> :: "('a::preorder) \<Rightarrow> 'b \<Rightarrow> 'b"
-  shows "(\<forall>s. P s \<longrightarrow> (\<forall>t\<in>T. (\<forall>\<tau>\<in>down T t. G (\<phi> \<tau> s)) \<longrightarrow> Q (\<phi> t s))) \<Longrightarrow> (EVOL \<phi> G T) \<le> Ref \<lceil>P\<rceil> \<lceil>Q\<rceil>"
-  unfolding sH_g_evol[symmetric] spec_def .
+  fixes \<phi> :: "('a::preorder) \<Rightarrow> 'b usubst"
+  shows "`P \<Rightarrow> (\<^bold>\<forall>t\<in>\<guillemotleft>T\<guillemotright> \<bullet> (\<^bold>\<forall>\<tau>\<in>\<guillemotleft>down T t\<guillemotright> \<bullet> \<phi> \<tau> \<dagger> G) \<Rightarrow> \<phi> t \<dagger> Q)` \<Longrightarrow> (EVOL \<phi> G T) \<le> Ref \<lceil>P\<rceil> \<lceil>Q\<rceil>"
+  unfolding sH_g_evol_alt[symmetric] spec_def by (auto)
 
 lemma R_g_evoll: 
-  fixes \<phi> :: "('a::preorder) \<Rightarrow> 'b \<Rightarrow> 'b"
-  shows "P = (\<lambda>s. \<forall>t\<in>T. (\<forall>\<tau>\<in>down T t. G (\<phi> \<tau> s)) \<longrightarrow> R (\<phi> t s)) \<Longrightarrow> 
+  fixes \<phi> :: "('a::preorder) \<Rightarrow> 'b usubst"
+  shows "P = (\<^bold>\<forall>t\<in>\<guillemotleft>T\<guillemotright> \<bullet> (\<^bold>\<forall>\<tau>\<in>\<guillemotleft>down T t\<guillemotright> \<bullet> \<phi> \<tau> \<dagger> G) \<Rightarrow> \<phi> t \<dagger> R) \<Longrightarrow> 
   (EVOL \<phi> G T) ; Ref \<lceil>R\<rceil> \<lceil>Q\<rceil> \<le> Ref \<lceil>P\<rceil> \<lceil>Q\<rceil>"
   apply(rule_tac R=R in R_seq_rule)
   by (rule_tac R_g_evol_rule, simp_all)
 
 lemma R_g_evolr: 
-  fixes \<phi> :: "('a::preorder) \<Rightarrow> 'b \<Rightarrow> 'b"
-  shows "R = (\<lambda>s. \<forall>t\<in>T. (\<forall>\<tau>\<in>down T t. G (\<phi> \<tau> s)) \<longrightarrow> Q (\<phi> t s)) \<Longrightarrow> 
+  fixes \<phi> :: "('a::preorder) \<Rightarrow> 'b usubst"
+  shows "R = (\<^bold>\<forall>t\<in>\<guillemotleft>T\<guillemotright> \<bullet> (\<^bold>\<forall>\<tau>\<in>\<guillemotleft>down T t\<guillemotright> \<bullet> \<phi> \<tau> \<dagger> G) \<Rightarrow> \<phi> t \<dagger> Q) \<Longrightarrow> 
   Ref \<lceil>P\<rceil> \<lceil>R\<rceil>; (EVOL \<phi> G T) \<le> Ref \<lceil>P\<rceil> \<lceil>Q\<rceil>"
   apply(rule_tac R=R in R_seq_rule, simp)
   by (rule_tac R_g_evol_rule, simp)
 
 lemma 
-  fixes \<phi> :: "('a::preorder) \<Rightarrow> 'b \<Rightarrow> 'b"
-  shows "EVOL \<phi> G T ; Ref \<lceil>Q\<rceil> \<lceil>Q\<rceil> \<le> Ref \<lceil>\<lambda>s. \<forall>t\<in>T. (\<forall>\<tau>\<in>down T t. G (\<phi> \<tau> s)) \<longrightarrow> Q (\<phi> t s)\<rceil> \<lceil>Q\<rceil>"
+  fixes \<phi> :: "('a::preorder) \<Rightarrow> 'b usubst"
+  shows "EVOL \<phi> G T ; Ref \<lceil>Q\<rceil> \<lceil>Q\<rceil> \<le> Ref \<lceil>(\<^bold>\<forall>t\<in>\<guillemotleft>T\<guillemotright> \<bullet> (\<^bold>\<forall>\<tau>\<in>\<guillemotleft>down T t\<guillemotright> \<bullet> \<phi> \<tau> \<dagger> G) \<Rightarrow> \<phi> t \<dagger> Q)\<rceil> \<lceil>Q\<rceil>"
   by (rule R_g_evoll) simp
 
 lemma 
-  fixes \<phi> :: "('a::preorder) \<Rightarrow> 'b \<Rightarrow> 'b"
-  shows "Ref \<lceil>Q\<rceil> \<lceil>\<lambda>s. \<forall>t\<in>T. (\<forall>\<tau>\<in>down T t. G (\<phi> \<tau> s)) \<longrightarrow> Q (\<phi> t s)\<rceil>; EVOL \<phi> G T \<le> Ref \<lceil>Q\<rceil> \<lceil>Q\<rceil>"
+  fixes \<phi> :: "('a::preorder) \<Rightarrow> 'b usubst"
+  shows "Ref \<lceil>Q\<rceil> \<lceil>(\<^bold>\<forall>t\<in>\<guillemotleft>T\<guillemotright> \<bullet> (\<^bold>\<forall>\<tau>\<in>\<guillemotleft>down T t\<guillemotright> \<bullet> \<phi> \<tau> \<dagger> G) \<Rightarrow> \<phi> t \<dagger> Q)\<rceil>; EVOL \<phi> G T \<le> Ref \<lceil>Q\<rceil> \<lceil>Q\<rceil>"
   by (rule R_g_evolr) simp
 
 \<comment> \<open> Evolution command (ode) \<close>
+
+(****** SDF: Adapted this far *****)
 
 context local_flow
 begin
