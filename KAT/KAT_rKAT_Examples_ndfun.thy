@@ -13,30 +13,58 @@ theory KAT_rKAT_Examples_ndfun
 
 begin
 
+utp_lit_vars
+
+definition vec_lens :: "'i \<Rightarrow> ('a \<Longrightarrow> 'a^'i)" where
+[lens_defs]: "vec_lens k = \<lparr> lens_get = (\<lambda> s. vec_nth s k)
+                           , lens_put = (\<lambda> s v. (\<chi> j. ((($) s)(k := v)) j)) \<rparr>"
+
+lemma vec_vwb_lens [simp]: "vwb_lens (vec_lens k)"
+  apply (unfold_locales)
+  apply (simp_all add: vec_lens_def fun_eq_iff)
+  using vec_lambda_unique apply fastforce
+  done
+
+lemma vec_lens_indep [simp]: "(i \<noteq> j) \<Longrightarrow> (vec_lens i \<bowtie> vec_lens j)"
+  by (simp add: lens_indep_vwb_iff, auto simp add: lens_defs)
 
 subsubsection \<open>Pendulum\<close>
+
+abbreviation x :: "real \<Longrightarrow> real^2" where "x \<equiv> vec_lens 1"
+abbreviation y :: "real \<Longrightarrow> real^2" where "y \<equiv> vec_lens 2"
 
 text \<open> The ODEs @{text "x' t = y t"} and {text "y' t = - x t"} describe the circular motion of 
 a mass attached to a string looked from above. We use @{text "s$1"} to represent the x-coordinate
 and @{text "s$2"} for the y-coordinate. We prove that this motion remains circular. \<close>
 
+(*
 abbreviation fpend :: "real^2 \<Rightarrow> real^2" ("f")
   where "f s \<equiv> (\<chi> i. if i=1 then s$2 else -s$1)"
+*)
 
+abbreviation fpend :: "(real^2) usubst" ("f") where
+"fpend \<equiv> [x \<mapsto>\<^sub>s y, y \<mapsto>\<^sub>s -x]"
+
+abbreviation pend_flow :: "real \<Rightarrow> (real^2) usubst" ("\<phi>") where
+"pend_flow \<tau> \<equiv> [x \<mapsto>\<^sub>s x \<cdot> cos \<tau> + y \<cdot> sin \<tau>
+                ,y \<mapsto>\<^sub>s - x \<cdot> sin \<tau> + y \<cdot> cos \<tau>]"
+
+(*
 abbreviation pend_flow :: "real \<Rightarrow> real^2 \<Rightarrow> real^2" ("\<phi>")
   where "\<phi> \<tau> s \<equiv> (\<chi> i. if i = 1 then s$1 \<cdot> cos \<tau> + s$2 \<cdot> sin \<tau> 
   else - s$1 \<cdot> sin \<tau> + s$2 \<cdot> cos \<tau>)"
+*)
 
 \<comment> \<open>Verified with annotated dynamics \<close>
 
-lemma pendulum_dyn: "Hoare \<lceil>\<lambda>s. r\<^sup>2 = (s$1)\<^sup>2 + (s$2)\<^sup>2\<rceil> (EVOL \<phi> G T) \<lceil>\<lambda>s. r\<^sup>2 = (s$1)\<^sup>2 + (s$2)\<^sup>2\<rceil>"
-  by simp
+lemma pendulum_dyn: "\<^bold>{r\<^sup>2 = x\<^sup>2 + y\<^sup>2\<^bold>}(EVOL \<phi> G T)\<^bold>{r\<^sup>2 = x\<^sup>2 + y\<^sup>2\<^bold>}"
+  by (simp, rel_auto)
 
 \<comment> \<open>Verified with differential invariants \<close>
 
-lemma pendulum_inv: "Hoare \<lceil>\<lambda>s. r\<^sup>2 = (s$1)\<^sup>2 + (s$2)\<^sup>2\<rceil> (x\<acute>=f & G) \<lceil>\<lambda>s. r\<^sup>2 = (s$1)\<^sup>2 + (s$2)\<^sup>2\<rceil>"
-  by (auto intro!: diff_invariant_rules poly_derivatives)
-
+lemma pendulum_inv: "\<^bold>{r\<^sup>2 = x\<^sup>2 + y\<^sup>2\<^bold>} (x\<acute>= \<lbrakk>f\<rbrakk>\<^sub>e & G) \<^bold>{r\<^sup>2 = x\<^sup>2 + y\<^sup>2\<^bold>}"
+  by (simp, pred_simp, auto intro!: diff_invariant_rules poly_derivatives)
+  
 \<comment> \<open>Verified with the flow \<close>
 
 lemma local_flow_pend: "local_flow f UNIV UNIV \<phi>"
