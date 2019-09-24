@@ -205,6 +205,10 @@ lemma sH_g_orbital: "\<^bold>{P\<^bold>} x\<acute>= f & G on T S @ t\<^sub>0 \<^
   `P \<Rightarrow> (\<^bold>\<forall> X\<in>ivp_sols' f T S t\<^sub>0 \<bullet> (\<^bold>\<forall>t\<in>\<guillemotleft>T\<guillemotright> \<bullet> (\<^bold>\<forall> \<tau> \<in> \<guillemotleft>down T t\<guillemotright> \<bullet> G\<lbrakk>\<guillemotleft>X \<tau>\<guillemotright>/&\<^bold>v\<rbrakk>) \<Rightarrow> Q\<lbrakk>\<guillemotleft>X t\<guillemotright>/&\<^bold>v\<rbrakk>))`"
   unfolding g_orbital_eq g_ode_def ndfun_kat_H by (pred_auto)
 
+term local_flow
+
+locale ue_local_flow = local_flow "\<lbrakk>\<sigma>\<rbrakk>\<^sub>e" T S "\<lambda> t. \<lbrakk>\<rho> t\<rbrakk>\<^sub>e" for \<sigma> \<rho> T S
+
 context local_flow
 begin
 
