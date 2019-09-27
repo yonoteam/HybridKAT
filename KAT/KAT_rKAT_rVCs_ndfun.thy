@@ -416,37 +416,35 @@ lemma
 
 \<comment> \<open> Evolution command (ode) \<close>
 
-(****** SDF: Adapted this far *****)
-
-(*
 context local_flow
 begin
 
-lemma R_g_ode: "(x\<acute>= f & G on T S @ 0) \<le> Ref \<lceil>\<lambda>s. s\<in>S \<longrightarrow> (\<forall>t\<in>T. (\<forall>\<tau>\<in>down T t. G (\<phi> \<tau> s)) \<longrightarrow> P (\<phi> t s))\<rceil> \<lceil>P\<rceil>"
-  unfolding spec_def by (rule H_g_ode, simp)
+lemma R_g_ode: "(x\<acute>= f & G on T S @ 0) \<le> Ref \<lceil>U(&\<^bold>v\<in>\<guillemotleft>S\<guillemotright> \<Rightarrow> (\<forall>t\<in>\<guillemotleft>T\<guillemotright>. (\<forall>\<tau>\<in>\<guillemotleft>down T t\<guillemotright>. G\<lbrakk>\<guillemotleft>\<phi> \<tau>\<guillemotright> |> &\<^bold>v/&\<^bold>v\<rbrakk>) \<Rightarrow> P\<lbrakk>\<guillemotleft>\<phi> t\<guillemotright> |> &\<^bold>v/&\<^bold>v\<rbrakk>))\<rceil> \<lceil>P\<rceil>"
+  unfolding spec_def by (rule H_g_ode, rel_auto)
 
-lemma R_g_ode_rule: "(\<forall>s\<in>S. P s \<longrightarrow> (\<forall>t\<in>T. (\<forall>\<tau>\<in>down T t. G (\<phi> \<tau> s)) \<longrightarrow> Q (\<phi> t s))) \<Longrightarrow> 
+lemma R_g_ode_rule: "(\<forall>s\<in>S. \<lbrakk>P\<rbrakk>\<^sub>e s \<longrightarrow> (\<forall>t\<in>T. (\<forall>\<tau>\<in>down T t. \<lbrakk>G\<rbrakk>\<^sub>e (\<phi> \<tau> s)) \<longrightarrow> \<lbrakk>Q\<rbrakk>\<^sub>e (\<phi> t s))) \<Longrightarrow> 
   (x\<acute>= f & G on T S @ 0) \<le> Ref \<lceil>P\<rceil> \<lceil>Q\<rceil>"
   unfolding sH_g_ode[symmetric] by (rule R2)
 
-lemma R_g_odel: "P = (\<lambda>s. \<forall>t\<in>T. (\<forall>\<tau>\<in>down T t. G (\<phi> \<tau> s)) \<longrightarrow> R (\<phi> t s)) \<Longrightarrow> 
+lemma R_g_odel: "P = U(\<forall>t\<in>\<guillemotleft>T\<guillemotright>. (\<forall>\<tau>\<in>\<guillemotleft>down T t\<guillemotright>. G\<lbrakk>\<guillemotleft>\<phi> \<tau>\<guillemotright> |> &\<^bold>v/&\<^bold>v\<rbrakk>) \<longrightarrow> R\<lbrakk>\<guillemotleft>\<phi> t\<guillemotright> |> &\<^bold>v/&\<^bold>v\<rbrakk>) \<Longrightarrow> 
   (x\<acute>= f & G on T S @ 0) ; Ref \<lceil>R\<rceil> \<lceil>Q\<rceil> \<le> Ref \<lceil>P\<rceil> \<lceil>Q\<rceil>"
   apply(rule_tac R=R in R_seq_rule)
-  by (rule_tac R_g_ode_rule, simp_all)
+   apply (rule_tac R_g_ode_rule, simp_all, rel_auto)
+  done
 
-lemma R_g_oder: "R = (\<lambda>s. \<forall>t\<in>T. (\<forall>\<tau>\<in>down T t. G (\<phi> \<tau> s)) \<longrightarrow> Q (\<phi> t s)) \<Longrightarrow> 
+lemma R_g_oder: "R = U(\<forall>t\<in>\<guillemotleft>T\<guillemotright>. (\<forall>\<tau>\<in>\<guillemotleft>down T t\<guillemotright>. G\<lbrakk>\<guillemotleft>\<phi> \<tau>\<guillemotright> |> &\<^bold>v/&\<^bold>v\<rbrakk>) \<longrightarrow> Q\<lbrakk>\<guillemotleft>\<phi> t\<guillemotright> |> &\<^bold>v/&\<^bold>v\<rbrakk>) \<Longrightarrow> 
   Ref \<lceil>P\<rceil> \<lceil>R\<rceil>; (x\<acute>= f & G on T S @ 0) \<le> Ref \<lceil>P\<rceil> \<lceil>Q\<rceil>"
   apply(rule_tac R=R in R_seq_rule, simp)
-  by (rule_tac R_g_ode_rule, simp)
+  by (rule_tac R_g_ode_rule, rel_simp)
 
-lemma "(x\<acute>= f & G on T S @ 0) ; Ref \<lceil>Q\<rceil> \<lceil>Q\<rceil> \<le> Ref \<lceil>\<lambda>s. \<forall>t\<in>T. (\<forall>\<tau>\<in>down T t. G (\<phi> \<tau> s)) \<longrightarrow> Q (\<phi> t s)\<rceil> \<lceil>Q\<rceil>"
+lemma "(x\<acute>= f & G on T S @ 0) ; Ref \<lceil>Q\<rceil> \<lceil>Q\<rceil> \<le> Ref \<lceil>U(\<forall>t\<in>\<guillemotleft>T\<guillemotright>. (\<forall>\<tau>\<in>\<guillemotleft>down T t\<guillemotright>. G\<lbrakk>\<guillemotleft>\<phi> \<tau>\<guillemotright> |> &\<^bold>v/&\<^bold>v\<rbrakk>) \<longrightarrow> Q\<lbrakk>\<guillemotleft>\<phi> t\<guillemotright> |> &\<^bold>v/&\<^bold>v\<rbrakk>)\<rceil> \<lceil>Q\<rceil>"
   by (rule R_g_odel) simp
 
-lemma "Ref \<lceil>Q\<rceil> \<lceil>\<lambda>s. \<forall>t\<in>T. (\<forall>\<tau>\<in>down T t. G (\<phi> \<tau> s)) \<longrightarrow> Q (\<phi> t s)\<rceil>; (x\<acute>= f & G on T S @ 0) \<le> Ref \<lceil>Q\<rceil> \<lceil>Q\<rceil>"
-  by (rule R_g_oder) simp
+lemma "Ref \<lceil>Q\<rceil> \<lceil>U(\<forall>t\<in>\<guillemotleft>T\<guillemotright>. (\<forall>\<tau>\<in>\<guillemotleft>down T t\<guillemotright>. G\<lbrakk>\<guillemotleft>\<phi> \<tau>\<guillemotright> |> &\<^bold>v/&\<^bold>v\<rbrakk>) \<Rightarrow> Q\<lbrakk>\<guillemotleft>\<phi> t\<guillemotright> |> &\<^bold>v/&\<^bold>v\<rbrakk>)\<rceil>; (x\<acute>= f & G on T S @ 0) \<le> Ref \<lceil>Q\<rceil> \<lceil>Q\<rceil>"
+  by (rule R_g_oder) rel_simp
 
 lemma R_g_ode_ivl: 
-  "\<tau> \<ge> 0 \<Longrightarrow> \<tau> \<in> T \<Longrightarrow> (\<forall>s\<in>S. P s \<longrightarrow> (\<forall>t\<in>{0..\<tau>}. (\<forall>\<tau>\<in>{0..t}. G (\<phi> \<tau> s)) \<longrightarrow> Q (\<phi> t s))) \<Longrightarrow> 
+  "\<tau> \<ge> 0 \<Longrightarrow> \<tau> \<in> T \<Longrightarrow> (\<forall>s\<in>S. \<lbrakk>P\<rbrakk>\<^sub>e s \<longrightarrow> (\<forall>t\<in>{0..\<tau>}. (\<forall>\<tau>\<in>{0..t}. \<lbrakk>G\<rbrakk>\<^sub>e (\<phi> \<tau> s)) \<longrightarrow> \<lbrakk>Q\<rbrakk>\<^sub>e (\<phi> t s))) \<Longrightarrow> 
   (x\<acute>= f & G on {0..\<tau>} S @ 0) \<le> Ref \<lceil>P\<rceil> \<lceil>Q\<rceil>"
   unfolding sH_g_ode_ivl[symmetric] by (rule R2)
 
@@ -454,7 +452,7 @@ end
 
 \<comment> \<open> Evolution command (invariants) \<close>
 
-lemma R_g_ode_inv: "diff_invariant I f T S t\<^sub>0 G \<Longrightarrow> \<lceil>P\<rceil> \<le> \<lceil>I\<rceil> \<Longrightarrow> \<lceil>\<lambda>s. I s \<and> G s\<rceil> \<le> \<lceil>Q\<rceil> \<Longrightarrow> 
+lemma R_g_ode_inv: "diff_invariant \<lbrakk>I\<rbrakk>\<^sub>e f T S t\<^sub>0 \<lbrakk>G\<rbrakk>\<^sub>e \<Longrightarrow> \<lceil>P\<rceil> \<le> \<lceil>I\<rceil> \<Longrightarrow> \<lceil>I \<and> G\<rceil> \<le> \<lceil>Q\<rceil> \<Longrightarrow> 
   (x\<acute>=f & G on T S @ t\<^sub>0 DINV I) \<le> Ref \<lceil>P\<rceil> \<lceil>Q\<rceil>"
   unfolding spec_def by (auto simp: H_g_ode_inv)
 
@@ -466,47 +464,45 @@ text \<open> We derive a generalised version of some domain specific rules of di
 lemma diff_solve_axiom: 
   fixes c::"'a::{heine_borel, banach}"
   assumes "0 \<in> T" and "is_interval T" "open T"
-    and "\<forall>s. P s \<longrightarrow> (\<forall>t\<in>T. (\<P> (\<lambda> t. s + t *\<^sub>R c) (down T t) \<subseteq> {s. G s}) \<longrightarrow> Q (s + t *\<^sub>R c))"
+    and "\<forall>s. \<lbrakk>P\<rbrakk>\<^sub>e s \<longrightarrow> (\<forall>t\<in>T. (\<P> (\<lambda> t. s + t *\<^sub>R c) (down T t) \<subseteq> {s. \<lbrakk>G\<rbrakk>\<^sub>e s}) \<longrightarrow> \<lbrakk>Q\<rbrakk>\<^sub>e (s + t *\<^sub>R c))"
   shows "Hoare \<lceil>P\<rceil> (x\<acute>=(\<lambda>s. c) & G on T UNIV @ 0) \<lceil>Q\<rceil>"
   apply(subst local_flow.sH_g_ode[where f="\<lambda>s. c" and \<phi>="(\<lambda> t x. x + t *\<^sub>R c)"])
   using line_is_local_flow assms by auto
 
 lemma diff_solve_rule:
   assumes "local_flow f T UNIV \<phi>"
-    and "\<forall>s. P s \<longrightarrow> (\<forall> t\<in>T. (\<P> (\<lambda>t. \<phi> t s) (down T t) \<subseteq> {s. G s}) \<longrightarrow> Q (\<phi> t s))"
+    and "\<forall>s. \<lbrakk>P\<rbrakk>\<^sub>e s \<longrightarrow> (\<forall> t\<in>T. (\<P> (\<lambda>t. \<phi> t s) (down T t) \<subseteq> {s. \<lbrakk>G\<rbrakk>\<^sub>e s}) \<longrightarrow> \<lbrakk>Q\<rbrakk>\<^sub>e (\<phi> t s))"
   shows "Hoare \<lceil>P\<rceil> (x\<acute>= f & G on T UNIV @ 0) \<lceil>Q\<rceil>"
   using assms by(subst local_flow.sH_g_ode, auto)
 
 lemma diff_weak_rule: 
   assumes "\<lceil>G\<rceil> \<le> \<lceil>Q\<rceil>"
   shows "Hoare \<lceil>P\<rceil> (x\<acute>= f & G on T S @ t\<^sub>0) \<lceil>Q\<rceil>"
-  using assms unfolding g_orbital_eq ndfun_kat_H ivp_sols_def g_ode_def by auto
+  using assms unfolding g_orbital_eq ndfun_kat_H ivp_sols_def g_ode_def by rel_auto
 
 lemma diff_cut_rule:
   assumes Thyp: "is_interval T" "t\<^sub>0 \<in> T"
     and wp_C:"Hoare \<lceil>P\<rceil> (x\<acute>= f & G on T S @ t\<^sub>0) \<lceil>C\<rceil>"
-    and wp_Q:"Hoare \<lceil>P\<rceil> (x\<acute>= f & (\<lambda> s. G s \<and> C s) on T S @ t\<^sub>0) \<lceil>Q\<rceil>"
+    and wp_Q:"Hoare \<lceil>P\<rceil> (x\<acute>= f & (G \<and> C) on T S @ t\<^sub>0) \<lceil>Q\<rceil>"
   shows "Hoare \<lceil>P\<rceil> (x\<acute>= f & G on T S @ t\<^sub>0) \<lceil>Q\<rceil>"
 proof(subst ndfun_kat_H, simp add: g_orbital_eq p2ndf_def g_ode_def, clarsimp)
-  fix t::real and X::"real \<Rightarrow> 'a" and s assume "P s" and "t \<in> T"
+  fix t::real and X::"real \<Rightarrow> 'a" and s assume "\<lbrakk>P\<rbrakk>\<^sub>e s" and "t \<in> T"
     and x_ivp:"X \<in> ivp_sols (\<lambda>t. f) T S t\<^sub>0 s" 
-    and guard_x:"\<forall>x. x \<in> T \<and> x \<le> t \<longrightarrow> G (X x)"
-  have "\<forall>t\<in>(down T t). X t \<in> g_orbital f G T S t\<^sub>0 s"
+    and guard_x:"\<forall>x. x \<in> T \<and> x \<le> t \<longrightarrow> \<lbrakk>G\<rbrakk>\<^sub>e (X x)"
+  have "\<forall>t\<in>(down T t). X t \<in> g_orbital f \<lbrakk>G\<rbrakk>\<^sub>e T S t\<^sub>0 s"
     using g_orbitalI[OF x_ivp] guard_x by auto
-  hence "\<forall>t\<in>(down T t). C (X t)" 
-    using wp_C \<open>P s\<close> by (subst (asm) ndfun_kat_H, auto simp: g_ode_def)
-  hence "X t \<in> g_orbital f (\<lambda>s. G s \<and> C s) T S t\<^sub>0 s"
-    using guard_x \<open>t \<in> T\<close> by (auto intro!: g_orbitalI x_ivp)
-  thus "Q (X t)"
-    using \<open>P s\<close> wp_Q by (subst (asm) ndfun_kat_H) (auto simp: g_ode_def)
+  hence "\<forall>t\<in>(down T t). \<lbrakk>C\<rbrakk>\<^sub>e (X t)" 
+    using wp_C \<open>\<lbrakk>P\<rbrakk>\<^sub>e s\<close> by (subst (asm) ndfun_kat_H, auto simp: g_ode_def)
+  hence "X t \<in> g_orbital f \<lbrakk>G \<and> C\<rbrakk>\<^sub>e T S t\<^sub>0 s"
+    using guard_x \<open>t \<in> T\<close> by (auto intro!: g_orbitalI x_ivp, rel_simp)
+  thus "\<lbrakk>Q\<rbrakk>\<^sub>e (X t)"
+    using \<open>\<lbrakk>P\<rbrakk>\<^sub>e s\<close> wp_Q by (subst (asm) ndfun_kat_H) (auto simp: g_ode_def)
 qed
-*)
 
 abbreviation g_global_ode ::"(('a::banach)\<Rightarrow>'a) \<Rightarrow> 'a upred \<Rightarrow> 'a nd_fun" ("(1x\<acute>=_ & _)") 
   where "(x\<acute>= f & G) \<equiv> (x\<acute>= f & G on UNIV UNIV @ 0)"
 
 abbreviation g_global_ode_inv :: "(('a::banach)\<Rightarrow>'a) \<Rightarrow> 'a upred \<Rightarrow> 'a upred \<Rightarrow> 'a nd_fun" 
   ("(1x\<acute>=_ & _ DINV _)") where "(x\<acute>= f & G DINV I) \<equiv> (x\<acute>= f & G on UNIV UNIV @ 0 DINV I)"
-
 
 end
