@@ -426,14 +426,16 @@ lemma R_therm_dyn_down:
   shows "Ref \<lceil>U(\<Theta> = 0 \<and> I Tmin Tmax \<and> t = 0 \<and> T\<^sub>0 = T)\<rceil> \<lceil>I Tmin Tmax\<rceil> \<ge> 
     (x\<acute>= \<lbrakk>f a 0\<rbrakk>\<^sub>e & G Tmin Tmax a 0 on {0..\<tau>} UNIV @ 0)"
   apply(rule local_flow.R_g_ode_ivl[OF local_flow_therm])
-  using assms therm_dyn_down_real_arith[OF assms(1,3), of _ Tmax] by auto
+  using assms apply(simp_all, pred_simp)
+  using therm_dyn_down_real_arith[OF assms(1,3), of _ Tmax] by auto
 
 lemma R_therm_dyn_up: 
   assumes "a > 0" and "0 \<le> \<tau>" and "0 < Tmin" and "Tmax < L"
   shows "Ref \<lceil>U(\<not> \<Theta> = 0 \<and> I Tmin Tmax \<and> t = 0 \<and> T\<^sub>0 = T)\<rceil> \<lceil>I Tmin Tmax\<rceil> \<ge> 
     (x\<acute>= \<lbrakk>f a L\<rbrakk>\<^sub>e & G Tmin Tmax a L on {0..\<tau>} UNIV @ 0)"
   apply(rule local_flow.R_g_ode_ivl[OF local_flow_therm])
-  using assms therm_dyn_up_real_arith[OF assms(1) _ _ assms(4), of Tmin] by auto
+  using assms apply(simp_all, pred_simp)
+  using therm_dyn_up_real_arith[OF assms(1) _ _ assms(4), of Tmin] by auto
 
 lemma R_therm_dyn:
   assumes "a > 0" and "0 \<le> \<tau>" and "0 < Tmin" and "Tmax < L"
@@ -707,11 +709,13 @@ proof-
   have dynup: "(x\<acute>=\<lbrakk>f (c\<^sub>i-c\<^sub>o)\<rbrakk>\<^sub>e & G hmax (c\<^sub>i-c\<^sub>o) on {0..\<tau>} UNIV @ 0 DINV (dI hmin hmax (c\<^sub>i-c\<^sub>o))) \<le> 
     Ref \<lceil>U(Pump = 0 \<and> I hmin hmax \<and> t = 0 \<and> h\<^sub>0 = h)\<rceil> \<lceil>I hmin hmax\<rceil>"
     apply(rule R_g_ode_inv[OF tank_diff_inv[OF assms(1)]])
-    using assms by (auto simp: tank_inv_arith1)
+    using assms apply(simp_all, pred_simp, pred_simp)
+    by (auto simp: tank_inv_arith1)
   have dyndown: "(x\<acute>=\<lbrakk>f (-c\<^sub>o)\<rbrakk>\<^sub>e & G hmin (-c\<^sub>o) on {0..\<tau>} UNIV @ 0 DINV (dI hmin hmax (-c\<^sub>o))) \<le> 
     Ref \<lceil>U(\<not> Pump = 0 \<and> I hmin hmax \<and> t = 0 \<and> h\<^sub>0 = h)\<rceil> \<lceil>I hmin hmax\<rceil>"
-    apply(rule R_g_ode_inv)
-    using tank_diff_inv[OF assms(1), of "-c\<^sub>o"] assms
+    apply(rule R_g_ode_inv, simp)
+    using tank_diff_inv[OF assms(1), of "-c\<^sub>o"] apply(pred_simp)
+    using assms apply(simp_all, pred_simp, pred_simp)
     by (auto simp: tank_inv_arith2)
   have dyn: "?dyn \<le> Ref \<lceil>?Icntrl\<rceil> \<lceil>I hmin hmax\<rceil>"
     apply(rule order_trans, rule R_cond_mono)
