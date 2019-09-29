@@ -478,7 +478,7 @@ lemma diff_solve_rule:
 lemma diff_weak_rule: 
   assumes "\<lceil>G\<rceil> \<le> \<lceil>Q\<rceil>"
   shows "Hoare \<lceil>P\<rceil> (x\<acute>= f & G on T S @ t\<^sub>0) \<lceil>Q\<rceil>"
-  using assms unfolding g_orbital_eq ndfun_kat_H ivp_sols_def g_ode_def by rel_auto
+  using assms unfolding ndfun_kat_H g_ode_def g_orbital_eq ivp_sols_def by (simp, rel_auto)
 
 lemma diff_cut_rule:
   assumes Thyp: "is_interval T" "t\<^sub>0 \<in> T"

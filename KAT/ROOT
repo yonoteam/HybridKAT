@@ -1,4 +1,4 @@
-session KAT = "Ordinary_Differential_Equations" +
+session KAT = "UTP-Hybrid-Imports" +
   options [quick_and_dirty, document = pdf, document_output = "Hybrid_KAT_rKAT"]
   sessions
     Hybrid_Systems_VCs
@@ -8,7 +8,7 @@ session KAT = "Ordinary_Differential_Equations" +
     B*)
   theories
     "KAT_rKAT_Examples_ndfun"
-    "KAT_rKAT_Examples_rel"
+    (*"KAT_rKAT_Examples_rel"*)
   document_files
     "root.bib"
     "root.tex"
