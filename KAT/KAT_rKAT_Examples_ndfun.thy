@@ -252,7 +252,7 @@ abbreviation T\<^sub>0 :: "real \<Longrightarrow> real^4" where "T\<^sub>0 \<equ
 abbreviation \<Theta> :: "real \<Longrightarrow> real^4" where "\<Theta> \<equiv> vec_lens 4"
 
 abbreviation ftherm :: "real \<Rightarrow> real \<Rightarrow> (real, 4) vec \<Rightarrow> (real, 4) vec" ("f")
-  where "f a L \<equiv> \<lbrakk>[T \<mapsto>\<^sub>s - a * (T - L), t \<mapsto>\<^sub>s 1, T\<^sub>0 \<mapsto>\<^sub>s 0, \<Theta> \<mapsto>\<^sub>s 0]\<rbrakk>\<^sub>e"
+  where "f a c \<equiv> \<lbrakk>[T \<mapsto>\<^sub>s - a * (T - c), t \<mapsto>\<^sub>s 1, T\<^sub>0 \<mapsto>\<^sub>s 0, \<Theta> \<mapsto>\<^sub>s 0]\<rbrakk>\<^sub>e"
 
 abbreviation therm_guard :: "real \<Rightarrow> real \<Rightarrow> real \<Rightarrow> real \<Rightarrow> (real^4) upred" ("G")
   where "G T\<^sub>m T\<^sub>M a L \<equiv> U(t \<le> - (ln ((L-(if L=0 then T\<^sub>m else T\<^sub>M))/(L-T\<^sub>0)))/a)"
@@ -265,7 +265,7 @@ abbreviation therm_loop_inv :: "real \<Rightarrow> real \<Rightarrow> (real^4) u
 no_utp_lift "therm_loop_inv" (0 1)
 
 abbreviation therm_flow :: "real \<Rightarrow> real \<Rightarrow> real \<Rightarrow> (real^4) usubst" ("\<phi>") 
-  where "therm_flow a L \<tau> \<equiv> [T \<mapsto>\<^sub>s - exp(-a * \<tau>) * (L - T) + L, t \<mapsto>\<^sub>s \<tau> + t, T\<^sub>0 \<mapsto>\<^sub>s T\<^sub>0, \<Theta> \<mapsto>\<^sub>s \<Theta>]"
+  where "\<phi> a c \<tau> \<equiv> [T \<mapsto>\<^sub>s - exp(-a * \<tau>) * (c - T) + c, t \<mapsto>\<^sub>s \<tau> + t, T\<^sub>0 \<mapsto>\<^sub>s T\<^sub>0, \<Theta> \<mapsto>\<^sub>s \<Theta>]"
 
 abbreviation therm_ctrl :: "real \<Rightarrow> real \<Rightarrow> (real^4) nd_fun" ("ctrl")
   where "ctrl T\<^sub>m T\<^sub>M \<equiv> 
@@ -574,7 +574,7 @@ lemma tank_inv:
        apply(simp, pred_simp, simp, pred_simp)
      apply(rule H_cond, simp, pred_simp)+
   apply(simp, pred_simp)
-    apply(rule H_cond, rule H_g_ode_inv, simp, pred_simp)
+  apply(rule H_cond, rule H_g_ode_inv, simp, pred_simp)
   using tank_diff_inv[OF assms(1)] apply(pred_simp)
       apply(simp, pred_simp, simp, pred_simp)
   using assms tank_inv_arith1 apply force
@@ -649,5 +649,7 @@ no_notation ftank ("f")
         and tank_guard ("G")
         and tank_loop_inv ("I")
         and tank_diff_inv ("dI")
+        and tank_ctrl ("ctrl")
+        and tank_dyn_dinv ("dyn")
 
 end
