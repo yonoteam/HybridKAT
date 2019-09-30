@@ -26,6 +26,7 @@ no_notation Archimedean_Field.ceiling ("\<lceil>_\<rceil>")
         and tau ("\<tau>")
         and Relation.relcomp (infixl ";" 75)
         and proto_near_quantale_class.bres (infixr "\<rightarrow>" 60)
+        and tt ("\<lparr>_\<rparr>_\<lparr>_\<rparr>")
 
 \<comment> \<open>Canonical lifting from predicates to state transformers and its simplification rules\<close>
 
@@ -118,6 +119,8 @@ lemma sH_seq: "\<^bold>{P\<^bold>} X ; Y \<^bold>{Q\<^bold>} =  \<^bold>{P\<^bol
 abbreviation cond_sugar :: "'a upred \<Rightarrow> 'a nd_fun \<Rightarrow> 'a nd_fun \<Rightarrow> 'a nd_fun" ("IF _ THEN _ ELSE _" [64,64] 63) 
   where "IF B THEN X ELSE Y \<equiv> ifthenelse \<lceil>B\<rceil> X Y"
 
+utp_lift_notation cond_sugar (0)
+
 lemma H_cond: "\<^bold>{P \<and> B\<^bold>} X \<^bold>{Q\<^bold>} \<Longrightarrow> \<^bold>{P \<and> \<not> B\<^bold>} Y \<^bold>{Q\<^bold>} \<Longrightarrow> \<^bold>{P\<^bold>} IF B THEN X ELSE Y \<^bold>{Q\<^bold>}"
   by (rule H_cond, simp_all)
 
@@ -128,6 +131,8 @@ lemma sH_cond[simp]: "\<^bold>{P\<^bold>} IF B THEN X ELSE Y \<^bold>{Q\<^bold>}
 
 abbreviation while_inv_sugar :: "'a upred \<Rightarrow> 'a upred \<Rightarrow> 'a nd_fun \<Rightarrow> 'a nd_fun" ("WHILE _ INV _ DO _" [64,64,64] 63) 
   where "WHILE B INV I DO X \<equiv> while_inv \<lceil>B\<rceil> \<lceil>I\<rceil> X"
+
+utp_lift_notation while_inv_sugar (0)
 
 (*
 lemma sH_while_inv: "\<forall>s. P s \<longrightarrow> I s \<Longrightarrow> \<forall>s. I s \<and> \<not> B s \<longrightarrow> Q s \<Longrightarrow> Hoare \<lceil>\<lambda>s. I s \<and> B s\<rceil> X \<lceil>I\<rceil> 
@@ -144,6 +149,8 @@ lemma sH_while_inv: "`P \<Rightarrow> I` \<Longrightarrow> `I \<and> \<not> B \<
 abbreviation loopi_sugar :: "'a nd_fun \<Rightarrow> 'a upred \<Rightarrow> 'a nd_fun" ("LOOP _ INV _ " [64,64] 63)
   where "LOOP X INV I \<equiv> loopi X \<lceil>I\<rceil>"
 
+utp_lift_notation loopi_sugar (1)
+
 lemma H_loop: "\<^bold>{P\<^bold>} X \<^bold>{P\<^bold>} \<Longrightarrow> \<^bold>{P\<^bold>} LOOP X INV I  \<^bold>{P\<^bold>}"
   by (auto intro: H_loop)
 
@@ -156,6 +163,8 @@ subsection\<open> Verification of hybrid programs \<close>
 
 definition g_evol :: "(('a::ord) \<Rightarrow> 'b usubst) \<Rightarrow> 'b upred \<Rightarrow> 'a set \<Rightarrow> 'b nd_fun" ("EVOL")
   where "EVOL \<phi> G T = (\<lambda>s. g_orbit (\<lambda>t. \<lbrakk>\<phi> t\<rbrakk>\<^sub>e s) \<lbrakk>G\<rbrakk>\<^sub>e T)\<^sup>\<bullet>"
+
+utp_lift_notation g_evol (1)
 
 lemma H_g_evol: 
   fixes \<phi> :: "('a::preorder) \<Rightarrow> 'b usubst"
@@ -189,6 +198,8 @@ definition g_ode ::"(('a::banach) \<Rightarrow> 'a) \<Rightarrow> 'a upred \<Rig
   real \<Rightarrow> 'a nd_fun" ("(1x\<acute>= _ & _ on _ _ @ _)") 
   where "(x\<acute>= f & G on T S @ t\<^sub>0) \<equiv> (\<lambda> s. g_orbital f \<lbrakk>G\<rbrakk>\<^sub>e T S t\<^sub>0 s)\<^sup>\<bullet>"
 
+utp_lift_notation g_ode (1)
+
 lemma H_g_orbital: 
   "P = (\<^bold>\<forall> X\<in>(\<guillemotleft>ivp_sols (\<lambda> t. f) T S t\<^sub>0\<guillemotright> |> &\<^bold>v) \<bullet> (\<^bold>\<forall>t\<in>\<guillemotleft>T\<guillemotright> \<bullet> (\<^bold>\<forall> \<tau> \<in> \<guillemotleft>down T t\<guillemotright> \<bullet> G\<lbrakk>\<guillemotleft>X \<tau>\<guillemotright>/&\<^bold>v\<rbrakk>) \<Rightarrow> Q\<lbrakk>\<guillemotleft>X t\<guillemotright>/&\<^bold>v\<rbrakk>)) \<Longrightarrow> 
   \<^bold>{P\<^bold>} x\<acute>= f & G on T S @ t\<^sub>0 \<^bold>{Q\<^bold>}"
@@ -204,8 +215,6 @@ lemma H_g_orbital:
 lemma sH_g_orbital: "\<^bold>{P\<^bold>} x\<acute>= f & G on T S @ t\<^sub>0 \<^bold>{Q\<^bold>} = 
   `P \<Rightarrow> (\<^bold>\<forall> X\<in>ivp_sols' f T S t\<^sub>0 \<bullet> (\<^bold>\<forall>t\<in>\<guillemotleft>T\<guillemotright> \<bullet> (\<^bold>\<forall> \<tau> \<in> \<guillemotleft>down T t\<guillemotright> \<bullet> G\<lbrakk>\<guillemotleft>X \<tau>\<guillemotright>/&\<^bold>v\<rbrakk>) \<Rightarrow> Q\<lbrakk>\<guillemotleft>X t\<guillemotright>/&\<^bold>v\<rbrakk>))`"
   unfolding g_orbital_eq g_ode_def ndfun_kat_H by (pred_auto)
-
-term local_flow
 
 locale ue_local_flow = local_flow "\<lbrakk>\<sigma>\<rbrakk>\<^sub>e" T S "\<lambda> t. \<lbrakk>\<rho> t\<rbrakk>\<^sub>e" for \<sigma> \<rho> T S
 
@@ -292,6 +301,8 @@ definition g_ode_inv :: "(('a::banach)\<Rightarrow>'a) \<Rightarrow> 'a upred \<
   real \<Rightarrow> 'a upred \<Rightarrow> 'a nd_fun" ("(1x\<acute>=_ & _ on _ _ @ _ DINV _ )") 
   where "(x\<acute>= f & G on T S @ t\<^sub>0 DINV I) = (x\<acute>= f & G on T S @ t\<^sub>0)"
 
+utp_lift_notation g_ode_inv (1 5)
+
 lemma sH_g_orbital_guard: 
   assumes "R = (G \<and> Q)"
   shows "Hoare \<lceil>P\<rceil> (x\<acute>= f & G on T S @ t\<^sub>0) \<lceil>Q\<rceil> = Hoare \<lceil>P\<rceil> (x\<acute>= f & G on T S @ t\<^sub>0) \<lceil>R\<rceil>" 
@@ -316,46 +327,50 @@ lemma H_g_ode_inv: "Hoare \<lceil>I\<rceil> (x\<acute>= f & G on T S @ t\<^sub>0
 
 subsection \<open> Refinement Components \<close>
 
+abbreviation RProgr ("\<^bold>[_,_\<^bold>]") where "\<^bold>[P,Q\<^bold>] \<equiv> Ref \<lceil>P\<rceil> \<lceil>Q\<rceil>"
+
+utp_lift_notation RProgr (0 1)
+
 \<comment> \<open> Skip \<close>
 
-lemma R_skip: "`P \<Rightarrow> Q` \<Longrightarrow> 1 \<le> Ref \<lceil>P\<rceil> \<lceil>Q\<rceil>"
+lemma R_skip: "`P \<Rightarrow> Q` \<Longrightarrow> 1 \<le> \<^bold>[P,Q\<^bold>]"
   by (auto simp: spec_def ndfun_kat_H one_nd_fun_def, pred_auto)
 
 \<comment> \<open> Composition \<close>
 
-lemma R_seq: "(Ref \<lceil>P\<rceil> \<lceil>R\<rceil>) ; (Ref \<lceil>R\<rceil> \<lceil>Q\<rceil>) \<le> Ref \<lceil>P\<rceil> \<lceil>Q\<rceil>"
+lemma R_seq: "\<^bold>[P,R\<^bold>] ; \<^bold>[R,Q\<^bold>] \<le> \<^bold>[P,Q\<^bold>]"
   using R_seq by blast
 
-lemma R_seq_rule: "X \<le> Ref \<lceil>P\<rceil> \<lceil>R\<rceil> \<Longrightarrow> Y \<le> Ref \<lceil>R\<rceil> \<lceil>Q\<rceil> \<Longrightarrow> X; Y \<le> Ref \<lceil>P\<rceil> \<lceil>Q\<rceil>"
+lemma R_seq_rule: "X \<le> \<^bold>[P,R\<^bold>] \<Longrightarrow> Y \<le> \<^bold>[R,Q\<^bold>] \<Longrightarrow> X; Y \<le> \<^bold>[P,Q\<^bold>]"
   unfolding spec_def by (rule H_seq)
 
 lemmas R_seq_mono = mult_isol_var
 
 \<comment> \<open> Assignment \<close>
 
-lemma R_assign: "(x ::= e) \<le> Ref \<lceil>P\<lbrakk>e/&x\<rbrakk>\<rceil> \<lceil>P\<rceil>"
+lemma R_assign: "(x ::= e) \<le> \<^bold>[P\<lbrakk>e/&x\<rbrakk>,P\<^bold>]"
   unfolding spec_def by (rule H_assign, clarsimp simp: fun_eq_iff fun_upd_def)
 
-lemma R_assign_rule: "`P \<Rightarrow> Q\<lbrakk>e/&x\<rbrakk>` \<Longrightarrow> (x ::= e) \<le> Ref \<lceil>P\<rceil> \<lceil>Q\<rceil>"
+lemma R_assign_rule: "`P \<Rightarrow> Q\<lbrakk>e/&x\<rbrakk>` \<Longrightarrow> (x ::= e) \<le> \<^bold>[P,Q\<^bold>]"
   unfolding sH_assign[symmetric] spec_def by (metis pr_var_def sH_assign_alt) 
 
-lemma R_assignl: "P = R\<lbrakk>e/&x\<rbrakk> \<Longrightarrow> (x ::= e) ; Ref \<lceil>R\<rceil> \<lceil>Q\<rceil> \<le> Ref \<lceil>P\<rceil> \<lceil>Q\<rceil>"
+lemma R_assignl: "P = R\<lbrakk>e/&x\<rbrakk> \<Longrightarrow> (x ::= e) ; \<^bold>[R,Q\<^bold>] \<le> \<^bold>[P,Q\<^bold>]"
   apply(rule_tac R=R in R_seq_rule)
   by (rule_tac R_assign_rule, simp_all)
 
-lemma R_assignr: "R = Q\<lbrakk>e/&x\<rbrakk> \<Longrightarrow> Ref \<lceil>P\<rceil> \<lceil>R\<rceil>; (x ::= e) \<le> Ref \<lceil>P\<rceil> \<lceil>Q\<rceil>"
+lemma R_assignr: "R = Q\<lbrakk>e/&x\<rbrakk> \<Longrightarrow> \<^bold>[P,R\<^bold>]; (x ::= e) \<le> \<^bold>[P,Q\<^bold>]"
   apply(rule_tac R=R in R_seq_rule, simp)
   by (rule_tac R_assign_rule, simp)
 
-lemma "(x ::= e) ; Ref \<lceil>Q\<rceil> \<lceil>Q\<rceil> \<le> Ref \<lceil>Q\<lbrakk>e/&x\<rbrakk>\<rceil> \<lceil>Q\<rceil>"
+lemma "(x ::= e) ; \<^bold>[Q,Q\<^bold>] \<le> \<^bold>[Q\<lbrakk>e/&x\<rbrakk>,Q\<^bold>]"
   by (rule R_assignl) simp
 
-lemma "Ref \<lceil>Q\<rceil> \<lceil>Q\<lbrakk>e/&x\<rbrakk>\<rceil>; (x ::= e) \<le> Ref \<lceil>Q\<rceil> \<lceil>Q\<rceil>"
+lemma "\<^bold>[Q,Q\<lbrakk>e/&x\<rbrakk>\<^bold>] ; (x ::= e) \<le> \<^bold>[Q,Q\<^bold>]"
   by (rule R_assignr) simp
 
 \<comment> \<open> Conditional \<close>
 
-lemma R_cond: "(IF B THEN Ref \<lceil>B \<and> P\<rceil> \<lceil>Q\<rceil> ELSE Ref \<lceil>\<not> B \<and> P\<rceil> \<lceil>Q\<rceil>) \<le> Ref \<lceil>P\<rceil> \<lceil>Q\<rceil>"
+lemma R_cond: "K1 = U(B \<and> P) \<Longrightarrow> K2 = U(\<not> B \<and> P) \<Longrightarrow> (IF B THEN \<^bold>[K1,Q\<^bold>] ELSE \<^bold>[K2,Q\<^bold>]) \<le> \<^bold>[P,Q\<^bold>]"
   using R_cond[of "\<lceil>B\<rceil>" "\<lceil>P\<rceil>" "\<lceil>Q\<rceil>"] by simp
 
 lemma R_cond_mono: "X \<le> X' \<Longrightarrow> Y \<le> Y' \<Longrightarrow> (IF P THEN X ELSE Y) \<le> IF P THEN X' ELSE Y'"
@@ -364,7 +379,7 @@ lemma R_cond_mono: "X \<le> X' \<Longrightarrow> Y \<le> Y' \<Longrightarrow> (I
 
 \<comment> \<open> While loop \<close>
 
-lemma R_while: "WHILE Q INV I DO (Ref \<lceil>P \<and> Q\<rceil> \<lceil>P\<rceil>) \<le> Ref \<lceil>P\<rceil> \<lceil>P \<and> \<not> Q\<rceil>"
+lemma R_while: "WHILE Q INV I DO \<^bold>[P \<and> Q,P\<^bold>] \<le> \<^bold>[P,P \<and> \<not> Q\<^bold>]"
   unfolding while_inv_def using R_while[of "\<lceil>Q\<rceil>" "\<lceil>P\<rceil>"] by simp
 
 lemma R_while_mono: "X \<le> X' \<Longrightarrow> (WHILE P INV I DO X) \<le> WHILE P INV I DO X'"
@@ -372,7 +387,7 @@ lemma R_while_mono: "X \<le> X' \<Longrightarrow> (WHILE P INV I DO X) \<le> WHI
 
 \<comment> \<open> Finite loop \<close>
 
-lemma R_loop: "X \<le> Ref \<lceil>I\<rceil> \<lceil>I\<rceil> \<Longrightarrow> \<lceil>P\<rceil> \<le> \<lceil>I\<rceil> \<Longrightarrow> \<lceil>I\<rceil> \<le> \<lceil>Q\<rceil> \<Longrightarrow> LOOP X INV I \<le> Ref \<lceil>P\<rceil> \<lceil>Q\<rceil>"
+lemma R_loop: "X \<le> \<^bold>[I,I\<^bold>] \<Longrightarrow> \<lceil>P\<rceil> \<le> \<lceil>I\<rceil> \<Longrightarrow> \<lceil>I\<rceil> \<le> \<lceil>Q\<rceil> \<Longrightarrow> LOOP X INV I \<le> \<^bold>[P,Q\<^bold>]"
   unfolding spec_def using H_loopI by blast
 
 lemma R_loop_mono: "X \<le> X' \<Longrightarrow> LOOP X INV I \<le> LOOP X' INV I"
@@ -387,31 +402,31 @@ lemma R_g_evol:
 
 lemma R_g_evol_rule: 
   fixes \<phi> :: "('a::preorder) \<Rightarrow> 'b usubst"
-  shows "`P \<Rightarrow> (\<^bold>\<forall>t\<in>\<guillemotleft>T\<guillemotright> \<bullet> (\<^bold>\<forall>\<tau>\<in>\<guillemotleft>down T t\<guillemotright> \<bullet> \<phi> \<tau> \<dagger> G) \<Rightarrow> \<phi> t \<dagger> Q)` \<Longrightarrow> (EVOL \<phi> G T) \<le> Ref \<lceil>P\<rceil> \<lceil>Q\<rceil>"
+  shows "`P \<Rightarrow> (\<^bold>\<forall>t\<in>\<guillemotleft>T\<guillemotright> \<bullet> (\<^bold>\<forall>\<tau>\<in>\<guillemotleft>down T t\<guillemotright> \<bullet> \<phi> \<tau> \<dagger> G) \<Rightarrow> \<phi> t \<dagger> Q)` \<Longrightarrow> (EVOL \<phi> G T) \<le> \<^bold>[P,Q\<^bold>]"
   unfolding sH_g_evol_alt[symmetric] spec_def by (auto)
 
 lemma R_g_evoll: 
   fixes \<phi> :: "('a::preorder) \<Rightarrow> 'b usubst"
   shows "P = (\<^bold>\<forall>t\<in>\<guillemotleft>T\<guillemotright> \<bullet> (\<^bold>\<forall>\<tau>\<in>\<guillemotleft>down T t\<guillemotright> \<bullet> \<phi> \<tau> \<dagger> G) \<Rightarrow> \<phi> t \<dagger> R) \<Longrightarrow> 
-  (EVOL \<phi> G T) ; Ref \<lceil>R\<rceil> \<lceil>Q\<rceil> \<le> Ref \<lceil>P\<rceil> \<lceil>Q\<rceil>"
+  (EVOL \<phi> G T) ; \<^bold>[R,Q\<^bold>] \<le> \<^bold>[P,Q\<^bold>]"
   apply(rule_tac R=R in R_seq_rule)
   by (rule_tac R_g_evol_rule, simp_all)
 
 lemma R_g_evolr: 
   fixes \<phi> :: "('a::preorder) \<Rightarrow> 'b usubst"
   shows "R = (\<^bold>\<forall>t\<in>\<guillemotleft>T\<guillemotright> \<bullet> (\<^bold>\<forall>\<tau>\<in>\<guillemotleft>down T t\<guillemotright> \<bullet> \<phi> \<tau> \<dagger> G) \<Rightarrow> \<phi> t \<dagger> Q) \<Longrightarrow> 
-  Ref \<lceil>P\<rceil> \<lceil>R\<rceil>; (EVOL \<phi> G T) \<le> Ref \<lceil>P\<rceil> \<lceil>Q\<rceil>"
+  \<^bold>[P,R\<^bold>]; (EVOL \<phi> G T) \<le> \<^bold>[P,Q\<^bold>]"
   apply(rule_tac R=R in R_seq_rule, simp)
   by (rule_tac R_g_evol_rule, simp)
 
 lemma 
   fixes \<phi> :: "('a::preorder) \<Rightarrow> 'b usubst"
-  shows "EVOL \<phi> G T ; Ref \<lceil>Q\<rceil> \<lceil>Q\<rceil> \<le> Ref \<lceil>(\<^bold>\<forall>t\<in>\<guillemotleft>T\<guillemotright> \<bullet> (\<^bold>\<forall>\<tau>\<in>\<guillemotleft>down T t\<guillemotright> \<bullet> \<phi> \<tau> \<dagger> G) \<Rightarrow> \<phi> t \<dagger> Q)\<rceil> \<lceil>Q\<rceil>"
+  shows "EVOL \<phi> G T ; \<^bold>[Q,Q\<^bold>] \<le> Ref \<lceil>\<^bold>\<forall>t\<in>\<guillemotleft>T\<guillemotright> \<bullet> (\<^bold>\<forall>\<tau>\<in>\<guillemotleft>down T t\<guillemotright> \<bullet> \<phi> \<tau> \<dagger> G) \<Rightarrow> \<phi> t \<dagger> Q\<rceil> \<lceil>Q\<rceil>"
   by (rule R_g_evoll) simp
 
 lemma 
   fixes \<phi> :: "('a::preorder) \<Rightarrow> 'b usubst"
-  shows "Ref \<lceil>Q\<rceil> \<lceil>(\<^bold>\<forall>t\<in>\<guillemotleft>T\<guillemotright> \<bullet> (\<^bold>\<forall>\<tau>\<in>\<guillemotleft>down T t\<guillemotright> \<bullet> \<phi> \<tau> \<dagger> G) \<Rightarrow> \<phi> t \<dagger> Q)\<rceil>; EVOL \<phi> G T \<le> Ref \<lceil>Q\<rceil> \<lceil>Q\<rceil>"
+  shows "Ref \<lceil>Q\<rceil> \<lceil>\<^bold>\<forall>t\<in>\<guillemotleft>T\<guillemotright> \<bullet> (\<^bold>\<forall>\<tau>\<in>\<guillemotleft>down T t\<guillemotright> \<bullet> \<phi> \<tau> \<dagger> G) \<Rightarrow> \<phi> t \<dagger> Q\<rceil> ; EVOL \<phi> G T \<le> \<^bold>[Q,Q\<^bold>]"
   by (rule R_g_evolr) simp
 
 \<comment> \<open> Evolution command (ode) \<close>
@@ -423,29 +438,29 @@ lemma R_g_ode: "(x\<acute>= f & G on T S @ 0) \<le> Ref \<lceil>U(&\<^bold>v\<in
   unfolding spec_def by (rule H_g_ode, rel_auto)
 
 lemma R_g_ode_rule: "(\<forall>s\<in>S. \<lbrakk>P\<rbrakk>\<^sub>e s \<longrightarrow> (\<forall>t\<in>T. (\<forall>\<tau>\<in>down T t. \<lbrakk>G\<rbrakk>\<^sub>e (\<phi> \<tau> s)) \<longrightarrow> \<lbrakk>Q\<rbrakk>\<^sub>e (\<phi> t s))) \<Longrightarrow> 
-  (x\<acute>= f & G on T S @ 0) \<le> Ref \<lceil>P\<rceil> \<lceil>Q\<rceil>"
+  (x\<acute>= f & G on T S @ 0) \<le> \<^bold>[P,Q\<^bold>]"
   unfolding sH_g_ode[symmetric] by (rule R2)
 
 lemma R_g_odel: "P = U(\<forall>t\<in>\<guillemotleft>T\<guillemotright>. (\<forall>\<tau>\<in>\<guillemotleft>down T t\<guillemotright>. G\<lbrakk>\<guillemotleft>\<phi> \<tau>\<guillemotright> |> &\<^bold>v/&\<^bold>v\<rbrakk>) \<longrightarrow> R\<lbrakk>\<guillemotleft>\<phi> t\<guillemotright> |> &\<^bold>v/&\<^bold>v\<rbrakk>) \<Longrightarrow> 
-  (x\<acute>= f & G on T S @ 0) ; Ref \<lceil>R\<rceil> \<lceil>Q\<rceil> \<le> Ref \<lceil>P\<rceil> \<lceil>Q\<rceil>"
+  (x\<acute>= f & G on T S @ 0) ; Ref \<lceil>R\<rceil> \<lceil>Q\<rceil> \<le> \<^bold>[P,Q\<^bold>]"
   apply(rule_tac R=R in R_seq_rule)
    apply (rule_tac R_g_ode_rule, simp_all, rel_auto)
   done
 
 lemma R_g_oder: "R = U(\<forall>t\<in>\<guillemotleft>T\<guillemotright>. (\<forall>\<tau>\<in>\<guillemotleft>down T t\<guillemotright>. G\<lbrakk>\<guillemotleft>\<phi> \<tau>\<guillemotright> |> &\<^bold>v/&\<^bold>v\<rbrakk>) \<longrightarrow> Q\<lbrakk>\<guillemotleft>\<phi> t\<guillemotright> |> &\<^bold>v/&\<^bold>v\<rbrakk>) \<Longrightarrow> 
-  Ref \<lceil>P\<rceil> \<lceil>R\<rceil>; (x\<acute>= f & G on T S @ 0) \<le> Ref \<lceil>P\<rceil> \<lceil>Q\<rceil>"
+  \<^bold>[P,R\<^bold>]; (x\<acute>= f & G on T S @ 0) \<le> \<^bold>[P,Q\<^bold>]"
   apply(rule_tac R=R in R_seq_rule, simp)
   by (rule_tac R_g_ode_rule, rel_simp)
 
-lemma "(x\<acute>= f & G on T S @ 0) ; Ref \<lceil>Q\<rceil> \<lceil>Q\<rceil> \<le> Ref \<lceil>U(\<forall>t\<in>\<guillemotleft>T\<guillemotright>. (\<forall>\<tau>\<in>\<guillemotleft>down T t\<guillemotright>. G\<lbrakk>\<guillemotleft>\<phi> \<tau>\<guillemotright> |> &\<^bold>v/&\<^bold>v\<rbrakk>) \<longrightarrow> Q\<lbrakk>\<guillemotleft>\<phi> t\<guillemotright> |> &\<^bold>v/&\<^bold>v\<rbrakk>)\<rceil> \<lceil>Q\<rceil>"
+lemma "(x\<acute>= f & G on T S @ 0) ; \<^bold>[Q,Q\<^bold>] \<le> Ref \<lceil>U(\<forall>t\<in>\<guillemotleft>T\<guillemotright>. (\<forall>\<tau>\<in>\<guillemotleft>down T t\<guillemotright>. G\<lbrakk>\<guillemotleft>\<phi> \<tau>\<guillemotright> |> &\<^bold>v/&\<^bold>v\<rbrakk>) \<longrightarrow> Q\<lbrakk>\<guillemotleft>\<phi> t\<guillemotright> |> &\<^bold>v/&\<^bold>v\<rbrakk>)\<rceil> \<lceil>Q\<rceil>"
   by (rule R_g_odel) simp
 
-lemma "Ref \<lceil>Q\<rceil> \<lceil>U(\<forall>t\<in>\<guillemotleft>T\<guillemotright>. (\<forall>\<tau>\<in>\<guillemotleft>down T t\<guillemotright>. G\<lbrakk>\<guillemotleft>\<phi> \<tau>\<guillemotright> |> &\<^bold>v/&\<^bold>v\<rbrakk>) \<Rightarrow> Q\<lbrakk>\<guillemotleft>\<phi> t\<guillemotright> |> &\<^bold>v/&\<^bold>v\<rbrakk>)\<rceil>; (x\<acute>= f & G on T S @ 0) \<le> Ref \<lceil>Q\<rceil> \<lceil>Q\<rceil>"
+lemma "Ref \<lceil>Q\<rceil> \<lceil>U(\<forall>t\<in>\<guillemotleft>T\<guillemotright>. (\<forall>\<tau>\<in>\<guillemotleft>down T t\<guillemotright>. G\<lbrakk>\<guillemotleft>\<phi> \<tau>\<guillemotright> |> &\<^bold>v/&\<^bold>v\<rbrakk>) \<Rightarrow> Q\<lbrakk>\<guillemotleft>\<phi> t\<guillemotright> |> &\<^bold>v/&\<^bold>v\<rbrakk>)\<rceil>; (x\<acute>= f & G on T S @ 0) \<le> \<^bold>[Q,Q\<^bold>]"
   by (rule R_g_oder) rel_simp
 
 lemma R_g_ode_ivl: 
   "\<tau> \<ge> 0 \<Longrightarrow> \<tau> \<in> T \<Longrightarrow> (\<forall>s\<in>S. \<lbrakk>P\<rbrakk>\<^sub>e s \<longrightarrow> (\<forall>t\<in>{0..\<tau>}. (\<forall>\<tau>\<in>{0..t}. \<lbrakk>G\<rbrakk>\<^sub>e (\<phi> \<tau> s)) \<longrightarrow> \<lbrakk>Q\<rbrakk>\<^sub>e (\<phi> t s))) \<Longrightarrow> 
-  (x\<acute>= f & G on {0..\<tau>} S @ 0) \<le> Ref \<lceil>P\<rceil> \<lceil>Q\<rceil>"
+  (x\<acute>= f & G on {0..\<tau>} S @ 0) \<le> \<^bold>[P,Q\<^bold>]"
   unfolding sH_g_ode_ivl[symmetric] by (rule R2)
 
 end
@@ -453,7 +468,7 @@ end
 \<comment> \<open> Evolution command (invariants) \<close>
 
 lemma R_g_ode_inv: "diff_invariant \<lbrakk>I\<rbrakk>\<^sub>e f T S t\<^sub>0 \<lbrakk>G\<rbrakk>\<^sub>e \<Longrightarrow> \<lceil>P\<rceil> \<le> \<lceil>I\<rceil> \<Longrightarrow> \<lceil>I \<and> G\<rceil> \<le> \<lceil>Q\<rceil> \<Longrightarrow> 
-  (x\<acute>=f & G on T S @ t\<^sub>0 DINV I) \<le> Ref \<lceil>P\<rceil> \<lceil>Q\<rceil>"
+  (x\<acute>=f & G on T S @ t\<^sub>0 DINV I) \<le> \<^bold>[P,Q\<^bold>]"
   unfolding spec_def by (auto simp: H_g_ode_inv)
 
 
@@ -502,7 +517,11 @@ qed
 abbreviation g_global_ode ::"(('a::banach)\<Rightarrow>'a) \<Rightarrow> 'a upred \<Rightarrow> 'a nd_fun" ("(1x\<acute>=_ & _)") 
   where "(x\<acute>= f & G) \<equiv> (x\<acute>= f & G on UNIV UNIV @ 0)"
 
+utp_lift_notation g_global_ode (1)
+
 abbreviation g_global_ode_inv :: "(('a::banach)\<Rightarrow>'a) \<Rightarrow> 'a upred \<Rightarrow> 'a upred \<Rightarrow> 'a nd_fun" 
   ("(1x\<acute>=_ & _ DINV _)") where "(x\<acute>= f & G DINV I) \<equiv> (x\<acute>= f & G on UNIV UNIV @ 0 DINV I)"
+
+utp_lift_notation g_global_ode_inv (1 2)
 
 end
