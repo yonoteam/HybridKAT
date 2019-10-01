@@ -89,6 +89,7 @@
 \newcommand{\lsnd}{\textit{\textsf{\textbf{snd}}}}
 \newcommand{\unrest}{\mathop{\sharp}}
 \newcommand{\seq}{\mathop{\,;\,}}
+\newcommand{\subapp}{\mathop{\,\dagger\,}}
 
 \urlstyle{rm}
 \isabellestyle{it}
@@ -441,12 +442,23 @@ $G:S\to \bools$ as
 Defining the state transformer semantics of assignments is
 standard~\cite{MuniveS19}, though we generalise using lenses. First,
 we use lenses to define state updates:
-$$\sigma(x\mapsto e) \defs \lambda s : S.\, \lput_x ~ (\sigma(s)) ~ (e(s))$$
-for $x : V \lto S$, $e : S \to V$, and $\sigma : S \to
-S$. Intuitively, this updates the value of variable $x$ in the state
-transformer $\sigma : S \to S$ to have the value given by $e$. Here, the
+$$\sigma(x\mapsto e) \defs \lambda s : S.\, \lput_x ~ (\sigma~s) ~ (e~s)$$
+for $x : V \lto S$, $e : S \to V$, and $\sigma : S \to S$.
+Intuitively, this updates the value of variable $x$ in the state
+update $\sigma : S \to S$ to have the value given by $e$. Here, the
 function $e$ is used to model an ``expression'' that is evaluated in
-the context of the state $s$. Then we define a generalised assignment operator:
+the context of the state $s$. For example, if $x$ and $y$ are
+variables, then the expression $x / (2 + y)$ is modelled by
+$\lambda s. \, \lget_x~s / (2 + \lget_y~s)$. We can update $n$
+variables simultaneously using maplet the notation:
+$$[x_1 \mapsto e_1, x_2 \mapsto e_2, \cdots, x_n \mapsto e_n] ~\defs~ id(x_1 \mapsto e_1)(x_2 \mapsto e_2)\cdots(x_n \mapsto e_n)$$ 
+where $id$ is the identity function. We also define a substitution
+operator for state updates, $\sigma \dagger e \defs e \circ s$, which
+simply composes expression $e$ with $\sigma$. Then we can obtain the
+traditional substitution operator:
+$e[f/x] \defs [x \mapsto f] \subapp e$, with the usual laws as
+theorems~\cite{FosterZW16}. Finally, we define the generalised
+assignment operator:
 
 \begin{equation}
   \langle \sigma \rangle \defs \lambda s. \{ \sigma(s) \} \tag{st-assgn}
@@ -454,9 +466,8 @@ the context of the state $s$. Then we define a generalised assignment operator:
 %
 This applies the function $\sigma : S \to S$ as an assignment. With
 our state update function, singleton assignment is simply a special
-case: $x := e \defs \langle id(x \mapsto e) \rangle$, where
-$id \defs \lambda s. s$, and we can also describe simultaneous updates
-by assigning several variables at once. With this foundation, we can
+case: $x := e \defs \langle x \mapsto e \rangle$, and we can also
+assign several variables simultaneously. With this foundation, we can
 also prove the standard laws of assignment in this setting:
 %
 \begin{align*}
@@ -502,10 +513,10 @@ elegant.
 In the semantics of Hoare triples, the Kleisli composition in the left hand side of the inequality $p\alpha\le \alpha q$ ensures that the precondition holds at the beginning of the program. The left hand side guarantees that the postcondition holds at the end. In particular, for evolution commands and consistently with $\dL$, the postcondition holds at every point in the solution's orbit.
 
 The assignment axiom of Hoare logic need not be explained. Our concrete
-semantics yields a variant with update functions instead
-of substitutions:
+semantics yields the expected theorem:
+
 \begin{equation}
-\left\{\lambda s.\ P\, s[x\mapsto e\, s]\right\}\,  x:=e\, \{P\}. \label{eq:h-assgn}\tag{h-assgn}
+\left\{P[e/x]\right\}\,  x:=e\, \{P\}. \label{eq:h-assgn}\tag{h-assgn}
 \end{equation}
 Hence all we need to add to Hoare logic is a rule for evolution
 commands.  We restrict our attention to Lipschitz-continuous vector
