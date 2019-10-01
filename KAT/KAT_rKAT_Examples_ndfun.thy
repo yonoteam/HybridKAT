@@ -79,10 +79,10 @@ abbreviation v :: "real \<Longrightarrow> real^2"
   where "v \<equiv> vec_lens 2"
 
 abbreviation fball :: "real \<Rightarrow> (real, 2) vec \<Rightarrow> (real, 2) vec" ("f") 
-  where "fball g \<equiv> \<lbrakk>[x \<mapsto>\<^sub>s v, v \<mapsto>\<^sub>s g]\<rbrakk>\<^sub>e"
+  where "f g \<equiv> \<lbrakk>[x \<mapsto>\<^sub>s v, v \<mapsto>\<^sub>s g]\<rbrakk>\<^sub>e"
 
 abbreviation ball_flow :: "real \<Rightarrow> real \<Rightarrow> (real^2) usubst" ("\<phi>") 
-  where "ball_flow g \<tau> \<equiv> [x \<mapsto>\<^sub>s g \<cdot> \<tau> ^ 2/2 + v \<cdot> \<tau> + x,  v \<mapsto>\<^sub>s g \<cdot> \<tau> + v]"
+  where "\<phi> g \<tau> \<equiv> [x \<mapsto>\<^sub>s g \<cdot> \<tau> ^ 2/2 + v \<cdot> \<tau> + x,  v \<mapsto>\<^sub>s g \<cdot> \<tau> + v]"
 
 \<comment> \<open>Verified with invariants \<close>
 
