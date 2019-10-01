@@ -87,6 +87,8 @@
 \newcommand{\lzero}{\mathbf{0}}
 \newcommand{\lfst}{\textit{\textsf{\textbf{fst}}}}
 \newcommand{\lsnd}{\textit{\textsf{\textbf{snd}}}}
+\newcommand{\unrest}{\mathop{\sharp}}
+\newcommand{\seq}{\mathop{\,;\,}}
 
 \urlstyle{rm}
 \isabellestyle{it}
@@ -170,9 +172,10 @@ assignment and evolution commands. The axioms and laws for these two
 basic commands are derived in a concrete state transformer semantics
 for hybrid programs~\cite{MuniveS19} over a generic hybrid store model
 based on lenses~\cite{FosterZW16}, reusing other Isabelle
-components~\cite{afp:hybrid,afp:simon?}.  Data-level verification
-conditions are discharged using Isabelle's impressive components for
-ordinary differential equations~\cite{ImmlerH12a}.
+components~\cite{afp:hybrid,Foster18c-Optics,Foster19a-IsabelleUTP}.
+Data-level verification conditions are discharged using Isabelle's
+impressive components for ordinary differential
+equations~\cite{ImmlerH12a}.
 
 This simple modular development evidences the benefits of algebraic
 reasoning and shallow embeddings with proof assistants. Our
@@ -369,41 +372,35 @@ evolutions. % Guards are also known as \emph{evolution domain
   % restrictions}~\cite{DoyenFPP18}.
 
 Formally, we fix a state space $S$ of the hybrid program, for example
-$S\subseteq \reals^n$ and $n\in\mathbb{N}$. Continuous variables are characterised
-algebraically using lenses~\cite{FosterZW16}, to support several state space
-models. A lens, $x : A \lto S$, is a quadruple $x \defs (A, S, \lget, \lput)$, where
-$A$ is the variable type, and $S$ is the state space. Total functions
-$\lget_x : S \to A$ and $\lput_x : S \to A \to S$ query and update the value of $x$
-in a particular state. They are linked together by three intuitive algebraic
-laws. Lenses $x$ and $y$ can also be checked for independence using the predicate
-$x \lindep y$, which allows us to distinguish different variables. Each continuous
-variable is a lens, $x : \real \lto S$. If $S \subseteq \reals^n$, then there are
-$n$ independent lenses, $x_1 \cdots x_n$, that each corresponds to a projection from
-$\reals^n$. However, this is not the only possible state space, and more complex
-state space models --- such as matrices, or infinite Euclidean spaces -- can be
-supported as well.
+$S\subseteq \reals^n$ and $n\in\mathbb{N}$. Continuous variables are
+characterised algebraically using lenses~\cite{FosterZW16}, to support
+several state space models. A lens, $x : A \lto S$, is a quadruple
+$x \defs (A, S, \lget, \lput)$, where $A$ is the variable type, and
+$S$ is the state space. Total functions $\lget_x : S \to A$ and
+$\lput_x : S \to A \to S$ query and update the value of $x$ in a
+particular state. They are linked by three intuitive
+algebraic laws~\cite{FosterZW16}: 
+$$\lget~(\lput~s~v) = v \qquad \lput~(\lput~s~v')~v = \lput~s~v \qquad \lput~s~(\lget~s) = s$$
+where $s \in S$ and $v, v' \in V$. Lenses $x$ and $y$ can also be
+checked for independence using the predicate $x \lindep y$, which
+allows us to distinguish variables. Each continuous variable is a
+lens, $x : \reals \lto S$. If $S \subseteq \reals^n$, then there are
+$n$ independent lenses, $x_1 \cdots x_n$, that each corresponds to a
+projection from $\reals^n$. However, this is not the only possible
+state space, and more complex state space models --- such as matrices,
+or infinite Euclidean spaces -- can be supported as well.
 
-\sfin{Need to integrate this with what follows}
-
-Formally, vector fields are functions of type $S\to S$ on some open set
-$S\subseteq \reals^n$ and $n\in\mathbb{N}$---the state space of
-the hybrid program. We assume that program variables range from $0$ to
-$n-1$, or pick them from any set $V$ isomorphic to the finite ordinal
-$n$. Program states in $S$ can thus be identified with hybrid program
-stores modelled as functions from variables in $V$ to values in
-$\reals$, as usual.
-
-Geometrically, vector field $f$ assigns a vector to any point of the
-state space
-$S$. A solution to the \emph{initial value problem} (IVP) for the pair
-$(f,s)$ and initial value $(0,s)\in T\times S$, where $T$ is an open
-interval in $\reals$ containing $0$, is then a function $X:T\to S$
-that satisfies $X'\, t = f\, (X\, t)$---an autonomous system of ODEs
-in vector form---and $X\, 0 = s$. Solution
-$X$ is thus a curve in $S$ through $s$, parametrised in $T$ and
-tangential to $f$ at any point in $S$; it is called \emph{trajectory}
-or \emph{integral curve} of $f$ at $s$ whenever it is uniquely
-defined ~\cite{Teschl12}.
+Systems of equations are modelled using vector fields: functions of
+type $S\to S$ on some open set $S$. Geometrically, vector field $f$
+assigns a vector to any point of the state space $S$. A solution to
+the \emph{initial value problem} (IVP) for the pair $(f,s)$ and
+initial value $(0,s)\in T\times S$, where $T$ is an open interval in
+$\reals$ containing $0$, is then a function $X:T\to S$ that satisfies
+$X'\, t = f\, (X\, t)$---an autonomous system of ODEs in vector
+form---and $X\, 0 = s$. Solution $X$ is thus a curve in $S$ through
+$s$, parametrised in $T$ and tangential to $f$ at any point in $S$; it
+is called \emph{trajectory} or \emph{integral curve} of $f$ at $s$
+whenever it is uniquely defined ~\cite{Teschl12}.
 
 For IVP $(f,s)$ with continuous vector field $f:S\to S$ and initial
 state $s\in S$ we define the set of solutions on
@@ -442,19 +439,52 @@ $G:S\to \bools$ as
 \end{equation}
 
 Defining the state transformer semantics of assignments is
-standard~\cite{MuniveS19}. First we define a state update
-function $f_a:V\to (S \to E) \to S\to S$ as
-\begin{equation*}
-f_a\, x\, e\, s = s[x\mapsto e\, s],
-\end{equation*}
-where $f[a\mapsto b]$ updates $f:A\to B$ by associating $a\in A$ with
-$b$ and every $y\neq a$ with $f\, y$.  The ``expression''
-${e:S\to \reals}$ is thus evaluated in state $s$ to $e\, s$.  Then we
-lift $f_a\, x\, e:S\to S$ to state transformer
-$x:= e:S \to \Pow\, S$ using $\eta_S$:
+standard~\cite{MuniveS19}, though we generalise using lenses. First,
+we use lenses to define state updates:
+$$\sigma(x\mapsto e) \defs \lambda s : S.\, \lput_x ~ (\sigma(s)) ~ (e(s))$$
+for $x : V \lto S$, $e : S \to V$, and $\sigma : S \to
+S$. Intuitively, this updates the value of variable $x$ in the state
+transformer $\sigma : S \to S$ to have the value given by $e$. Here, the
+function $e$ is used to model an ``expression'' that is evaluated in
+the context of the state $s$. Then we define a generalised assignment operator:
+
 \begin{equation}
-  (x:= e) = \lambda s.\ \{f_a\, x\, e\, s\}.\label{eq:st-assgn}\tag{st-assgn}
+  \langle \sigma \rangle \defs \lambda s. \{ \sigma(s) \} \tag{st-assgn}
 \end{equation}
+%
+This applies the function $\sigma : S \to S$ as an assignment. With
+our state update function, singleton assignment is simply a special
+case: $x := e \defs \langle id(x \mapsto e) \rangle$, where
+$id \defs \lambda s. s$, and we can also describe simultaneous updates
+by assigning several variables at once. With this foundation, we can
+also prove the standard laws of assignment in this setting:
+%
+\begin{align*}
+  x := x &~=~ \sskip \\
+  x := e \seq x := f &~=~ x := f[e/x] \\
+  x := e \seq y := f &~=~ y := f \seq x := e & \textnormal{provided~} x \lindep y, x \unrest f, y \unrest e
+\end{align*}
+
+Here, $x \unrest e$ means that the semantic expression $e$ does not
+depend for its valuation on lens $x$~\cite{FosterZW16}. An assignment
+of $x$ to itself is simply $\sskip$. Two assignments to $x$ result in
+a single assignment, with a semantic substitution applied. Assignments
+to independent variables $x$ and $y$ commute provided that neither
+assigned expression depend on the corresponding variable.
+
+% First we define a state update function
+% $f_a:V\to (S \to E) \to S\to S$ as
+% \begin{equation*}
+% f_a\, x\, e\, s = s[x\mapsto e\, s],
+% \end{equation*}
+% where $f[a\mapsto b]$ updates $f:A\to B$ by associating $a\in A$ with
+% $b$ and every $y\neq a$ with $f\, y$.  The ``expression''
+% ${e:S\to \reals}$ is thus evaluated in state $s$ to $e\, s$.  Then we
+% lift $f_a\, x\, e:S\to S$ to state transformer
+% $x:= e:S \to \Pow\, S$ using $\eta_S$:
+% \begin{equation}
+%   (x:= e) = \lambda s.\ \{f_a\, x\, e\, s\}.\label{eq:st-assgn}\tag{st-assgn}
+% \end{equation}
 
 The development in this section has already been formalised with
 Isabelle~\cite{afp:hybrid}, both for a state transformer and a
