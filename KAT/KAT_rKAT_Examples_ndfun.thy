@@ -179,10 +179,7 @@ abbreviation "bb_evol g h T \<equiv>
 
 lemma bouncing_ball_dyn: 
   assumes "g < 0" and "h \<ge> 0"
-  shows "
-  \<^bold>{x = h \<and> v = 0\<^bold>} 
-    bb_evol g h T 
-  \<^bold>{0 \<le> x \<and> x \<le> h\<^bold>}"
+  shows "\<^bold>{x = h \<and> v = 0\<^bold>} bb_evol g h T \<^bold>{0 \<le> x \<and> x \<le> h\<^bold>}"
   apply(rule H_loopI, rule H_seq[where R="U(0 \<le> x \<and> 2 \<cdot> g \<cdot> x = 2 \<cdot> g \<cdot> h + v \<cdot> v)"])
   using assms by (simp_all, rel_auto' simp: bb_real_arith)
 
@@ -202,10 +199,7 @@ abbreviation "bb_sol g h \<equiv>
 
 lemma bouncing_ball_flow: 
   assumes "g < 0" and "h \<ge> 0"
-  shows "
-  \<^bold>{x = h \<and> v = 0\<^bold>} 
-    bb_sol g h 
-  \<^bold>{0 \<le> x \<and> x \<le> h\<^bold>}"
+  shows "\<^bold>{x = h \<and> v = 0\<^bold>} bb_sol g h \<^bold>{0 \<le> x \<and> x \<le> h\<^bold>}"
   apply(rule H_loopI, rule H_seq[where R="U(0 \<le> x \<and> 2 \<cdot> g \<cdot> x = 2 \<cdot> g \<cdot> h + v \<cdot> v)"])
      apply(subst local_flow.sH_g_ode[OF local_flow_ball])
   using assms by (simp_all, rel_auto' simp: bb_real_arith)
@@ -213,7 +207,7 @@ lemma bouncing_ball_flow:
 \<comment> \<open>Refined with annotated dynamics \<close>
 
 lemma R_bb_assign: "g < (0::real) \<Longrightarrow> 0 \<le> h \<Longrightarrow> 
-  (v ::= - v) \<le> \<^bold>[v = 0 \<and> 0 \<le> x \<and> 2 \<cdot> g \<cdot> x = 2 \<cdot> g \<cdot> h + v \<cdot> v, 0 \<le> x \<and> 2 \<cdot> g \<cdot> x = 2 \<cdot> g \<cdot> h + v \<cdot> v\<^bold>]"
+  \<^bold>[v = 0 \<and> 0 \<le> x \<and> 2 \<cdot> g \<cdot> x = 2 \<cdot> g \<cdot> h + v \<cdot> v, 0 \<le> x \<and> 2 \<cdot> g \<cdot> x = 2 \<cdot> g \<cdot> h + v \<cdot> v\<^bold>] \<ge> (v ::= - v)"
   by (rule R_assign_rule, pred_simp)
 
 lemma R_bouncing_ball_dyn:
@@ -364,10 +358,7 @@ lemmas H_g_ode_therm = local_flow.sH_g_ode_ivl[OF local_flow_therm _ UNIV_I]
 
 lemma thermostat_flow: 
   assumes "0 < a" and "0 \<le> \<tau>" and "0 < T\<^sub>m" and "T\<^sub>M < L"
-  shows "
-  \<^bold>{I T\<^sub>m T\<^sub>M\<^bold>}
-    therm T\<^sub>m T\<^sub>M a L \<tau>
-  \<^bold>{I T\<^sub>m T\<^sub>M\<^bold>}"
+  shows "\<^bold>{I T\<^sub>m T\<^sub>M\<^bold>} therm T\<^sub>m T\<^sub>M a L \<tau> \<^bold>{I T\<^sub>m T\<^sub>M\<^bold>}"
   apply(rule H_loopI)
     apply(rule_tac R="U(I T\<^sub>m T\<^sub>M \<and> t=0 \<and> T\<^sub>0 = T)" in H_seq)
      apply(rule_tac R="U(I T\<^sub>m T\<^sub>M \<and> t=0 \<and> T\<^sub>0 = T)" in H_seq)
@@ -455,7 +446,7 @@ abbreviation tank_flow :: "real \<Rightarrow> real \<Rightarrow> (real^4) usubst
   where "\<phi> k \<tau> \<equiv> [h \<mapsto>\<^sub>s k * \<tau> + h, t \<mapsto>\<^sub>s \<tau> + t, h\<^sub>0 \<mapsto>\<^sub>s h\<^sub>0, Pump \<mapsto>\<^sub>s Pump]"
 
 abbreviation tank_guard :: "real \<Rightarrow> real \<Rightarrow> (real^4) upred" ("G")
-  where "G Hm k \<equiv> U(t \<le> (Hm - h\<^sub>0)/k)"
+  where "G h\<^sub>x k \<equiv> U(t \<le> (h\<^sub>x - h\<^sub>0)/k)"
 
 no_utp_lift "tank_guard" (0 1)
 
@@ -506,10 +497,7 @@ lemmas H_g_ode_tank = local_flow.sH_g_ode_ivl[OF local_flow_tank _ UNIV_I]
 
 lemma tank_flow:
   assumes "0 \<le> \<tau>" and "0 < c\<^sub>o" and "c\<^sub>o < c\<^sub>i"
-  shows "
-  \<^bold>{I h\<^sub>m h\<^sub>M\<^bold>}
-    tank_sol c\<^sub>i c\<^sub>o h\<^sub>m h\<^sub>M \<tau>
-  \<^bold>{I h\<^sub>m h\<^sub>M\<^bold>}"
+  shows "\<^bold>{I h\<^sub>m h\<^sub>M\<^bold>} tank_sol c\<^sub>i c\<^sub>o h\<^sub>m h\<^sub>M \<tau> \<^bold>{I h\<^sub>m h\<^sub>M\<^bold>}"
   apply(rule H_loopI)
     apply(rule_tac R="U(I h\<^sub>m h\<^sub>M \<and> t = 0 \<and> h\<^sub>0 = h)" in H_seq)
      apply(rule_tac R="U(I h\<^sub>m h\<^sub>M \<and> t = 0 \<and> h\<^sub>0 = h)" in H_seq)
@@ -563,10 +551,7 @@ abbreviation "tank_dinv c\<^sub>i c\<^sub>o h\<^sub>m h\<^sub>M \<tau> \<equiv> 
 
 lemma tank_inv:
   assumes "0 \<le> \<tau>" and "0 < c\<^sub>o" and "c\<^sub>o < c\<^sub>i"
-  shows "
-  \<^bold>{I h\<^sub>m h\<^sub>M\<^bold>}
-    tank_dinv c\<^sub>i c\<^sub>o h\<^sub>m h\<^sub>M \<tau> 
-  \<^bold>{I h\<^sub>m h\<^sub>M\<^bold>}"
+  shows "\<^bold>{I h\<^sub>m h\<^sub>M\<^bold>} tank_dinv c\<^sub>i c\<^sub>o h\<^sub>m h\<^sub>M \<tau> \<^bold>{I h\<^sub>m h\<^sub>M\<^bold>}"
   apply(rule H_loopI)
     apply(rule_tac R="U(I h\<^sub>m h\<^sub>M \<and> t = 0 \<and> h\<^sub>0 = h)" in H_seq)
      apply(rule_tac R="U(I h\<^sub>m h\<^sub>M \<and> t = 0 \<and> h\<^sub>0 = h)" in H_seq)

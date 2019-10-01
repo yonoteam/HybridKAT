@@ -608,10 +608,7 @@ Thus, the formalisation of the correctness specification for the thermostat is
 \isacommand{lemma}\isamarkupfalse%
 \ thermostat{\isacharunderscore}flow{\isacharcolon}\ \isanewline
 \ \ \isakeyword{assumes}\ {\isachardoublequoteopen}{\isadigit{0}}\ {\isacharless}\ a{\isachardoublequoteclose}\ \isakeyword{and}\ {\isachardoublequoteopen}{\isadigit{0}}\ {\isasymle}\ {\isasymtau}{\isachardoublequoteclose}\ \isakeyword{and}\ {\isachardoublequoteopen}{\isadigit{0}}\ {\isacharless}\ T\isactrlsub m{\isachardoublequoteclose}\ \isakeyword{and}\ {\isachardoublequoteopen}T\isactrlsub M\ {\isacharless}\ L{\isachardoublequoteclose}\isanewline
-\ \ \isakeyword{shows}\ {\isachardoublequoteopen}\isanewline
-\ \ \isactrlbold {\isacharbraceleft}I\ T\isactrlsub m\ T\isactrlsub M\isactrlbold {\isacharbraceright}\isanewline
-\ \ \ \ therm\ T\isactrlsub m\ T\isactrlsub M\ a\ L\ {\isasymtau}\isanewline
-\ \ \isactrlbold {\isacharbraceleft}I\ T\isactrlsub m\ T\isactrlsub M\isactrlbold {\isacharbraceright}{\isachardoublequoteclose}\isanewline
+\ \ \isakeyword{shows}\ {\isachardoublequoteopen}\ \isactrlbold {\isacharbraceleft}I\ T\isactrlsub m\ T\isactrlsub M\isactrlbold {\isacharbraceright}\ therm\ T\isactrlsub m\ T\isactrlsub M\ a\ L\ {\isasymtau}\ \isactrlbold {\isacharbraceleft}I\ T\isactrlsub m\ T\isactrlsub M\isactrlbold {\isacharbraceright}{\isachardoublequoteclose}\isanewline
 \isacommand{apply}\isamarkupfalse%
 {\isacharparenleft}rule\ H{\isacharunderscore}loopI{\isacharparenright}\isanewline
 \ \ \ \ \isacommand{apply}\isamarkupfalse%
@@ -627,7 +624,7 @@ Thus, the formalisation of the correctness specification for the thermostat is
 \ rel{\isacharunderscore}auto{\isacharprime}\isanewline
 \end{isabellebody}
 
-The rule applications decompose the program structure of \isa{therm\ T\isactrlsub m\ T\isactrlsub M\ a\ L\ {\isasymtau}}. The first line applies rule (\ref{eq:h-loop-inv}) while the next three lines do the same with (\ref{eq:h-seq}) and correspond reversely to the three semicolons in the program structure. The fifth line simplifies the proof obligation with (\ref{eq:h-cond}) and (\ref{eq:h-evl}). This is possible because lemma \isa{H{\isacharunderscore}g{\isacharunderscore}ode{\isacharunderscore}therm} uses the fact that the flow for $f\, a\, c$ is  
+The rule applications decompose the program structure of \isa{therm}. The first line applies rule (\ref{eq:h-loop-inv}) while the next three lines do the same with (\ref{eq:h-seq}) and correspond reversely to the three semicolons in the program structure. The fifth line simplifies the proof obligation with (\ref{eq:h-cond}) and (\ref{eq:h-evl}). This is possible because lemma \isa{H{\isacharunderscore}g{\isacharunderscore}ode{\isacharunderscore}therm} uses the fact that the flow for $f\, a\, c$ is  
 \begin{equation*}
 \flow\, a\, c\, \tau = (-e^{-a\cdot\tau}(c-T)+c, \tau+t, T_0, \Theta)^\top,
 \end{equation*}
@@ -726,7 +723,7 @@ A controller turns on and off a water pump to keep the level of water $h$ in a t
 \isanewline
 \isacommand{abbreviation}\isamarkupfalse%
 \ tank{\isacharunderscore}guard\ {\isacharcolon}{\isacharcolon}\ {\isachardoublequoteopen}real\ {\isasymRightarrow}\ real\ {\isasymRightarrow}\ {\isacharparenleft}real{\isacharcircum}{\isadigit{4}}{\isacharparenright}\ upred{\isachardoublequoteclose}\ {\isacharparenleft}{\isachardoublequoteopen}G{\isachardoublequoteclose}{\isacharparenright}\isanewline
-\ \ \isakeyword{where}\ {\isachardoublequoteopen}G\ Hm\ k\ {\isasymequiv}\ U{\isacharparenleft}t\ {\isasymle}\ {\isacharparenleft}Hm\ {\isacharminus}\ h\isactrlsub {\isadigit{0}}{\isacharparenright}{\isacharslash}k{\isacharparenright}{\isachardoublequoteclose}\isanewline
+\ \ \isakeyword{where}\ {\isachardoublequoteopen}G\ h\isactrlsub x\ k\ {\isasymequiv}\ U{\isacharparenleft}t\ {\isasymle}\ {\isacharparenleft}h\isactrlsub x\ {\isacharminus}\ h\isactrlsub {\isadigit{0}}{\isacharparenright}{\isacharslash}k{\isacharparenright}{\isachardoublequoteclose}\isanewline
 \isanewline
 \isacommand{abbreviation}\isamarkupfalse%
 \ tank{\isacharunderscore}loop{\isacharunderscore}inv\ {\isacharcolon}{\isacharcolon}\ {\isachardoublequoteopen}real\ {\isasymRightarrow}\ real\ {\isasymRightarrow}\ {\isacharparenleft}real{\isacharcircum}{\isadigit{4}}{\isacharparenright}\ upred{\isachardoublequoteclose}\ {\isacharparenleft}{\isachardoublequoteopen}I{\isachardoublequoteclose}{\isacharparenright}\isanewline
@@ -781,10 +778,7 @@ For this example, we use the invariant annotated version of evolution commands, 
 \isacommand{lemma}\isamarkupfalse%
 \ tank{\isacharunderscore}inv{\isacharcolon}\isanewline
 \ \ \isakeyword{assumes}\ {\isachardoublequoteopen}{\isadigit{0}}\ {\isasymle}\ {\isasymtau}{\isachardoublequoteclose}\ \isakeyword{and}\ {\isachardoublequoteopen}{\isadigit{0}}\ {\isacharless}\ c\isactrlsub o{\isachardoublequoteclose}\ \isakeyword{and}\ {\isachardoublequoteopen}c\isactrlsub o\ {\isacharless}\ c\isactrlsub i{\isachardoublequoteclose}\isanewline
-\ \ \isakeyword{shows}\ {\isachardoublequoteopen}\isanewline
-\ \ \isactrlbold {\isacharbraceleft}I\ h\isactrlsub m\ h\isactrlsub M\isactrlbold {\isacharbraceright}\isanewline
-\ \ \ \ tank{\isacharunderscore}dinv\ c\isactrlsub i\ c\isactrlsub o\ h\isactrlsub m\ h\isactrlsub M\ {\isasymtau}\ \isanewline
-\ \ \isactrlbold {\isacharbraceleft}I\ h\isactrlsub m\ h\isactrlsub M\isactrlbold {\isacharbraceright}{\isachardoublequoteclose}\isanewline
+\ \ \isakeyword{shows}\ {\isachardoublequoteopen}\ \isactrlbold {\isacharbraceleft}I\ h\isactrlsub m\ h\isactrlsub M\isactrlbold {\isacharbraceright}\ tank{\isacharunderscore}dinv\ c\isactrlsub i\ c\isactrlsub o\ h\isactrlsub m\ h\isactrlsub M\ {\isasymtau}\ \isactrlbold {\isacharbraceleft}I\ h\isactrlsub m\ h\isactrlsub M\isactrlbold {\isacharbraceright}{\isachardoublequoteclose}\isanewline
 \ \ $\langle \dots\rangle$\ \isacommand{apply}\isamarkupfalse%
 {\isacharparenleft}rule\ H{\isacharunderscore}cond{\isacharcomma}\ rule\ H{\isacharunderscore}g{\isacharunderscore}ode{\isacharunderscore}inv{\isacharcomma}\ simp{\isacharcomma}\ pred{\isacharunderscore}simp{\isacharparenright}\isanewline
 \ \ \isacommand{using}\isamarkupfalse%
@@ -892,25 +886,21 @@ two standard calculi mentioned and much more intricate than the
 approach presented.
 
 \begin{example}[Thermostat refinement via solutions]\label{ex:therm-rsol}
-Here we refine $\mathsf{Thermostat}$ from Example~\ref{ex:therm-sol} in a modular way. To prove $\mathsf{Thermostat}\leq [I,I]$ (in Isabelle, $\mathsf{Thermostat}\leq \isa{Ref\ {\isasymlceil}I\ Tmin\ Tmax{\isasymrceil}\ {\isasymlceil}I\ Tmin\ Tmax{\isasymrceil}}$) we need to show that the body of the loop also refines the specification $[I,I]$. For this we prove a refinement statement for the control and one for the dynamics which we later compose. This implies ensuring that the loop invariant $I$ is a precondition of the control and a postcondition of the dynamics and that any postcondition of the control will be the precondition of the dynamics.
+Here we refine \isa{therm} from Example~\ref{ex:therm-sol} in a modular way. To prove 
+\begin{equation*}
+\isa{therm\ T\isactrlsub m\ T\isactrlsub M\ a\ L\ {\isasymtau}\ {\isasymle}\ \isactrlbold {\isacharbrackleft}I\ T\isactrlsub m\ T\isactrlsub M{\isacharcomma}\ I\ T\isactrlsub m\ T\isactrlsub M\isactrlbold {\isacharbrackright}}
+\end{equation*} 
+we need to show that the body of the loop also refines the specification. For this we prove a refinement statement for the control and one for the dynamics which we later compose. This implies ensuring that the loop invariant $I$ is a precondition of the control and a postcondition of the dynamics and that any postcondition of the control will be the precondition of the dynamics.
 \begin{isabellebody}
 \isanewline
 \isacommand{lemma}\isamarkupfalse%
-\ R{\isacharunderscore}therm{\isacharunderscore}ctrl{\isacharcolon}\isanewline
-\ \ {\isachardoublequoteopen}Ref\ {\isasymlceil}I\ Tmin\ Tmax{\isasymrceil}\ {\isasymlceil}U{\isacharparenleft}I\ Tmin\ Tmax\ {\isasymand}\ t\ {\isacharequal}\ {\isadigit{0}}\ {\isasymand}\ T\isactrlsub {\isadigit{0}}\ {\isacharequal}\ T{\isacharparenright}{\isasymrceil}\ {\isasymge}\isanewline
-\ \ {\isacharparenleft}t\ {\isacharcolon}{\isacharcolon}{\isacharequal}\ {\isadigit{0}}{\isacharparenright}{\isacharsemicolon}\ {\isacharparenleft}T\isactrlsub {\isadigit{0}}\ {\isacharcolon}{\isacharcolon}{\isacharequal}\ T{\isacharparenright}{\isacharsemicolon}\isanewline
-\ \ \ {\isacharparenleft}IF\ U{\isacharparenleft}{\isasymTheta}\ {\isacharequal}\ {\isadigit{0}}\ {\isasymand}\ T\isactrlsub {\isadigit{0}}\ {\isasymle}\ Tmin\ {\isacharplus}\ {\isadigit{1}}{\isacharparenright}\ THEN\ {\isacharparenleft}{\isasymTheta}\ {\isacharcolon}{\isacharcolon}{\isacharequal}\ {\isadigit{1}}{\isacharparenright}\ ELSE\isanewline 
-\ \ \ \ IF\ U{\isacharparenleft}{\isasymTheta}\ {\isacharequal}\ {\isadigit{1}}\ {\isasymand}\ T\isactrlsub {\isadigit{0}}\ {\isasymge}\ Tmax\ {\isacharminus}\ {\isadigit{1}}{\isacharparenright}\ THEN\ {\isacharparenleft}{\isasymTheta}\ {\isacharcolon}{\isacharcolon}{\isacharequal}\ {\isadigit{0}}{\isacharparenright}\ ELSE\ skip{\isacharparenright}{\isachardoublequoteclose}\isanewline
+\ R{\isacharunderscore}therm{\isacharunderscore}ctrl{\isacharcolon}\ {\isachardoublequoteopen}\isactrlbold {\isacharbrackleft}I\ T\isactrlsub m\ T\isactrlsub M{\isacharcomma}\ I\ T\isactrlsub m\ T\isactrlsub M\ {\isasymand}\ t\ {\isacharequal}\ {\isadigit{0}}\ {\isasymand}\ T\isactrlsub {\isadigit{0}}\ {\isacharequal}\ T\isactrlbold {\isacharbrackright}\ {\isasymge}\ ctrl\ T\isactrlsub m\ T\isactrlsub M{\isachardoublequoteclose}\isanewline
 \ \ $\langle \isa{proof}\rangle$\isanewline
 \isanewline
 \isacommand{lemma}\isamarkupfalse%
 \ R{\isacharunderscore}therm{\isacharunderscore}dyn{\isacharcolon}\isanewline
-\ \ \isakeyword{assumes}\ {\isachardoublequoteopen}a\ {\isachargreater}\ {\isadigit{0}}{\isachardoublequoteclose}\ \isakeyword{and}\ {\isachardoublequoteopen}{\isadigit{0}}\ {\isasymle}\ {\isasymtau}{\isachardoublequoteclose}\ \isakeyword{and}\ {\isachardoublequoteopen}{\isadigit{0}}\ {\isacharless}\ Tmin{\isachardoublequoteclose}\ \isakeyword{and}\ {\isachardoublequoteopen}Tmax\ {\isacharless}\ L{\isachardoublequoteclose}\isanewline
-\ \ \isakeyword{shows}\ {\isachardoublequoteopen}Ref\ {\isasymlceil}U{\isacharparenleft}I\ Tmin\ Tmax\ {\isasymand}\ t\ {\isacharequal}\ {\isadigit{0}}\ {\isasymand}\ T\isactrlsub {\isadigit{0}}\ {\isacharequal}\ T{\isacharparenright}{\isasymrceil}\ {\isasymlceil}I\ Tmin\ Tmax{\isasymrceil}\ {\isasymge}\ \isanewline
-\ \ {\isacharparenleft}IF\ U{\isacharparenleft}{\isasymTheta}\ {\isacharequal}\ {\isadigit{0}}{\isacharparenright}\ THEN\ \isanewline
-\ \ \ \ {\isacharparenleft}x{\isasymacute}{\isacharequal}\ {\isasymlbrakk}f\ a\ {\isadigit{0}}{\isasymrbrakk}\isactrlsub e\ {\isacharampersand}\ G\ Tmin\ Tmax\ a\ {\isadigit{0}}\ on\ {\isacharbraceleft}{\isadigit{0}}{\isachardot}{\isachardot}{\isasymtau}{\isacharbraceright}\ UNIV\ {\isacharat}\ {\isadigit{0}}{\isacharparenright}\ \isanewline
-\ \ ELSE\ \isanewline
-\ \ \ \ {\isacharparenleft}x{\isasymacute}{\isacharequal}\ {\isasymlbrakk}f\ a\ L{\isasymrbrakk}\isactrlsub e\ {\isacharampersand}\ G\ Tmin\ Tmax\ a\ L\ on\ {\isacharbraceleft}{\isadigit{0}}{\isachardot}{\isachardot}{\isasymtau}{\isacharbraceright}\ UNIV\ {\isacharat}\ {\isadigit{0}}{\isacharparenright}{\isacharparenright}{\isachardoublequoteclose}\isanewline
+\ \ \isakeyword{assumes}\ {\isachardoublequoteopen}a\ {\isachargreater}\ {\isadigit{0}}{\isachardoublequoteclose}\ \isakeyword{and}\ {\isachardoublequoteopen}{\isadigit{0}}\ {\isasymle}\ {\isasymtau}{\isachardoublequoteclose}\ \isakeyword{and}\ {\isachardoublequoteopen}{\isadigit{0}}\ {\isacharless}\ T\isactrlsub m{\isachardoublequoteclose}\ \isakeyword{and}\ {\isachardoublequoteopen}T\isactrlsub M\ {\isacharless}\ L{\isachardoublequoteclose}\isanewline
+\ \ \isakeyword{shows}\ {\isachardoublequoteopen}\isactrlbold {\isacharbrackleft}I\ T\isactrlsub m\ T\isactrlsub M\ {\isasymand}\ t\ {\isacharequal}\ {\isadigit{0}}\ {\isasymand}\ T\isactrlsub {\isadigit{0}}\ {\isacharequal}\ T{\isacharcomma}\ I\ T\isactrlsub m\ T\isactrlsub M\isactrlbold {\isacharbrackright}\ {\isasymge}\ dyn\ T\isactrlsub m\ T\isactrlsub M\ a\ L\ {\isasymtau}{\isachardoublequoteclose}\isanewline
 \isacommand{apply}\isamarkupfalse%
 {\isacharparenleft}rule\ order{\isacharunderscore}trans{\isacharcomma}\ rule\ R{\isacharunderscore}cond{\isacharunderscore}mono{\isacharparenright}\isanewline
 \ \ \isacommand{using}\isamarkupfalse%
@@ -919,37 +909,26 @@ Here we refine $\mathsf{Thermostat}$ from Example~\ref{ex:therm-sol} in a modula
 \ {\isacharparenleft}auto\ intro{\isacharbang}{\isacharcolon}\ R{\isacharunderscore}cond{\isacharparenright}\isanewline
 \end{isabellebody}
 
-In particular for the dynamics we use (\ref{eq:r-evl}) to prove that each branch of the if-statement refines the specification (\isa{R{\isacharunderscore}therm{\isacharunderscore}dyn{\isacharunderscore}down/up}). Then we combine them by transitivity and (\ref{eq:r-cond}). Finally, we show that the loop of the composition of the specifications for the control and the dynamics refine $[I,I]$. We use this fact and transitivity to show $\mathsf{Thermostat}\leq [I,I]$.
+In particular for the dynamics we use (\ref{eq:r-evl}) to prove that each branch of the if-statement refines the specification (\isa{R{\isacharunderscore}therm{\isacharunderscore}dyn{\isacharunderscore}down/up}). Then we combine them by transitivity and (\ref{eq:r-cond}). 
+
+Finally, we show that the loop of the composition of the specifications for the control and the dynamics refine the original specification. We use this fact and transitivity to show our main goal.
 
 \begin{isabellebody}
+
 \isanewline
 \isacommand{lemma}\isamarkupfalse%
-\ R{\isacharunderscore}therm{\isacharunderscore}loop{\isacharcolon}\ {\isachardoublequoteopen}Ref\ {\isasymlceil}I\ Tmin\ Tmax{\isasymrceil}\ {\isasymlceil}I\ Tmin\ Tmax{\isasymrceil}\ {\isasymge}\ \isanewline
+\ R{\isacharunderscore}therm{\isacharunderscore}loop{\isacharcolon}\ {\isachardoublequoteopen}\isactrlbold {\isacharbrackleft}I\ T\isactrlsub m\ T\isactrlsub M{\isacharcomma}\ I\ T\isactrlsub m\ T\isactrlsub M\isactrlbold {\isacharbrackright}\ {\isasymge}\ \isanewline
 \ \ {\isacharparenleft}LOOP\ \isanewline
-\ \ \ \ Ref\ {\isasymlceil}I\ Tmin\ Tmax{\isasymrceil}\ {\isasymlceil}U{\isacharparenleft}I\ Tmin\ Tmax\ {\isasymand}\ t\ {\isacharequal}\ {\isadigit{0}}\ {\isasymand}\ T\isactrlsub {\isadigit{0}}\ {\isacharequal}\ T{\isacharparenright}{\isasymrceil}{\isacharsemicolon}\isanewline
-\ \ \ \ Ref\ {\isasymlceil}U{\isacharparenleft}I\ Tmin\ Tmax\ {\isasymand}\ t\ {\isacharequal}\ {\isadigit{0}}\ {\isasymand}\ T\isactrlsub {\isadigit{0}}\ {\isacharequal}\ T{\isacharparenright}{\isasymrceil}\ {\isasymlceil}I\ Tmin\ Tmax{\isasymrceil}\isanewline
-\ \ INV\ I\ Tmin\ Tmax{\isacharparenright}{\isachardoublequoteclose}\isanewline
+\ \ \ \ \isactrlbold {\isacharbrackleft}I\ T\isactrlsub m\ T\isactrlsub M{\isacharcomma}\ I\ T\isactrlsub m\ T\isactrlsub M\ {\isasymand}\ t\ {\isacharequal}\ {\isadigit{0}}\ {\isasymand}\ T\isactrlsub {\isadigit{0}}\ {\isacharequal}\ T\isactrlbold {\isacharbrackright}{\isacharsemicolon}\isanewline
+\ \ \ \ \isactrlbold {\isacharbrackleft}I\ T\isactrlsub m\ T\isactrlsub M\ {\isasymand}\ t\ {\isacharequal}\ {\isadigit{0}}\ {\isasymand}\ T\isactrlsub {\isadigit{0}}\ {\isacharequal}\ T{\isacharcomma}\ I\ T\isactrlsub m\ T\isactrlsub M\isactrlbold {\isacharbrackright}\isanewline
+\ \ INV\ I\ T\isactrlsub m\ T\isactrlsub M{\isacharparenright}{\isachardoublequoteclose}\isanewline
 \isacommand{by}\isamarkupfalse%
-\ {\isacharparenleft}intro\ R{\isacharunderscore}loop\ R{\isacharunderscore}seq{\isacharcomma}\ simp{\isacharunderscore}all{\isacharparenright}%
-\isanewline
+\ {\isacharparenleft}intro\ R{\isacharunderscore}loop\ R{\isacharunderscore}seq{\isacharcomma}\ simp{\isacharunderscore}all{\isacharparenright}\isanewline
 \isanewline
 \isacommand{lemma}\isamarkupfalse%
 \ R{\isacharunderscore}thermostat{\isacharunderscore}flow{\isacharcolon}\ \isanewline
-\ \ \isakeyword{assumes}\ {\isachardoublequoteopen}a\ {\isachargreater}\ {\isadigit{0}}{\isachardoublequoteclose}\ \isakeyword{and}\ {\isachardoublequoteopen}{\isadigit{0}}\ {\isasymle}\ {\isasymtau}{\isachardoublequoteclose}\ \isakeyword{and}\ {\isachardoublequoteopen}{\isadigit{0}}\ {\isacharless}\ Tmin{\isachardoublequoteclose}\ \isakeyword{and}\ {\isachardoublequoteopen}Tmax\ {\isacharless}\ L{\isachardoublequoteclose}\isanewline
-\ \ \isakeyword{shows}\ {\isachardoublequoteopen}Ref\ {\isasymlceil}I\ Tmin\ Tmax{\isasymrceil}\ {\isasymlceil}I\ Tmin\ Tmax{\isasymrceil}\ {\isasymge}\ \isanewline
-\ \ {\isacharparenleft}LOOP\ {\isacharparenleft}\isanewline
-\ \ \ \ %
-\isamarkupcmt{control%
-}\isanewline
-\ \ \ \ {\isacharparenleft}t\ {\isacharcolon}{\isacharcolon}{\isacharequal}\ {\isadigit{0}}{\isacharparenright}{\isacharsemicolon}\ {\isacharparenleft}T\isactrlsub {\isadigit{0}}\ {\isacharcolon}{\isacharcolon}{\isacharequal}\ T{\isacharparenright}{\isacharsemicolon}\isanewline
-\ \ \ \ {\isacharparenleft}IF\ U{\isacharparenleft}{\isasymTheta}\ {\isacharequal}\ {\isadigit{0}}\ {\isasymand}\ T\isactrlsub {\isadigit{0}}\ {\isasymle}\ Tmin\ {\isacharplus}\ {\isadigit{1}}{\isacharparenright}\ THEN\ {\isacharparenleft}{\isasymTheta}\ {\isacharcolon}{\isacharcolon}{\isacharequal}\ {\isadigit{1}}{\isacharparenright}\ ELSE\isanewline 
-\ \ \ \ \ IF\ U{\isacharparenleft}{\isasymTheta}\ {\isacharequal}\ {\isadigit{1}}\ {\isasymand}\ T\isactrlsub {\isadigit{0}}\ {\isasymge}\ Tmax\ {\isacharminus}\ {\isadigit{1}}{\isacharparenright}\ THEN\ {\isacharparenleft}{\isasymTheta}\ {\isacharcolon}{\isacharcolon}{\isacharequal}\ {\isadigit{0}}{\isacharparenright}\ ELSE\ skip{\isacharparenright}{\isacharsemicolon}\isanewline
-\ \ \ \ %
-\isamarkupcmt{dynamics%
-}\isanewline
-\ \ \ \ {\isacharparenleft}IF\ U{\isacharparenleft}{\isasymTheta}\ {\isacharequal}\ {\isadigit{0}}{\isacharparenright}\ THEN\ {\isacharparenleft}x{\isasymacute}{\isacharequal}\ {\isasymlbrakk}f\ a\ {\isadigit{0}}{\isasymrbrakk}\isactrlsub e\ {\isacharampersand}\ G\ Tmin\ Tmax\ a\ {\isadigit{0}}\ on\ {\isacharbraceleft}{\isadigit{0}}{\isachardot}{\isachardot}{\isasymtau}{\isacharbraceright}\ UNIV\ {\isacharat}\ {\isadigit{0}}{\isacharparenright}\ \isanewline
-\ \ \ \ ELSE\ {\isacharparenleft}x{\isasymacute}{\isacharequal}\ {\isasymlbrakk}f\ a\ L{\isasymrbrakk}\isactrlsub e\ {\isacharampersand}\ G\ Tmin\ Tmax\ a\ L\ on\ {\isacharbraceleft}{\isadigit{0}}{\isachardot}{\isachardot}{\isasymtau}{\isacharbraceright}\ UNIV\ {\isacharat}\ {\isadigit{0}}{\isacharparenright}{\isacharparenright}\isanewline
-\ \ {\isacharparenright}\ INV\ I\ Tmin\ Tmax{\isacharparenright}{\isachardoublequoteclose}\isanewline
+\ \ \isakeyword{assumes}\ {\isachardoublequoteopen}a\ {\isachargreater}\ {\isadigit{0}}{\isachardoublequoteclose}\ \isakeyword{and}\ {\isachardoublequoteopen}{\isadigit{0}}\ {\isasymle}\ {\isasymtau}{\isachardoublequoteclose}\ \isakeyword{and}\ {\isachardoublequoteopen}{\isadigit{0}}\ {\isacharless}\ T\isactrlsub m{\isachardoublequoteclose}\ \isakeyword{and}\ {\isachardoublequoteopen}T\isactrlsub M\ {\isacharless}\ L{\isachardoublequoteclose}\isanewline
+\ \ \isakeyword{shows}\ {\isachardoublequoteopen}\isactrlbold {\isacharbrackleft}I\ T\isactrlsub m\ T\isactrlsub M{\isacharcomma}\ I\ T\isactrlsub m\ T\isactrlsub M\isactrlbold {\isacharbrackright}\ {\isasymge}\ therm\ T\isactrlsub m\ T\isactrlsub M\ a\ L\ {\isasymtau}{\isachardoublequoteclose}\isanewline
 \isacommand{by}\isamarkupfalse%
 \ {\isacharparenleft}intro\ order{\isacharunderscore}trans{\isacharbrackleft}OF\ {\isacharunderscore}\ R{\isacharunderscore}therm{\isacharunderscore}loop{\isacharbrackright}\ R{\isacharunderscore}loop{\isacharunderscore}mono\ \isanewline
 \ \ \ \ \ \ R{\isacharunderscore}seq{\isacharunderscore}mono\ R{\isacharunderscore}therm{\isacharunderscore}ctrl\ R{\isacharunderscore}therm{\isacharunderscore}dyn{\isacharbrackleft}OF\ assms{\isacharbrackright}{\isacharparenright}\isanewline
@@ -959,59 +938,64 @@ The proof of \isa{R{\isacharunderscore}therm{\isacharunderscore}loop} applies la
 \end{example}
 
 \begin{example}[Water tank refinement via invariants]\label{ex:tank-rinv}
-We use invariants to refine $\mathsf{Tank}$ from Example~\ref{ex:tank-inv}. Instead of doing it modularly, we do it in a single structured proof. We abbreviate uncritical parts of the proof with ellipses $\langle \dots\rangle$ and long expressions with schematic variables \isa{{\isacharparenleft}{\isacharquery}ctrl{\isacharcomma}{\isacharquery}dyn{\isacharcomma}{\isacharquery}ref{\isacharcomma}{\isacharquery}Ictrl{\isacharparenright}}. We follow the strategy of Example~\ref{ex:therm-rsol} with the exception that the dynamics are refined using the fact that $dI_k$ from Example~\ref{ex:tank-inv} is an invariant for $f_k$.
+We use invariants to refine \isa{tank{\isacharunderscore}dinv} from Example~\ref{ex:tank-inv}. Instead of doing it modularly, we do it in a single structured proof. We abbreviate uncritical parts of the proof with ellipses $\langle \dots\rangle$ and long expressions with schematic variables \isa{{\isacharparenleft}{\isacharquery}ctrl{\isacharunderscore}ref{\isacharcomma}{\isacharquery}dyn{\isacharunderscore}ref{\isacharparenright}}. We follow the strategy of Example~\ref{ex:therm-rsol} with the exception that the dynamics are refined using the fact that $dI\, h_m\, h_M\, k$ from Example~\ref{ex:tank-inv} is an invariant for $f\, k$.
 \begin{isabellebody}
 \isanewline
 \isacommand{lemma}\isamarkupfalse%
 \ tank{\isacharunderscore}diff{\isacharunderscore}inv{\isacharcolon}\isanewline
-\ \ {\isachardoublequoteopen}{\isadigit{0}}\ {\isasymle}\ {\isasymtau}\ {\isasymLongrightarrow}\ diff{\isacharunderscore}invariant\ \ {\isasymlbrakk}dI\ hmin\ hmax\ k{\isasymrbrakk}\isactrlsub e\ {\isasymlbrakk}f\ k{\isasymrbrakk}\isactrlsub e\ {\isacharbraceleft}{\isadigit{0}}{\isachardot}{\isachardot}{\isasymtau}{\isacharbraceright}\ UNIV\ {\isadigit{0}}\ Guard{\isachardoublequoteclose}\isanewline
+\ \ {\isachardoublequoteopen}{\isadigit{0}}\ {\isasymle}\ {\isasymtau}\ {\isasymLongrightarrow}\ diff{\isacharunderscore}invariant\ \ {\isasymlbrakk}dI\ h\isactrlsub m\ h\isactrlsub M\ k{\isasymrbrakk}\isactrlsub e\ {\isacharparenleft}f\ k{\isacharparenright}\ {\isacharbraceleft}{\isadigit{0}}{\isachardot}{\isachardot}{\isasymtau}{\isacharbraceright}\ UNIV\ {\isadigit{0}}\ Guard{\isachardoublequoteclose}\isanewline
 \ \ $\langle \isa{proof}\rangle$\isanewline
 \isanewline
 \isacommand{lemma}\isamarkupfalse%
 \ R{\isacharunderscore}tank{\isacharunderscore}inv{\isacharcolon}\isanewline
 \ \ \isakeyword{assumes}\ {\isachardoublequoteopen}{\isadigit{0}}\ {\isasymle}\ {\isasymtau}{\isachardoublequoteclose}\ \isakeyword{and}\ {\isachardoublequoteopen}{\isadigit{0}}\ {\isacharless}\ c\isactrlsub o{\isachardoublequoteclose}\ \isakeyword{and}\ {\isachardoublequoteopen}c\isactrlsub o\ {\isacharless}\ c\isactrlsub i{\isachardoublequoteclose}\isanewline
-\ \ \isakeyword{shows}\ {\isachardoublequoteopen}Ref\ {\isasymlceil}I\ hmin\ hmax{\isasymrceil}\ {\isasymlceil}I\ hmin\ hmax{\isasymrceil}\ {\isasymge}\isanewline
-\ \ {\isacharparenleft}LOOP\ \isanewline
-\ \ \ \ %
-\isamarkupcmt{control%
-}\isanewline
-\ \ \ \ {\isacharparenleft}{\isacharparenleft}t\ {\isacharcolon}{\isacharcolon}{\isacharequal}{\isadigit{0}}{\isacharparenright}{\isacharsemicolon}{\isacharparenleft}h\isactrlsub {\isadigit{0}}\ {\isacharcolon}{\isacharcolon}{\isacharequal}\ h{\isacharparenright}{\isacharsemicolon}\isanewline
-\ \ \ \ {\isacharparenleft}IF\ U{\isacharparenleft}Pump\ {\isacharequal}\ {\isadigit{0}}\ {\isasymand}\ h\isactrlsub {\isadigit{0}}\ {\isasymle}\ hmin\ {\isacharplus}\ {\isadigit{1}}{\isacharparenright}\ THEN\ {\isacharparenleft}Pump\ {\isacharcolon}{\isacharcolon}{\isacharequal}\ {\isadigit{1}}{\isacharparenright}\ ELSE\ \isanewline
-\ \ \ \ {\isacharparenleft}IF\ U{\isacharparenleft}Pump\ {\isacharequal}\ {\isadigit{1}}\ {\isasymand}\ h\isactrlsub {\isadigit{0}}\ {\isasymge}\ hmax\ {\isacharminus}\ {\isadigit{1}}{\isacharparenright}\ THEN\ {\isacharparenleft}Pump\ {\isacharcolon}{\isacharcolon}{\isacharequal}\ {\isadigit{0}}{\isacharparenright}\ ELSE\ skip{\isacharparenright}{\isacharparenright}{\isacharsemicolon}\isanewline
-\ \ \ \ %
-\isamarkupcmt{dynamics%
-}\isanewline
-\ \ \ \ {\isacharparenleft}IF\ U{\isacharparenleft}Pump\ {\isacharequal}\ {\isadigit{0}}{\isacharparenright}\ THEN\ \isanewline
-\ \ \ \ \ \ {\isacharparenleft}x{\isasymacute}{\isacharequal}\ {\isasymlbrakk}f\ {\isacharparenleft}c\isactrlsub i{\isacharminus}c\isactrlsub o{\isacharparenright}{\isasymrbrakk}\isactrlsub e\ {\isacharampersand}\ G\ hmax\ {\isacharparenleft}c\isactrlsub i{\isacharminus}c\isactrlsub o{\isacharparenright}\ on\ {\isacharbraceleft}{\isadigit{0}}{\isachardot}{\isachardot}{\isasymtau}{\isacharbraceright}\ UNIV\ {\isacharat}\ {\isadigit{0}}\isanewline 
-\ \ \ \ \ \ DINV\ {\isacharparenleft}dI\ hmin\ hmax\ {\isacharparenleft}c\isactrlsub i{\isacharminus}c\isactrlsub o{\isacharparenright}{\isacharparenright}{\isacharparenright}\ \isanewline
-\ \ \ \ \ ELSE\ \isanewline
-\ \ \ \ \ \ {\isacharparenleft}x{\isasymacute}{\isacharequal}\ {\isasymlbrakk}f\ {\isacharparenleft}{\isacharminus}c\isactrlsub o{\isacharparenright}{\isasymrbrakk}\isactrlsub e\ {\isacharampersand}\ G\ hmin\ {\isacharparenleft}{\isacharminus}c\isactrlsub o{\isacharparenright}\ on\ {\isacharbraceleft}{\isadigit{0}}{\isachardot}{\isachardot}{\isasymtau}{\isacharbraceright}\ UNIV\ {\isacharat}\ {\isadigit{0}}\isanewline 
-\ \ \ \ \ \ DINV\ {\isacharparenleft}dI\ hmin\ hmax\ {\isacharparenleft}{\isacharminus}c\isactrlsub o{\isacharparenright}{\isacharparenright}{\isacharparenright}{\isacharparenright}\ {\isacharparenright}\isanewline
-\ \ INV\ I\ hmin\ hmax{\isacharparenright}{\isachardoublequoteclose}\ {\isacharparenleft}\isakeyword{is}\ {\isachardoublequoteopen}LOOP\ {\isacharparenleft}{\isacharquery}ctrl{\isacharsemicolon}{\isacharquery}dyn{\isacharparenright}\ INV\ {\isacharunderscore}\ {\isasymle}\ {\isacharquery}ref{\isachardoublequoteclose}{\isacharparenright}\isanewline
+\ \ \isakeyword{shows}\ {\isachardoublequoteopen}\isactrlbold {\isacharbrackleft}I\ h\isactrlsub m\ h\isactrlsub M{\isacharcomma}\ I\ h\isactrlsub m\ h\isactrlsub M\isactrlbold {\isacharbrackright}\ {\isasymge}\ tank{\isacharunderscore}dinv\ c\isactrlsub i\ c\isactrlsub o\ h\isactrlsub m\ h\isactrlsub M\ {\isasymtau}{\isachardoublequoteclose}\isanewline
 \isacommand{proof}\isamarkupfalse%
 {\isacharminus}\isanewline
-\ \ \isamarkupcmt{First we refine the control.}\isanewline
-\ \ \isacommand{let}\isamarkupfalse%
-\ {\isacharquery}Icntrl\ {\isacharequal}\ {\isachardoublequoteopen}U{\isacharparenleft}I\ hmin\ hmax\ {\isasymand}\ t\ {\isacharequal}\ {\isadigit{0}}\ {\isasymand}\ h\isactrlsub {\isadigit{0}}\ {\isacharequal}\ h{\isacharparenright}{\isachardoublequoteclose}\ $\langle \dots\rangle$\isanewline
+\isamarkupcmt{First we refine the control.}\ $\langle\dots\rangle$\isanewline
 \ \ \isacommand{hence}\isamarkupfalse%
-\ ctrl{\isacharcolon}\ {\isachardoublequoteopen}{\isacharquery}ctrl\ {\isasymle}\ Ref\ {\isasymlceil}I\ Hmin\ Hmax{\isasymrceil}\ {\isasymlceil}{\isacharquery}Icntrl{\isasymrceil}{\isachardoublequoteclose}\ $\langle \isa{proof}\rangle$\isanewline
-\ \ \isamarkupcmt{Then we refine the dynamics.}\ $\langle \dots\rangle$\isanewline
+\ ctrl{\isacharcolon}\ {\isachardoublequoteopen}ctrl\ h\isactrlsub m\ h\isactrlsub M\ {\isasymle}\ \isactrlbold {\isacharbrackleft}I\ h\isactrlsub m\ h\isactrlsub M{\isacharcomma}\ I\ h\isactrlsub m\ h\isactrlsub M\ {\isasymand}\ t\ {\isacharequal}\ {\isadigit{0}}\ {\isasymand}\ h\isactrlsub {\isadigit{0}}\ {\isacharequal}\ h\isactrlbold {\isacharbrackright}{\isachardoublequoteclose}\isanewline 
+\ \ {\isacharparenleft}\isakeyword{is}\ {\isachardoublequoteopen}{\isacharunderscore}\ {\isasymle}\ {\isacharquery}ctrl{\isacharunderscore}ref{\isachardoublequoteclose}{\isacharparenright}\ \isacommand{apply}\isamarkupfalse%
+{\isacharparenleft}rule{\isacharunderscore}tac\ R{\isacharequal}{\isachardoublequoteopen}U{\isacharparenleft}I\ h\isactrlsub m\ h\isactrlsub M\ {\isasymand}\ t\ {\isacharequal}\ {\isadigit{0}}\ {\isasymand}\ h\isactrlsub {\isadigit{0}}\ {\isacharequal}\ h{\isacharparenright}{\isachardoublequoteclose}\ \isakeyword{in}\ R{\isacharunderscore}seq{\isacharunderscore}rule{\isacharparenright}\isanewline
+\ \ \ \ \ \isacommand{apply}\isamarkupfalse%
+{\isacharparenleft}rule{\isacharunderscore}tac\ R{\isacharequal}{\isachardoublequoteopen}U{\isacharparenleft}I\ h\isactrlsub m\ h\isactrlsub M\ {\isasymand}\ t\ {\isacharequal}\ {\isadigit{0}}{\isacharparenright}{\isachardoublequoteclose}\ \isakeyword{in}\ R{\isacharunderscore}seq{\isacharunderscore}rule{\isacharparenright}\isanewline
+\ \ \ \ \isacommand{by}\isamarkupfalse%
+\ {\isacharparenleft}auto\ intro{\isacharbang}{\isacharcolon}\ R{\isacharunderscore}assign{\isacharunderscore}rule{\isacharcomma}\ rel{\isacharunderscore}auto{\isacharprime}{\isacharparenright}\isanewline
+\ \ %
+\isamarkupcmt{Then we refine the dynamics.}\ $\langle\dots\rangle$\isanewline
 \ \ \isacommand{have}\isamarkupfalse%
-\ dyn{\isacharcolon}\ {\isachardoublequoteopen}{\isacharquery}dyn\ {\isasymle}\ Ref\ {\isasymlceil}{\isacharquery}Icntrl{\isasymrceil}\ {\isasymlceil}I\ Hmin\ Hmax{\isasymrceil}{\isachardoublequoteclose}\ $\langle \isa{proof}\rangle$\isanewline
-\ \ \isamarkupcmt{Finally we put everything together.}\isanewline
+\ dyn{\isacharcolon}\ {\isachardoublequoteopen}dyn\ c\isactrlsub i\ c\isactrlsub o\ h\isactrlsub m\ h\isactrlsub M\ {\isasymtau}\ {\isasymle}\ \isactrlbold {\isacharbrackleft}I\ h\isactrlsub m\ h\isactrlsub M\ {\isasymand}\ t\ {\isacharequal}\ {\isadigit{0}}\ {\isasymand}\ h\isactrlsub {\isadigit{0}}\ {\isacharequal}\ h{\isacharcomma}\ I\ h\isactrlsub m\ h\isactrlsub M\isactrlbold {\isacharbrackright}{\isachardoublequoteclose}\isanewline 
+\ \ {\isacharparenleft}\isakeyword{is}\ {\isachardoublequoteopen}{\isacharunderscore}\ {\isasymle}\ {\isacharquery}dyn{\isacharunderscore}ref{\isachardoublequoteclose}{\isacharparenright}\ \isacommand{apply}\isamarkupfalse%
+{\isacharparenleft}rule\ order{\isacharunderscore}trans{\isacharcomma}\ rule\ R{\isacharunderscore}cond{\isacharunderscore}mono{\isacharparenright}\isanewline
+\ \ \ \ \isacommand{using}\isamarkupfalse%
+\ dynup\ dyndown\ \isacommand{apply}\isamarkupfalse%
+{\isacharparenleft}force{\isacharcomma}\ force{\isacharparenright}\isanewline
+\ \ \ \ \isacommand{by}\isamarkupfalse%
+\ {\isacharparenleft}rule\ R{\isacharunderscore}cond{\isacharcomma}\ rel{\isacharunderscore}auto{\isacharprime}{\isacharparenright}\isanewline
+\ \ %
+\isamarkupcmt{Finally we put everything together.}\isanewline
 \ \ \isacommand{have}\isamarkupfalse%
-\ pre{\isacharunderscore}pos{\isacharcolon}\ {\isachardoublequoteopen}{\isasymlceil}I\ Hmin\ Hmax{\isasymrceil}\ {\isasymle}\ {\isasymlceil}I\ Hmin\ Hmax{\isasymrceil}{\isachardoublequoteclose}\ \isacommand{by}\isamarkupfalse\ simp\isanewline
+\ pre{\isacharunderscore}pos{\isacharcolon}\ {\isachardoublequoteopen}{\isasymlceil}I\ h\isactrlsub m\ h\isactrlsub M{\isasymrceil}\ {\isasymle}\ {\isasymlceil}I\ h\isactrlsub m\ h\isactrlsub M{\isasymrceil}{\isachardoublequoteclose}\ \isacommand{by}\isamarkupfalse\ simp\isanewline
 \ \ \isacommand{have}\isamarkupfalse%
-\ inv{\isacharunderscore}inv{\isacharcolon}\ {\isachardoublequoteopen}Ref\ {\isasymlceil}I\ Hmin\ Hmax{\isasymrceil}\ {\isasymlceil}{\isacharquery}Icntrl{\isasymrceil}{\isacharsemicolon}\ {\isacharparenleft}Ref\ {\isasymlceil}{\isacharquery}Icntrl{\isasymrceil}\ {\isasymlceil}I\ Hmin\ Hmax{\isasymrceil}{\isacharparenright}\ {\isasymle}\ Ref\ {\isasymlceil}I\ Hmin\ Hmax{\isasymrceil}\ {\isasymlceil}I\ Hmin\ Hmax{\isasymrceil}{\isachardoublequoteclose}\ \isacommand{by}\isamarkupfalse\ {\isacharparenleft}rule\ R{\isacharunderscore}comp{\isacharparenright}\isanewline
+\ inv{\isacharunderscore}inv{\isacharcolon}\ {\isachardoublequoteopen}{\isacharquery}ctrl{\isacharunderscore}ref{\isacharsemicolon}\ {\isacharquery}dyn{\isacharunderscore}ref\ {\isasymle}\ \isactrlbold {\isacharbrackleft}I\ h\isactrlsub m\ h\isactrlsub M{\isacharcomma}\ I\ h\isactrlsub m\ h\isactrlsub M\isactrlbold {\isacharbrackright}{\isachardoublequoteclose}\ \isacommand{by}\isamarkupfalse%
+\ {\isacharparenleft}rule\ R{\isacharunderscore}seq{\isacharparenright}\isanewline
 \ \ \isacommand{have}\isamarkupfalse%
-\ loopref{\isacharcolon}\ {\isachardoublequoteopen}LOOP\ Ref\ {\isasymlceil}I\ Hmin\ Hmax{\isasymrceil}\ {\isasymlceil}{\isacharquery}Icntrl{\isasymrceil}{\isacharsemicolon}\ {\isacharparenleft}Ref\ {\isasymlceil}{\isacharquery}Icntrl{\isasymrceil}\ {\isasymlceil}I\ Hmin\ Hmax{\isasymrceil}{\isacharparenright}\ INV\ I\ Hmin\ Hmax\ {\isasymle}\ {\isacharquery}ref{\isachardoublequoteclose}\ $\langle \isa{proof}\rangle$\isanewline
+\ loopref{\isacharcolon}\ {\isachardoublequoteopen}LOOP\ {\isacharquery}ctrl{\isacharunderscore}ref{\isacharsemicolon}\ {\isacharquery}dyn{\isacharunderscore}ref\ INV\ I\ h\isactrlsub m\ h\isactrlsub M\ {\isasymle}\ \isactrlbold {\isacharbrackleft}I\ h\isactrlsub m\ h\isactrlsub M{\isacharcomma}\ I\ h\isactrlsub m\ h\isactrlsub M\isactrlbold {\isacharbrackright}{\isachardoublequoteclose}\isanewline
+\ \ \ \ \isacommand{apply}\isamarkupfalse%
+{\isacharparenleft}rule\ R{\isacharunderscore}loop{\isacharparenright}\ \isacommand{using}\isamarkupfalse%
+\ pre{\isacharunderscore}pos\ inv{\isacharunderscore}inv\ \isacommand{by}\isamarkupfalse%
+\ auto\isanewline
 \ \ \isacommand{have}\isamarkupfalse%
-\ obs{\isacharcolon}\ {\isachardoublequoteopen}{\isacharquery}ctrl{\isacharsemicolon}{\isacharquery}dyn\ {\isasymle}\ Ref\ {\isasymlceil}I\ Hmin\ Hmax{\isasymrceil}\ {\isasymlceil}{\isacharquery}Icntrl{\isasymrceil}{\isacharsemicolon}\ {\isacharparenleft}Ref\ {\isasymlceil}{\isacharquery}Icntrl{\isasymrceil}\ {\isasymlceil}I\ Hmin\ Hmax{\isasymrceil}{\isacharparenright}{\isachardoublequoteclose}\ $\langle \isa{proof}\rangle$\isanewline
+\ obs{\isacharcolon}\ {\isachardoublequoteopen}{\isacharparenleft}ctrl\ h\isactrlsub m\ h\isactrlsub M{\isacharsemicolon}dyn\ c\isactrlsub i\ c\isactrlsub o\ h\isactrlsub m\ h\isactrlsub M\ {\isasymtau}{\isacharparenright}\ {\isasymle}\ {\isacharquery}ctrl{\isacharunderscore}ref{\isacharsemicolon}\ {\isacharquery}dyn{\isacharunderscore}ref{\isachardoublequoteclose}\isanewline
+\ \ \ \ \isacommand{apply}\isamarkupfalse%
+{\isacharparenleft}rule\ R{\isacharunderscore}seq{\isacharunderscore}mono{\isacharparenright}\ \isacommand{using}\isamarkupfalse%
+\ ctrl\ dyn\ \isacommand{by}\isamarkupfalse%
+\ auto\isanewline
 \ \ \isacommand{show}\isamarkupfalse%
-\ {\isachardoublequoteopen}LOOP\ {\isacharparenleft}{\isacharquery}ctrl{\isacharsemicolon}{\isacharquery}dyn{\isacharparenright}\ INV\ I\ Hmin\ Hmax\ {\isasymle}\ {\isacharquery}ref{\isachardoublequoteclose}\isanewline
+\ {\isachardoublequoteopen}tank{\isacharunderscore}dinv\ c\isactrlsub i\ c\isactrlsub o\ h\isactrlsub m\ h\isactrlsub M\ {\isasymtau}\ {\isasymle}\ \isactrlbold {\isacharbrackleft}I\ h\isactrlsub m\ h\isactrlsub M{\isacharcomma}\ I\ h\isactrlsub m\ h\isactrlsub M\isactrlbold {\isacharbrackright}{\isachardoublequoteclose}\isanewline
 \ \ \ \ \isacommand{by}\isamarkupfalse%
 \ {\isacharparenleft}rule\ order{\isacharunderscore}trans{\isacharbrackleft}OF\ {\isacharunderscore}\ loopref{\isacharbrackright}{\isacharcomma}\ rule\ R{\isacharunderscore}loop{\isacharunderscore}mono{\isacharbrackleft}OF\ obs{\isacharbrackright}{\isacharparenright}\isanewline
-\isacommand{qed}\qed
+\isacommand{qed}\isamarkupfalse%
 \end{isabellebody}
 \end{example}
 
@@ -1052,69 +1036,75 @@ for such evolution commands.
 \begin{example}[Bouncing ball via Hoare logic]\label{ex:ball-hoare}
   Suppose a ball of mass $m$ falls down from height $h\geq 0$, with
   $x$ denoting its position, $v$ its velocity and $g$ its
-  acceleration. Its kinematics is modelled by the function
-  $\flow:\reals\to\reals^2\to\reals^2$ with
- \begin{equation*}
-    \flow\, t\,
-    \begin{pmatrix}
-      s_x\\
-      s_v
-    \end{pmatrix}
-=
-\begin{pmatrix}
-  s_x+s_v t-\frac{1}{2}gt^2\\
- s_v-g t
-\end{pmatrix},
-\end{equation*}
-where we abbreviate
-$s_x = s\, x$ and $s_v = s\, v$.  It bounces back
+  acceleration. Its kinematics is modelled by the flow mapping
+\begin{isabellebody}
+\isanewline
+\isacommand{abbreviation}\isamarkupfalse%
+\ ball{\isacharunderscore}flow\ {\isacharcolon}{\isacharcolon}\ {\isachardoublequoteopen}real\ {\isasymRightarrow}\ real\ {\isasymRightarrow}\ {\isacharparenleft}real{\isacharcircum}{\isadigit{2}}{\isacharparenright}\ usubst{\isachardoublequoteclose}\ {\isacharparenleft}{\isachardoublequoteopen}{\isasymphi}{\isachardoublequoteclose}{\isacharparenright}\ \isanewline
+\ \ \isakeyword{where}\ {\isachardoublequoteopen}{\isasymphi}\ g\ {\isasymtau}\ {\isasymequiv}\ {\isacharbrackleft}x\ {\isasymmapsto}\isactrlsub s\ g\ {\isasymcdot}\ {\isasymtau}\ {\isacharcircum}\ {\isadigit{2}}{\isacharslash}{\isadigit{2}}\ {\isacharplus}\ v\ {\isasymcdot}\ {\isasymtau}\ {\isacharplus}\ x{\isacharcomma}\ \ v\ {\isasymmapsto}\isactrlsub s\ g\ {\isasymcdot}\ {\isasymtau}\ {\isacharplus}\ v{\isacharbrackright}{\isachardoublequoteclose}\isanewline
+\end{isabellebody}
+
+% function
+%  $\flow:\reals\to\reals^2\to\reals^2$ with
+% \begin{equation*}
+%    \flow\, t\,
+%    \begin{pmatrix}
+%      s_x\\
+%      s_v
+%    \end{pmatrix}
+%=
+%\begin{pmatrix}
+%  s_x+s_v t-\frac{1}{2}gt^2\\
+% s_v-g t
+%\end{pmatrix},
+%\end{equation*}
+%where we abbreviate
+%$s_x = s\, x$ and $s_v = s\, v$.  
+The ball bounces back
 from the ground in an elastic collision, which is modelled using a
-discrete control that checks whether $s_x=0$ and then flips the
-velocity.  Guard $G=(\lambda s.\ s_x\geq 0)$ excludes any motion
+discrete control that checks whether $x=0$ and then flips the
+velocity.  Guard $G=(x\geq 0)$ excludes any motion
 below the ground. This is modelled by the hybrid
 program~\cite{Platzer18}
-\begin{align*}
-	\mathsf{Cntrl} &= \IF {(\lambda\, s.\ s_x=0)} {v:=(\lambda\, s.\ - s_v)} \mathit{skip},\\
-	\mathsf{Ball} &= ({\mathbf{evol}\, \flow\, G}\,  {;}\, \mathsf{Cntrl})^\ast.
-\end{align*}
-Its correctness specification is $\{P\}\, \mathsf{Ball}\, \{Q\}$ for $P= (\lambda s.\ s_x = h\land s_v = 0)$ and $Q  = (\lambda s.\ 0\leq s_x\leq h)$; its loop invariant
-\begin{equation*}
-      I = \left(\lambda s.\ 0\le s_x \land \frac{1}{2}s_v^2= g(h - s_x)\right).
-\end{equation*}
-
-We use Isabelle's \isa{{\isadigit{1}}{\isacharcomma} {\isadigit{2}}{\isacharcolon}{\isacharcolon}{\isadigit{2}}} for $x$ and $v$ respectively. The bouncing ball specification $\{P\}\, \mathsf{Ball}\, \{Q\}$ and its refinement version $\mathsf{Ball}\leq [P,Q]$ are then formalised as below. 
+\begin{isabellebody}
+\isanewline
+\isacommand{abbreviation}\isamarkupfalse%
+\ {\isachardoublequoteopen}bb{\isacharunderscore}evol\ g\ h\ T\ {\isasymequiv}\ \isanewline
+\ \ {\isacharparenleft}LOOP\ {\isacharparenleft}\isanewline
+\ \ \ \ {\isacharparenleft}EVOL\ {\isacharparenleft}{\isasymphi}\ g{\isacharparenright}\ {\isacharparenleft}x\ {\isasymge}\ {\isadigit{0}}{\isacharparenright}\ T{\isacharparenright}{\isacharsemicolon}\isanewline
+\ \ \ \ {\isacharparenleft}IF\ {\isacharparenleft}v\ {\isacharequal}\ {\isadigit{0}}{\isacharparenright}\ THEN\ {\isacharparenleft}v\ {\isacharcolon}{\isacharcolon}{\isacharequal}\ {\isacharminus}v{\isacharparenright}\ ELSE\ skip{\isacharparenright}{\isacharparenright}\ \isanewline
+\ \ INV\ {\isacharparenleft}{\isadigit{0}}\ {\isasymle}\ x\ {\isasymand}\ {\isadigit{2}}\ {\isasymcdot}\ g\ {\isasymcdot}\ x\ {\isacharequal}\ {\isadigit{2}}\ {\isasymcdot}\ g\ {\isasymcdot}\ h\ {\isacharplus}\ v\ {\isasymcdot}\ v{\isacharparenright}{\isacharparenright}{\isachardoublequoteclose}\isanewline
+\end{isabellebody}
+Its loop invariant is a conjunction of the guard $G$ and a variation of the law of conservation of energy. The correctness specification in Hoare-triple style and its refinement version are then formalised as below
+%\begin{align*}
+%	\mathsf{Cntrl} &= \IF {(\lambda\, s.\ s_x=0)} {v:=(\lambda\, s.\ - s_v)} \mathit{skip},\\
+%	\mathsf{Ball} &= ({\mathbf{evol}\, \flow\, G}\,  {;}\, \mathsf{Cntrl})^\ast.
+%\end{align*}
+%Its correctness specification is $\{P\}\, \mathsf{Ball}\, \{Q\}$ for $P= (\lambda s.\ s_x = h\land s_v = 0)$ and $Q  = (\lambda s.\ 0\leq s_x\leq h)$; its loop invariant
+%\begin{equation*}
+%      I = \left(\lambda s.\ 0\le s_x \land \frac{1}{2}s_v^2= g(h - s_x)\right).
+%\end{equation*}
+%We use Isabelle's \isa{{\isadigit{1}}{\isacharcomma} {\isadigit{2}}{\isacharcolon}{\isacharcolon}{\isadigit{2}}} for $x$ and $v$ respectively. The bouncing ball specification $\{P\}\, \mathsf{Ball}\, \{Q\}$ and its refinement version $\mathsf{Ball}\leq [P,Q]$ are then formalised as below. 
 \begin{isabellebody}
 \isanewline
 \isacommand{lemma}\isamarkupfalse%
-\ bouncing{\isacharunderscore}ball{\isacharunderscore}dyn{\isacharcolon}\ {\isachardoublequoteopen}g\ {\isacharless}\ {\isadigit{0}}\ {\isasymLongrightarrow}\ h\ {\isasymge}\ {\isadigit{0}}\ {\isasymLongrightarrow}\isanewline
-\ \ \isactrlbold {\isacharbraceleft}x\ {\isacharequal}\ h\ {\isasymand}\ v\ {\isacharequal}\ {\isadigit{0}}\isactrlbold {\isacharbraceright}\ \isanewline
-\ \ {\isacharparenleft}LOOP\ \isanewline
-\ \ \ \ \ \ {\isacharparenleft}{\isacharparenleft}EVOL\ {\isacharparenleft}{\isasymphi}\ g{\isacharparenright}\ U{\isacharparenleft}x\ {\isasymge}\ {\isadigit{0}}{\isacharparenright}\ T{\isacharparenright}{\isacharsemicolon}\isanewline
-\ \ \ \ \ \ \ {\isacharparenleft}IF\ U{\isacharparenleft}v\ {\isacharequal}\ {\isadigit{0}}{\isacharparenright}\ THEN\ {\isacharparenleft}v\ {\isacharcolon}{\isacharcolon}{\isacharequal}\ {\isacharminus}v{\isacharparenright}\ ELSE\ skip{\isacharparenright}{\isacharparenright}\ \isanewline
-\ \ \ \ INV\ U{\isacharparenleft}{\isadigit{0}}\ {\isasymle}\ x\ {\isasymand}\ {\isadigit{2}}\ {\isasymcdot}\ g\ {\isasymcdot}\ x\ {\isacharequal}\ {\isadigit{2}}\ {\isasymcdot}\ g\ {\isasymcdot}\ h\ {\isacharplus}\ v\ {\isasymcdot}\ v{\isacharparenright}\isanewline
-\ \ {\isacharparenright}\ \isactrlbold {\isacharbraceleft}{\isadigit{0}}\ {\isasymle}\ x\ {\isasymand}\ x\ {\isasymle}\ h\isactrlbold {\isacharbraceright}{\isachardoublequoteclose}\isanewline
+\ bouncing{\isacharunderscore}ball{\isacharunderscore}dyn{\isacharcolon}\ \isanewline
+\ \ \isakeyword{assumes}\ {\isachardoublequoteopen}g\ {\isacharless}\ {\isadigit{0}}{\isachardoublequoteclose}\ \isakeyword{and}\ {\isachardoublequoteopen}h\ {\isasymge}\ {\isadigit{0}}{\isachardoublequoteclose}\isanewline
+\ \ \isakeyword{shows}\ {\isachardoublequoteopen}\ \isactrlbold {\isacharbraceleft}x\ {\isacharequal}\ h\ {\isasymand}\ v\ {\isacharequal}\ {\isadigit{0}}\isactrlbold {\isacharbraceright}\ bb{\isacharunderscore}evol\ g\ h\ T\ \isactrlbold {\isacharbraceleft}{\isadigit{0}}\ {\isasymle}\ x\ {\isasymand}\ x\ {\isasymle}\ h\isactrlbold {\isacharbraceright}{\isachardoublequoteclose}\isanewline
 \isacommand{apply}\isamarkupfalse%
 {\isacharparenleft}rule\ H{\isacharunderscore}loopI{\isacharcomma}\ rule\ H{\isacharunderscore}seq{\isacharbrackleft}\isakeyword{where}\ R{\isacharequal}{\isachardoublequoteopen}U{\isacharparenleft}{\isadigit{0}}\ {\isasymle}\ x\ {\isasymand}\ {\isadigit{2}}\ {\isasymcdot}\ g\ {\isasymcdot}\ x\ {\isacharequal}\ {\isadigit{2}}\ {\isasymcdot}\ g\ {\isasymcdot}\ h\ {\isacharplus}\ v\ {\isasymcdot}\ v{\isacharparenright}{\isachardoublequoteclose}{\isacharbrackright}{\isacharparenright}\isanewline
-\ \ \ \ \ \isacommand{apply}\isamarkupfalse%
-{\isacharparenleft}simp{\isacharcomma}\ pred{\isacharunderscore}simp{\isacharcomma}\ force\ simp{\isacharcolon}\ bb{\isacharunderscore}real{\isacharunderscore}arith{\isacharparenright}\isanewline
-\ \ \ \ \isacommand{apply}\isamarkupfalse%
-{\isacharparenleft}simp{\isacharcomma}\ pred{\isacharunderscore}simp{\isacharparenright}{\isacharplus}\isanewline
-\ \ \isacommand{by}\isamarkupfalse%
-\ {\isacharparenleft}force\ simp{\isacharcolon}\ bb{\isacharunderscore}real{\isacharunderscore}arith{\isacharparenright}\isanewline
+\ \ \isacommand{using}\isamarkupfalse%
+\ assms\ \isacommand{by}\isamarkupfalse%
+\ {\isacharparenleft}simp{\isacharunderscore}all{\isacharcomma}\ rel{\isacharunderscore}auto{\isacharprime}\ simp{\isacharcolon}\ bb{\isacharunderscore}real{\isacharunderscore}arith{\isacharparenright}\isanewline
 \isanewline
-\isacommand{lemma}\isamarkupfalse%
-\ R{\isacharunderscore}bouncing{\isacharunderscore}ball{\isacharunderscore}dyn{\isacharcolon}\isanewline
+\isacommand{lemma}\isamarkupfalse\ R{\isacharunderscore}bouncing{\isacharunderscore}ball{\isacharunderscore}dyn{\isacharcolon}\isanewline
 \ \ \isakeyword{assumes}\ {\isachardoublequoteopen}g\ {\isacharless}\ {\isadigit{0}}{\isachardoublequoteclose}\ \isakeyword{and}\ {\isachardoublequoteopen}h\ {\isasymge}\ {\isadigit{0}}{\isachardoublequoteclose}\isanewline
-\ \ \isakeyword{shows}\ {\isachardoublequoteopen}Ref\ {\isasymlceil}U{\isacharparenleft}x\ {\isacharequal}\ h\ {\isasymand}\ v\ {\isacharequal}\ {\isadigit{0}}{\isacharparenright}{\isasymrceil}\ {\isasymlceil}U{\isacharparenleft}{\isadigit{0}}\ {\isasymle}\ x\ {\isasymand}\ x\ {\isasymle}\ h{\isacharparenright}{\isasymrceil}\ {\isasymge}\ \isanewline
-\ \ {\isacharparenleft}LOOP\ \isanewline
-\ \ \ \ \ \ {\isacharparenleft}{\isacharparenleft}EVOL\ {\isacharparenleft}{\isasymphi}\ g{\isacharparenright}\ U{\isacharparenleft}x\ {\isasymge}\ {\isadigit{0}}{\isacharparenright}\ T{\isacharparenright}{\isacharsemicolon}\isanewline
-\ \ \ \ \ \ \ {\isacharparenleft}IF\ U{\isacharparenleft}v\ {\isacharequal}\ {\isadigit{0}}{\isacharparenright}\ THEN\ {\isacharparenleft}v\ {\isacharcolon}{\isacharcolon}{\isacharequal}\ {\isacharminus}v{\isacharparenright}\ ELSE\ skip{\isacharparenright}{\isacharparenright}\ \isanewline
-\ \ \ \ INV\ U{\isacharparenleft}{\isadigit{0}}\ {\isasymle}\ x\ {\isasymand}\ {\isadigit{2}}\ {\isasymcdot}\ g\ {\isasymcdot}\ x\ {\isacharequal}\ {\isadigit{2}}\ {\isasymcdot}\ g\ {\isasymcdot}\ h\ {\isacharplus}\ v\ {\isasymcdot}\ v{\isacharparenright}{\isacharparenright}{\isachardoublequoteclose}\isanewline
+\ \ \isakeyword{shows}\ {\isachardoublequoteopen}\isactrlbold {\isacharbrackleft}x\ {\isacharequal}\ h\ {\isasymand}\ v\ {\isacharequal}\ {\isadigit{0}}{\isacharcomma}\ {\isadigit{0}}\ {\isasymle}\ x\ {\isasymand}\ x\ {\isasymle}\ h\isactrlbold {\isacharbrackright}\ {\isasymge}\ bb{\isacharunderscore}evol\ g\ h\ T{\isachardoublequoteclose}\isanewline
 \ \ $\langle \isa{\dots}\rangle$\ \isacommand{by}\isamarkupfalse%
-\ {\isacharparenleft}rule\ R{\isacharunderscore}g{\isacharunderscore}evol{\isacharunderscore}rule{\isacharcomma}\ pred{\isacharunderscore}simp{\isacharcomma}\ force\ simp{\isacharcolon}\ bb{\isacharunderscore}real{\isacharunderscore}arith{\isacharparenright}\isanewline
+\ {\isacharparenleft}rule\ R{\isacharunderscore}g{\isacharunderscore}evol{\isacharunderscore}rule{\isacharcomma}\ rel{\isacharunderscore}auto{\isacharprime}\ simp{\isacharcolon}\ bb{\isacharunderscore}real{\isacharunderscore}arith{\isacharparenright}\isanewline
 \end{isabellebody}
 
-For the Hoare triple version of the bouncing ball, there is no need to supply any flow as it is already annotated in the specification. Therefore, as soon as the only sequential composition is addressed in the proof, the proof can be finished automatically by providing some arithmetical facts (\isa{bb{\isacharunderscore}real{\isacharunderscore}arith}). For the refinement version, the proof is longer for the control because we refine each of its atomic programs. However, the dynamics are quickly discharged with (\ref{eq:h-evlfl}) and the same arithmetical facts. \qed
+For the Hoare triple version of the bouncing ball, there is no need to supply any flow as it is already annotated in the specification. Therefore, as soon as the only sequential composition is addressed, the proof can be finished automatically by providing some arithmetical facts (\isa{bb{\isacharunderscore}real{\isacharunderscore}arith}). For the refinement version, the proof is longer for the control because we refine each of its atomic programs. However, the dynamics are quickly discharged with (\ref{eq:h-evlfl}) and the same arithmetical facts. \qed
 \end{example}
 
 
