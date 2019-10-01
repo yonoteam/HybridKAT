@@ -116,7 +116,7 @@ lemma sH_seq: "\<^bold>{P\<^bold>} X ; Y \<^bold>{Q\<^bold>} =  \<^bold>{P\<^bol
 
 text \<open> Assignment laws \<close>
 
-lemma assign_self: "vwb_lens x \<Longrightarrow> x ::= &x = skip"
+lemma assign_self: "vwb_lens x \<Longrightarrow> (x ::= &x) = skip"
   by (rel_simp' simp: one_nd_fun.abs_eq)
 
 lemma assigns_comp: "assigns \<sigma> ; assigns \<rho> = assigns (\<rho> \<circ>\<^sub>s \<sigma>)"

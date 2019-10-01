@@ -446,11 +446,11 @@ $$\sigma(x\mapsto e) \defs \lambda s : S.\, \lput_x ~ (\sigma~s) ~ (e~s)$$
 for $x : V \lto S$, $e : S \to V$, and $\sigma : S \to S$.
 Intuitively, this updates the value of variable $x$ in the state
 update $\sigma : S \to S$ to have the value given by $e$. Here, the
-function $e$ is used to model an ``expression'' that is evaluated in
+function $e$ models an ``expression'' that is evaluated in
 the context of the state $s$. For example, if $x$ and $y$ are
 variables, then the expression $x / (2 + y)$ is modelled by
-$\lambda s. \, \lget_x~s / (2 + \lget_y~s)$. We can update $n$
-variables simultaneously using maplet the notation:
+$\lambda s. \, \lget_x~s / (2 + \lget_y~s)$. We can also update $n$
+variables simultaneously:
 $$[x_1 \mapsto e_1, x_2 \mapsto e_2, \cdots, x_n \mapsto e_n] ~\defs~ id(x_1 \mapsto e_1)(x_2 \mapsto e_2)\cdots(x_n \mapsto e_n)$$ 
 where $id$ is the identity function. We also define a substitution
 operator for state updates, $\sigma \dagger e \defs e \circ s$, which
