@@ -114,6 +114,20 @@ lemma sH_seq: "Hoare \<lceil>P\<rceil> (X ; Y) \<lceil>Q\<rceil> = Hoare \<lceil
 lemma sH_seq: "\<^bold>{P\<^bold>} X ; Y \<^bold>{Q\<^bold>} =  \<^bold>{P\<^bold>} X \<^bold>{\<forall>s'. s' \<in> Y\<^sub>\<circ> \<Rightarrow> Q\<lbrakk>s'/&\<^bold>v\<rbrakk>\<^bold>}"
   unfolding ndfun_kat_H by (auto simp: times_nd_fun_def kcomp_def, pred_auto+)
 
+text \<open> Assignment laws \<close>
+
+lemma assign_self: "vwb_lens x \<Longrightarrow> x ::= &x = skip"
+  by (rel_simp' simp: one_nd_fun.abs_eq)
+
+lemma assigns_comp: "assigns \<sigma> ; assigns \<rho> = assigns (\<rho> \<circ>\<^sub>s \<sigma>)"
+  by (simp add: assigns_def nd_fun_eq_iff subst_comp.rep_eq, transfer, simp add: kcomp_def)
+
+lemma assign_twice: "vwb_lens x \<Longrightarrow> (x ::= e) ; (x ::= f) = x ::= f\<lbrakk>e/&x\<rbrakk>"
+  by (simp add: assigns_comp usubst)
+
+lemma assign_commute: "\<lbrakk> x \<bowtie> y; x \<sharp> f; y \<sharp> e \<rbrakk> \<Longrightarrow> (x ::= e) ; (y ::= f) = (y ::= f) ; (x ::= e)"
+  by (simp add: assigns_comp usubst usubst_upd_comm)
+
 \<comment> \<open> Rewriting the Hoare rule for the conditional statement \<close>
 
 abbreviation cond_sugar :: "'a upred \<Rightarrow> 'a nd_fun \<Rightarrow> 'a nd_fun \<Rightarrow> 'a nd_fun" ("IF _ THEN _ ELSE _" [64,64] 63) 
