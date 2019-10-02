@@ -65,6 +65,14 @@ lemma H_skip: "\<^bold>{P\<^bold>}skip\<^bold>{P\<^bold>}"
 lemma sH_skip[simp]: "\<^bold>{P\<^bold>}skip\<^bold>{Q\<^bold>} \<longleftrightarrow> `P \<Rightarrow> Q`"
   unfolding ndfun_kat_H by (simp add: one_nd_fun_def impl.rep_eq taut.rep_eq)
 
+\<comment> \<open> Hoare logic consequence rule \<close>
+
+lemma H_conseq: 
+  assumes "\<^bold>{p\<^sub>2\<^bold>}S\<^bold>{q\<^sub>2\<^bold>}" "`p\<^sub>1 \<Rightarrow> p\<^sub>2`" "`q\<^sub>2 \<Rightarrow> q\<^sub>1`" 
+  shows "\<^bold>{p\<^sub>1\<^bold>}S\<^bold>{q\<^sub>1\<^bold>}"
+  using assms
+  unfolding ndfun_kat_H by (rel_auto)
+
 \<comment> \<open> We introduce assignments and compute derive their rule of Hoare logic. \<close>
 
 definition assigns :: "'s usubst \<Rightarrow> 's nd_fun" ("\<^bold>\<langle>_\<^bold>\<rangle>") where
@@ -97,6 +105,11 @@ lemma sH_assigns[simp]: "\<^bold>{P\<^bold>} \<^bold>\<langle>\<sigma>\<^bold>\<
 lemma sH_assign_alt: "\<^bold>{P\<^bold>}x ::= e\<^bold>{Q\<^bold>} \<longleftrightarrow> `P \<Rightarrow> Q\<lbrakk>e/x\<rbrakk>`"
   unfolding ndfun_kat_H by (pred_auto)
 
+lemma H_assign_floyd_hoare:
+  assumes "vwb_lens x"
+  shows "\<^bold>{p\<^bold>} x ::= e \<^bold>{\<exists> v . p\<lbrakk>\<guillemotleft>v\<guillemotright>/x\<rbrakk> \<and> &x = e\<lbrakk>\<guillemotleft>v\<guillemotright>/x\<rbrakk>\<^bold>}"
+  using assms by (simp, rel_auto', metis vwb_lens_wb wb_lens.get_put)
+
 (*
 lemma sH_assign[simp]: "Hoare \<lceil>P\<rceil> (x ::= e) \<lceil>Q\<rceil> \<longleftrightarrow> (\<forall>s. P s \<longrightarrow> Q (\<chi> j. ((($) s)(x := (e s))) j))"
 *)
@@ -109,15 +122,22 @@ abbreviation seq_comp :: "'a nd_fun \<Rightarrow> 'a nd_fun \<Rightarrow> 'a nd_
 lemma H_seq: "\<^bold>{P\<^bold>} X \<^bold>{R\<^bold>} \<Longrightarrow> \<^bold>{R\<^bold>} Y \<^bold>{Q\<^bold>} \<Longrightarrow> \<^bold>{P\<^bold>} X ; Y \<^bold>{Q\<^bold>}"
   by (auto intro: H_seq)
 
-(*
-lemma sH_seq: "Hoare \<lceil>P\<rceil> (X ; Y) \<lceil>Q\<rceil> = Hoare \<lceil>P\<rceil> (X) \<lceil>\<lambda>s. \<forall>s'. s' \<in> (Y\<^sub>\<circ>) s \<longrightarrow> \<lbrakk>Q\<rbrakk>\<^sub>e s'\<rceil>"
-  unfolding ndfun_kat_H by (auto simp: times_nd_fun_def kcomp_def)
-*)
-
 lemma sH_seq: "\<^bold>{P\<^bold>} X ; Y \<^bold>{Q\<^bold>} =  \<^bold>{P\<^bold>} X \<^bold>{\<forall>s'. s' \<in> Y\<^sub>\<circ> \<Rightarrow> Q\<lbrakk>s'/&\<^bold>v\<rbrakk>\<^bold>}"
   unfolding ndfun_kat_H by (auto simp: times_nd_fun_def kcomp_def, pred_auto+)
 
 text \<open> Assignment laws \<close>
+
+\<comment> \<open> Assignment forward law \<close>
+
+lemma H_assign_init:
+  assumes "vwb_lens x" "\<And> x\<^sub>0. \<^bold>{&x = e\<lbrakk>\<guillemotleft>x\<^sub>0\<guillemotright>/&x\<rbrakk> \<and> p\<lbrakk>\<guillemotleft>x\<^sub>0\<guillemotright>/&x\<rbrakk>\<^bold>}S\<^bold>{q\<^bold>}"
+  shows "\<^bold>{p\<^bold>}(x ::= e) ; S\<^bold>{q\<^bold>}"
+proof -
+  from assms(2) have "\<^bold>{\<exists> v. p\<lbrakk>v/x\<rbrakk> \<and> &x = e\<lbrakk>v/x\<rbrakk>\<^bold>} S \<^bold>{q\<^bold>}"
+    unfolding ndfun_kat_H by (rel_auto')
+  thus ?thesis
+    by (rule_tac H_seq, rule_tac H_assign_floyd_hoare, simp_all add: assms)
+qed
 
 lemma assign_self: "vwb_lens x \<Longrightarrow> (x ::= &x) = skip"
   by (rel_simp' simp: one_nd_fun.abs_eq)
