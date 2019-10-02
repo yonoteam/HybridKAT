@@ -91,6 +91,9 @@ lemma H_assign: "P = Q\<lbrakk>e/&x\<rbrakk> \<Longrightarrow> \<^bold>{P\<^bold
 lemma sH_assign[simp]: "\<^bold>{P\<^bold>} x ::= e \<^bold>{Q\<^bold>} = (\<forall>s. \<lbrakk>P\<rbrakk>\<^sub>e s \<longrightarrow> \<lbrakk>Q\<lbrakk>e/&x\<rbrakk>\<rbrakk>\<^sub>e s)"
   unfolding ndfun_kat_H by (pred_auto)
 
+lemma sH_assigns[simp]: "\<^bold>{P\<^bold>} \<^bold>\<langle>\<sigma>\<^bold>\<rangle> \<^bold>{Q\<^bold>} = (\<forall>s. \<lbrakk>P\<rbrakk>\<^sub>e s \<longrightarrow> \<lbrakk>\<sigma> \<dagger> Q\<rbrakk>\<^sub>e s)"
+  unfolding ndfun_kat_H by (pred_auto)
+
 lemma sH_assign_alt: "\<^bold>{P\<^bold>}x ::= e\<^bold>{Q\<^bold>} \<longleftrightarrow> `P \<Rightarrow> Q\<lbrakk>e/x\<rbrakk>`"
   unfolding ndfun_kat_H by (pred_auto)
 
@@ -152,10 +155,10 @@ lemma assigns_cond:
   by (simp add: ifthenelse_def KAT_rKAT_Models.nd_fun_distl assigns_test Groups.mult_ac[THEN sym] usubst)
 
 lemma cond_assigns: "(IF B THEN \<^bold>\<langle>\<sigma>\<^bold>\<rangle> ELSE \<^bold>\<langle>\<rho>\<^bold>\<rangle>) = \<^bold>\<langle>\<sigma> \<triangleleft> B \<triangleright> \<rho>\<^bold>\<rangle>"
-  apply (simp add: ifthenelse_def assigns_def fun_eq_iff p2ndf_def)
+  apply (simp add: ifthenelse_def assigns_def p2ndf_def n_op_nd_fun_def plus_nd_fun_def Abs_nd_fun_inject)
   apply (transfer)
-  apply (auto simp add: kcomp_def sup_fun_def)
-  oops
+  apply (auto simp add: kcomp_def sup_fun_def comp_def fun_eq_iff uIf_def)
+  done
 
 lemmas assign_simps = assigns_cond assigns_test assigns_comp
 
