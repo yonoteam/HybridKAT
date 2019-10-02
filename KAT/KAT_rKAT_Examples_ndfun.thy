@@ -358,28 +358,31 @@ qed
 
 lemmas H_g_ode_therm = local_flow.sH_g_ode_ivl[OF local_flow_therm _ UNIV_I]
 
+
+
+lemma upred_simps:
+  "\<lbrakk>P \<and> B\<rbrakk>\<^sub>e s = (\<lbrakk>P\<rbrakk>\<^sub>e s \<and> \<lbrakk>B\<rbrakk>\<^sub>e s)"
+  "\<lbrakk>P \<or> B\<rbrakk>\<^sub>e s = (\<lbrakk>P\<rbrakk>\<^sub>e s \<or> \<lbrakk>B\<rbrakk>\<^sub>e s)"
+  by (simp_all add: conj_upred_def disj_upred_def inf_uexpr.rep_eq sup_uexpr.rep_eq)
+
+lemma sH_condl: "\<^bold>{P\<^bold>} (Z; (IF B THEN X ELSE Y)) \<^bold>{Q\<^bold>} = (\<^bold>{P \<and> B\<^bold>} Z; X \<^bold>{Q\<^bold>} \<and> \<^bold>{P \<and> \<not> B\<^bold>} Z; Y \<^bold>{Q\<^bold>})"
+  apply(simp add: sH_seq, simp add: ndfun_kat_H upred_simps, pred_simp)
+  apply(simp add: ifthenelse_def plus_nd_fun_def times_nd_fun_def kcomp_def, simp add: p2ndf_def)
+  apply(intro iffI conjI impI)
+    apply(clarify, erule_tac x=s in allE, erule_tac x=s' in allE, simp, erule impE, 
+      rule_tac x=x in exI, pred_simp, simp)+
+  apply(clarsimp, cases B)
+  by (simp, erule_tac x=s in allE, erule_tac x=s' in allE, simp, erule impE, 
+      rule_tac x=x in exI, pred_simp, simp)+
+
 lemma thermostat_flow: 
   assumes "0 < a" and "0 \<le> \<tau>" and "0 < T\<^sub>m" and "T\<^sub>M < L"
   shows "\<^bold>{I T\<^sub>m T\<^sub>M\<^bold>} therm T\<^sub>m T\<^sub>M a L \<tau> \<^bold>{I T\<^sub>m T\<^sub>M\<^bold>}"
-  apply(rule H_loopI)
-    apply(rule_tac R="U(I T\<^sub>m T\<^sub>M \<and> t=0 \<and> T\<^sub>0 = T)" in H_seq)
-     apply(rule_tac R="U(I T\<^sub>m T\<^sub>M \<and> t=0 \<and> T\<^sub>0 = T)" in H_seq)
-      apply(rule_tac R="U(I T\<^sub>m T\<^sub>M \<and> t=0)" in H_seq)
-       apply(simp_all only: H_g_ode_therm[OF assms(1,2)] sH_cond, simp_all)
+  apply(rule H_loopI, rule_tac R="U(I T\<^sub>m T\<^sub>M \<and> t=0 \<and> T\<^sub>0 = T)" in H_seq)
+     apply(intro H_assign_init, simp_all add: H_g_ode_therm[OF assms(1,2)])
   using therm_dyn_up_real_arith[OF assms(1) _ _ assms(4), of T\<^sub>m]
     and therm_dyn_down_real_arith[OF assms(1,3), of _ T\<^sub>M] by rel_auto'
 
-lemma thermostat_flow': 
-  assumes "0 < a" and "0 \<le> \<tau>" and "0 < T\<^sub>m" and "T\<^sub>M < L"
-  shows "\<^bold>{I T\<^sub>m T\<^sub>M\<^bold>} therm T\<^sub>m T\<^sub>M a L \<tau> \<^bold>{I T\<^sub>m T\<^sub>M\<^bold>}"
-  apply(rule H_loopI)
-    apply (simp only: Groups.mult_ac)
-    apply (rule H_assign_init, simp add: usubst, simp add: usubst)
-    apply (rule H_assign_init, simp add: usubst, simp add: usubst)
-    apply(rule_tac R="U(I T\<^sub>m T\<^sub>M \<and> t=0 \<and> T\<^sub>0 = T)" in H_seq)
-     apply(simp_all only: H_g_ode_therm[OF assms(1,2)] sH_cond, simp_all)
-  using therm_dyn_up_real_arith[OF assms(1) _ _ assms(4), of T\<^sub>m]
-    and therm_dyn_down_real_arith[OF assms(1,3), of _ T\<^sub>M] by rel_auto'
 
 \<comment> \<open>Refined by providing solutions \<close>
 
@@ -410,9 +413,8 @@ lemma R_therm_assign2: "\<^bold>[I T\<^sub>m T\<^sub>M \<and> t = 0, I T\<^sub>m
   by (rule R_assign_rule, pred_simp)
 
 lemma R_therm_ctrl: "\<^bold>[I T\<^sub>m T\<^sub>M, I T\<^sub>m T\<^sub>M \<and> t = 0 \<and> T\<^sub>0 = T\<^bold>] \<ge> ctrl T\<^sub>m T\<^sub>M"
-  apply(rule R_seq_rule)+
-    apply(rule R_therm_assign1)
-   apply(rule R_therm_assign2)
+  apply(rule R_seq_rule, rule R_therm_assign1)
+  apply(rule R_seq_rule, rule R_therm_assign2)
   apply(rule order_trans)
    apply(rule R_cond_mono)
     apply(rule R_assign_rule) defer
@@ -423,7 +425,7 @@ lemma R_therm_ctrl: "\<^bold>[I T\<^sub>m T\<^sub>M, I T\<^sub>m T\<^sub>M \<and
       apply(rule R_cond_mono)
        apply force
       apply (rule R_cond) defer defer
-       apply (rule R_cond) defer defer
+       apply (rule R_cond)
   by (simp_all, rel_auto')
 
 lemma R_therm_loop: "\<^bold>[I T\<^sub>m T\<^sub>M, I T\<^sub>m T\<^sub>M\<^bold>] \<ge> 
@@ -454,7 +456,7 @@ abbreviation h\<^sub>0 :: "real \<Longrightarrow> real^4" where "h\<^sub>0 \<equ
 abbreviation Pump :: "real \<Longrightarrow> real^4" where "Pump \<equiv> vec_lens 4"
 
 abbreviation ftank :: "real \<Rightarrow> (real, 4) vec \<Rightarrow> (real, 4) vec" ("f")
-  where "f k \<equiv> \<lbrakk>[h \<mapsto>\<^sub>s k, t \<mapsto>\<^sub>s 1, h\<^sub>0 \<mapsto>\<^sub>s 0, Pump \<mapsto>\<^sub>s 0]\<rbrakk>\<^sub>e"
+  where "f k \<equiv> \<lbrakk>[Pump \<mapsto>\<^sub>s 0, h \<mapsto>\<^sub>s k, h\<^sub>0 \<mapsto>\<^sub>s 0, t \<mapsto>\<^sub>s 1]\<rbrakk>\<^sub>e"
 
 abbreviation tank_flow :: "real \<Rightarrow> real \<Rightarrow> (real^4) usubst" ("\<phi>") 
   where "\<phi> k \<tau> \<equiv> [h \<mapsto>\<^sub>s k * \<tau> + h, t \<mapsto>\<^sub>s \<tau> + t, h\<^sub>0 \<mapsto>\<^sub>s h\<^sub>0, Pump \<mapsto>\<^sub>s Pump]"
@@ -512,11 +514,8 @@ lemmas H_g_ode_tank = local_flow.sH_g_ode_ivl[OF local_flow_tank _ UNIV_I]
 lemma tank_flow:
   assumes "0 \<le> \<tau>" and "0 < c\<^sub>o" and "c\<^sub>o < c\<^sub>i"
   shows "\<^bold>{I h\<^sub>m h\<^sub>M\<^bold>} tank_sol c\<^sub>i c\<^sub>o h\<^sub>m h\<^sub>M \<tau> \<^bold>{I h\<^sub>m h\<^sub>M\<^bold>}"
-  apply(rule H_loopI)
-    apply(rule_tac R="U(I h\<^sub>m h\<^sub>M \<and> t = 0 \<and> h\<^sub>0 = h)" in H_seq)
-     apply(rule_tac R="U(I h\<^sub>m h\<^sub>M \<and> t = 0 \<and> h\<^sub>0 = h)" in H_seq)
-      apply(rule_tac R="U(I h\<^sub>m h\<^sub>M \<and> t = 0)" in H_seq)
-       apply(simp_all only: H_g_ode_tank[OF assms(1)] sH_cond, simp_all)
+  apply(rule H_loopI, rule_tac R="U(I h\<^sub>m h\<^sub>M \<and> t = 0 \<and> h\<^sub>0 = h)" in H_seq)
+     apply(intro H_assign_init, simp_all add: H_g_ode_tank[OF assms(1)])
   using assms tank_arith[OF _ assms(2,3)] by rel_auto'
 
 no_notation tank_dyn_sol ("dyn")
@@ -566,13 +565,9 @@ abbreviation "tank_dinv c\<^sub>i c\<^sub>o h\<^sub>m h\<^sub>M \<tau> \<equiv> 
 lemma tank_inv:
   assumes "0 \<le> \<tau>" and "0 < c\<^sub>o" and "c\<^sub>o < c\<^sub>i"
   shows "\<^bold>{I h\<^sub>m h\<^sub>M\<^bold>} tank_dinv c\<^sub>i c\<^sub>o h\<^sub>m h\<^sub>M \<tau> \<^bold>{I h\<^sub>m h\<^sub>M\<^bold>}"
-  apply(rule H_loopI)
-    apply(rule_tac R="U(I h\<^sub>m h\<^sub>M \<and> t = 0 \<and> h\<^sub>0 = h)" in H_seq)
-     apply(rule_tac R="U(I h\<^sub>m h\<^sub>M \<and> t = 0 \<and> h\<^sub>0 = h)" in H_seq)
-      apply(rule_tac R="U(I h\<^sub>m h\<^sub>M \<and> t = 0)" in H_seq)
-       apply(simp, pred_simp, simp, pred_simp)
-     apply(rule H_cond, simp, pred_simp)+
-  apply(simp, pred_simp)
+  apply(rule H_loopI, rule_tac R="U(I h\<^sub>m h\<^sub>M \<and> t = 0 \<and> h\<^sub>0 = h)" in H_seq)
+     apply(intro H_assign_init H_cond)
+         apply(simp, simp, simp, pred_simp, simp, pred_simp, simp, pred_simp)
   apply(rule H_cond, rule H_g_ode_inv, simp, pred_simp)
   using tank_diff_inv[OF assms(1)] apply(pred_simp)
       apply(simp, pred_simp, simp, pred_simp)
@@ -608,9 +603,10 @@ proof-
     apply(rule_tac y="?ifthenelse" in order_trans, rule R_cond_mono)
     using ifbranch1 ifbranch2 ifthenelse by auto
   hence ctrl: "ctrl h\<^sub>m h\<^sub>M \<le> \<^bold>[I h\<^sub>m h\<^sub>M, I h\<^sub>m h\<^sub>M \<and> t = 0 \<and> h\<^sub>0 = h\<^bold>]" (is "_ \<le> ?ctrl_ref")
-    apply(rule_tac R="U(I h\<^sub>m h\<^sub>M \<and> t = 0 \<and> h\<^sub>0 = h)" in R_seq_rule)
      apply(rule_tac R="U(I h\<^sub>m h\<^sub>M \<and> t = 0)" in R_seq_rule)
-    by (auto intro!: R_assign_rule, rel_auto')
+    apply(rule R_assign_rule, pred_simp)
+    apply(rule_tac R="U(I h\<^sub>m h\<^sub>M \<and> t = 0 \<and> h\<^sub>0 = h)" in R_seq_rule)
+    apply(rule R_assign_rule, pred_simp) .
   \<comment> \<open>Then we refine the dynamics. \<close>
   have dynup: 
     "(x\<acute>= f (c\<^sub>i-c\<^sub>o) & G h\<^sub>M (c\<^sub>i-c\<^sub>o) on {0..\<tau>} UNIV @ 0 DINV (dI h\<^sub>m h\<^sub>M (c\<^sub>i-c\<^sub>o))) \<le> 
@@ -621,7 +617,7 @@ proof-
   have dyndown: 
     "(x\<acute>= f (-c\<^sub>o) & G h\<^sub>m (-c\<^sub>o) on {0..\<tau>} UNIV @ 0 DINV (dI h\<^sub>m h\<^sub>M (-c\<^sub>o))) \<le> 
     \<^bold>[\<not> Pump = 0 \<and> I h\<^sub>m h\<^sub>M \<and> t = 0 \<and> h\<^sub>0 = h, I h\<^sub>m h\<^sub>M\<^bold>]"
-    apply(rule R_g_ode_inv, simp)
+    apply(rule R_g_ode_inv)
     using tank_diff_inv[OF assms(1), of "-c\<^sub>o"] apply(pred_simp)
     using assms by (simp_all, rel_auto' simp: tank_inv_arith2)
   have dyn: "dyn c\<^sub>i c\<^sub>o h\<^sub>m h\<^sub>M \<tau> \<le> \<^bold>[I h\<^sub>m h\<^sub>M \<and> t = 0 \<and> h\<^sub>0 = h, I h\<^sub>m h\<^sub>M\<^bold>]" (is "_ \<le> ?dyn_ref")
