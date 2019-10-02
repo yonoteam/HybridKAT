@@ -240,13 +240,15 @@ follows the ODE @{text "T' = - a * (T - c)"} where @{text "c = L \<ge> 0"} when 
 is on, and @{text "c = 0"} when it is off. We prove that the thermostat keeps the room's 
 temperature between @{text "T\<^sub>m"} and @{text "T\<^sub>M"}. \<close>
 
+hide_const t
+
 abbreviation T :: "real \<Longrightarrow> real^4" where "T \<equiv> vec_lens 1"
 abbreviation t :: "real \<Longrightarrow> real^4" where "t \<equiv> vec_lens 2"
 abbreviation T\<^sub>0 :: "real \<Longrightarrow> real^4" where "T\<^sub>0 \<equiv> vec_lens 3"
 abbreviation \<Theta> :: "real \<Longrightarrow> real^4" where "\<Theta> \<equiv> vec_lens 4"
 
 abbreviation ftherm :: "real \<Rightarrow> real \<Rightarrow> (real, 4) vec \<Rightarrow> (real, 4) vec" ("f")
-  where "f a c \<equiv> \<lbrakk>[T \<mapsto>\<^sub>s - a * (T - c), t \<mapsto>\<^sub>s 1, T\<^sub>0 \<mapsto>\<^sub>s 0, \<Theta> \<mapsto>\<^sub>s 0]\<rbrakk>\<^sub>e"
+  where "f a c \<equiv> \<lbrakk>[T \<mapsto>\<^sub>s - (a * (T - c)), T\<^sub>0 \<mapsto>\<^sub>s 0, \<Theta> \<mapsto>\<^sub>s 0, t \<mapsto>\<^sub>s 1]\<rbrakk>\<^sub>e"
 
 abbreviation therm_guard :: "real \<Rightarrow> real \<Rightarrow> real \<Rightarrow> real \<Rightarrow> (real^4) upred" ("G")
   where "G T\<^sub>m T\<^sub>M a L \<equiv> U(t \<le> - (ln ((L-(if L=0 then T\<^sub>m else T\<^sub>M))/(L-T\<^sub>0)))/a)"
@@ -364,6 +366,18 @@ lemma thermostat_flow:
      apply(rule_tac R="U(I T\<^sub>m T\<^sub>M \<and> t=0 \<and> T\<^sub>0 = T)" in H_seq)
       apply(rule_tac R="U(I T\<^sub>m T\<^sub>M \<and> t=0)" in H_seq)
        apply(simp_all only: H_g_ode_therm[OF assms(1,2)] sH_cond, simp_all)
+  using therm_dyn_up_real_arith[OF assms(1) _ _ assms(4), of T\<^sub>m]
+    and therm_dyn_down_real_arith[OF assms(1,3), of _ T\<^sub>M] by rel_auto'
+
+lemma thermostat_flow': 
+  assumes "0 < a" and "0 \<le> \<tau>" and "0 < T\<^sub>m" and "T\<^sub>M < L"
+  shows "\<^bold>{I T\<^sub>m T\<^sub>M\<^bold>} therm T\<^sub>m T\<^sub>M a L \<tau> \<^bold>{I T\<^sub>m T\<^sub>M\<^bold>}"
+  apply(rule H_loopI)
+    apply (simp only: Groups.mult_ac)
+    apply (rule H_assign_init, simp add: usubst, simp add: usubst)
+    apply (rule H_assign_init, simp add: usubst, simp add: usubst)
+    apply(rule_tac R="U(I T\<^sub>m T\<^sub>M \<and> t=0 \<and> T\<^sub>0 = T)" in H_seq)
+     apply(simp_all only: H_g_ode_therm[OF assms(1,2)] sH_cond, simp_all)
   using therm_dyn_up_real_arith[OF assms(1) _ _ assms(4), of T\<^sub>m]
     and therm_dyn_down_real_arith[OF assms(1,3), of _ T\<^sub>M] by rel_auto'
 
