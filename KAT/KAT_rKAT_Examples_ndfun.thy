@@ -358,8 +358,6 @@ qed
 
 lemmas H_g_ode_therm = local_flow.sH_g_ode_ivl[OF local_flow_therm _ UNIV_I]
 
-
-
 lemma upred_simps:
   "\<lbrakk>P \<and> B\<rbrakk>\<^sub>e s = (\<lbrakk>P\<rbrakk>\<^sub>e s \<and> \<lbrakk>B\<rbrakk>\<^sub>e s)"
   "\<lbrakk>P \<or> B\<rbrakk>\<^sub>e s = (\<lbrakk>P\<rbrakk>\<^sub>e s \<or> \<lbrakk>B\<rbrakk>\<^sub>e s)"
@@ -383,6 +381,17 @@ lemma thermostat_flow:
   using therm_dyn_up_real_arith[OF assms(1) _ _ assms(4), of T\<^sub>m]
     and therm_dyn_down_real_arith[OF assms(1,3), of _ T\<^sub>M] by rel_auto'
 
+lemma thermostat_flow': 
+  assumes "0 < a" and "0 \<le> \<tau>" and "0 < T\<^sub>m" and "T\<^sub>M < L"
+  shows "\<^bold>{I T\<^sub>m T\<^sub>M\<^bold>} therm T\<^sub>m T\<^sub>M a L \<tau> \<^bold>{I T\<^sub>m T\<^sub>M\<^bold>}"
+  apply(rule H_loopI)
+    apply (simp add: Groups.mult_ac)
+    apply (rule H_assign_init, simp add: usubst, simp add: usubst)
+    apply (rule H_assign_init, simp add: usubst, simp add: usubst)
+    apply(rule_tac H_seq_inv_1)
+     apply(simp_all only: H_g_ode_therm[OF assms(1,2)] sH_cond, simp_all)
+  using therm_dyn_up_real_arith[OF assms(1) _ _ assms(4), of T\<^sub>m]
+    and therm_dyn_down_real_arith[OF assms(1,3), of _ T\<^sub>M] by rel_auto'
 
 \<comment> \<open>Refined by providing solutions \<close>
 
