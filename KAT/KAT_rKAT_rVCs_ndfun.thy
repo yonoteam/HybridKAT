@@ -67,7 +67,7 @@ lemma sH_skip[simp]: "\<^bold>{P\<^bold>}skip\<^bold>{Q\<^bold>} \<longleftright
 
 \<comment> \<open> We introduce assignments and compute derive their rule of Hoare logic. \<close>
 
-definition assigns :: "'s usubst \<Rightarrow> 's nd_fun" where
+definition assigns :: "'s usubst \<Rightarrow> 's nd_fun" ("\<^bold>\<langle>_\<^bold>\<rangle>") where
 [upred_defs]: "assigns \<sigma> = (\<lambda> s. {\<lbrakk>\<sigma>\<rbrakk>\<^sub>e s})\<^sup>\<bullet>"
 
 (*
@@ -80,10 +80,10 @@ abbreviation assign ("(2_ ::= _)" [70, 65] 61)
 
 utp_lift_notation assign (1)
 
-lemma H_assigns: "P = (\<sigma> \<dagger> Q) \<Longrightarrow> H \<lceil>P\<rceil> (assigns \<sigma>) \<lceil>Q\<rceil>"
+lemma H_assigns: "P = (\<sigma> \<dagger> Q) \<Longrightarrow> \<^bold>{P\<^bold>} \<^bold>\<langle>\<sigma>\<^bold>\<rangle> \<^bold>{Q\<^bold>}"
   unfolding ndfun_kat_H by (simp add: assigns_def, pred_auto)
 
-lemma H_assign: "P = Q\<lbrakk>e/&x\<rbrakk> \<Longrightarrow> H \<lceil>P\<rceil> (x ::= e) \<lceil>Q\<rceil>"
+lemma H_assign: "P = Q\<lbrakk>e/&x\<rbrakk> \<Longrightarrow> \<^bold>{P\<^bold>} x ::= e \<^bold>{Q\<^bold>}"
   unfolding ndfun_kat_H by (simp add: assigns_def, pred_auto)
 
 (* lemma H_assign: "(\<lambda>s. Q (\<chi> j. ((($) s)(x := (e s))) j)) \<Longrightarrow> Hoare \<lceil>P\<rceil> (x ::= e) \<lceil>Q\<rceil>" *)
@@ -119,7 +119,7 @@ text \<open> Assignment laws \<close>
 lemma assign_self: "vwb_lens x \<Longrightarrow> (x ::= &x) = skip"
   by (rel_simp' simp: one_nd_fun.abs_eq)
 
-lemma assigns_comp: "assigns \<sigma> ; assigns \<rho> = assigns (\<rho> \<circ>\<^sub>s \<sigma>)"
+lemma assigns_comp: "\<^bold>\<langle>\<sigma>\<^bold>\<rangle> ; \<^bold>\<langle>\<rho>\<^bold>\<rangle> = \<^bold>\<langle>\<rho> \<circ>\<^sub>s \<sigma>\<^bold>\<rangle>"
   by (simp add: assigns_def nd_fun_eq_iff subst_comp.rep_eq, transfer, simp add: kcomp_def)
 
 lemma assign_twice: "vwb_lens x \<Longrightarrow> (x ::= e) ; (x ::= f) = x ::= f\<lbrakk>e/&x\<rbrakk>"
@@ -140,6 +140,24 @@ lemma H_cond: "\<^bold>{P \<and> B\<^bold>} X \<^bold>{Q\<^bold>} \<Longrightarr
 
 lemma sH_cond[simp]: "\<^bold>{P\<^bold>} IF B THEN X ELSE Y \<^bold>{Q\<^bold>} = (\<^bold>{P \<and> B\<^bold>} X \<^bold>{Q\<^bold>} \<and> \<^bold>{P \<and> \<not> B\<^bold>} Y \<^bold>{Q\<^bold>})"
   by (auto simp: H_cond_iff ndfun_kat_H)
+
+lemma assigns_test: "\<^bold>\<langle>\<sigma>\<^bold>\<rangle> ; \<lceil>p\<rceil> = \<lceil>\<sigma> \<dagger> p\<rceil> ; \<^bold>\<langle>\<sigma>\<^bold>\<rangle>"
+  apply (simp add: assigns_def n_op_nd_fun_def nd_fun_eq_iff subst_comp.rep_eq p2ndf_def)
+  apply (transfer)
+  apply (auto simp add:kcomp_def)
+  done
+
+lemma assigns_cond:
+  "\<^bold>\<langle>\<sigma>\<^bold>\<rangle> ; (IF B THEN P ELSE Q) = IF \<sigma> \<dagger> B THEN \<^bold>\<langle>\<sigma>\<^bold>\<rangle> ; P ELSE \<^bold>\<langle>\<sigma>\<^bold>\<rangle> ; Q"
+  by (simp add: ifthenelse_def KAT_rKAT_Models.nd_fun_distl assigns_test Groups.mult_ac[THEN sym] usubst)
+
+lemma cond_assigns: "(IF B THEN \<^bold>\<langle>\<sigma>\<^bold>\<rangle> ELSE \<^bold>\<langle>\<rho>\<^bold>\<rangle>) = \<^bold>\<langle>\<sigma> \<triangleleft> B \<triangleright> \<rho>\<^bold>\<rangle>"
+  apply (simp add: ifthenelse_def assigns_def fun_eq_iff p2ndf_def)
+  apply (transfer)
+  apply (auto simp add: kcomp_def sup_fun_def)
+  oops
+
+lemmas assign_simps = assigns_cond assigns_test assigns_comp
 
 \<comment> \<open> Rewriting the Hoare rule for the while loop \<close>
 
