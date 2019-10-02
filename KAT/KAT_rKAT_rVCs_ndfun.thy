@@ -116,11 +116,7 @@ lemma sH_assign[simp]: "Hoare \<lceil>P\<rceil> (x ::= e) \<lceil>Q\<rceil> \<lo
 
 \<comment> \<open> Next, the Hoare rule of the composition \<close>
 
-<<<<<<< HEAD
 abbreviation seq_comp :: "'a nd_fun \<Rightarrow> 'a nd_fun \<Rightarrow> 'a nd_fun" (infixr ";" 75)
-=======
-abbreviation seq_comp :: "'a nd_fun \<Rightarrow> 'a nd_fun \<Rightarrow> 'a nd_fun" (infixl";" 75)
->>>>>>> 5b4a36161bbfe1a764d23cae333817d95077abd1
   where "f ; g \<equiv> f \<cdot> g"
 
 lemma H_seq: "\<^bold>{P\<^bold>} X \<^bold>{R\<^bold>} \<Longrightarrow> \<^bold>{R\<^bold>} Y \<^bold>{Q\<^bold>} \<Longrightarrow> \<^bold>{P\<^bold>} X ; Y \<^bold>{Q\<^bold>}"

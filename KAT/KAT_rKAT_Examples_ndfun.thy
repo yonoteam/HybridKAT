@@ -373,10 +373,27 @@ lemma sH_condl: "\<^bold>{P\<^bold>} (Z; (IF B THEN X ELSE Y)) \<^bold>{Q\<^bold
   by (simp, erule_tac x=s in allE, erule_tac x=s' in allE, simp, erule impE, 
       rule_tac x=x in exI, pred_simp, simp)+
 
+named_theorems ctrl_hoareI and hyb_hoare_simp
+
+thm H_skip H_assign H_seq H_assign_init H_cond H_loopI local_flow.H_g_ode
+thm sH_skip sH_assign sH_seq sH_cond local_flow.sH_g_ode
+
+declare H_assign_init [ctrl_hoareI]
+    and H_cond [ctrl_hoareI]
+    and H_cond [ctrl_hoareI]
+
+method hoare 
+  = ((rule H_assign_init,simp)?,(rule H_cond)?; simp)
+
+method hyb_hoare for P::"'a upred"
+ = (rule H_loopI, rule H_seq[where R=P]; hoare?)
+
 lemma thermostat_flow: 
   assumes "0 < a" and "0 \<le> \<tau>" and "0 < T\<^sub>m" and "T\<^sub>M < L"
   shows "\<^bold>{I T\<^sub>m T\<^sub>M\<^bold>} therm T\<^sub>m T\<^sub>M a L \<tau> \<^bold>{I T\<^sub>m T\<^sub>M\<^bold>}"
+  apply(hyb_hoare "U(I T\<^sub>m T\<^sub>M \<and> t=0 \<and> T\<^sub>0 = T)")
   apply(rule H_loopI, rule_tac R="U(I T\<^sub>m T\<^sub>M \<and> t=0 \<and> T\<^sub>0 = T)" in H_seq)
+     apply hoare
      apply(intro H_assign_init, simp_all add: H_g_ode_therm[OF assms(1,2)])
   using therm_dyn_up_real_arith[OF assms(1) _ _ assms(4), of T\<^sub>m]
     and therm_dyn_down_real_arith[OF assms(1,3), of _ T\<^sub>M] by rel_auto'
