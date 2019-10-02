@@ -116,7 +116,7 @@ lemma sH_assign[simp]: "Hoare \<lceil>P\<rceil> (x ::= e) \<lceil>Q\<rceil> \<lo
 
 \<comment> \<open> Next, the Hoare rule of the composition \<close>
 
-abbreviation seq_comp :: "'a nd_fun \<Rightarrow> 'a nd_fun \<Rightarrow> 'a nd_fun" (infixl ";" 75)
+abbreviation seq_comp :: "'a nd_fun \<Rightarrow> 'a nd_fun \<Rightarrow> 'a nd_fun" (infixl";" 75)
   where "f ; g \<equiv> f \<cdot> g"
 
 lemma H_seq: "\<^bold>{P\<^bold>} X \<^bold>{R\<^bold>} \<Longrightarrow> \<^bold>{R\<^bold>} Y \<^bold>{Q\<^bold>} \<Longrightarrow> \<^bold>{P\<^bold>} X ; Y \<^bold>{Q\<^bold>}"
@@ -124,6 +124,12 @@ lemma H_seq: "\<^bold>{P\<^bold>} X \<^bold>{R\<^bold>} \<Longrightarrow> \<^bol
 
 lemma sH_seq: "\<^bold>{P\<^bold>} X ; Y \<^bold>{Q\<^bold>} =  \<^bold>{P\<^bold>} X \<^bold>{\<forall>s'. s' \<in> Y\<^sub>\<circ> \<Rightarrow> Q\<lbrakk>s'/&\<^bold>v\<rbrakk>\<^bold>}"
   unfolding ndfun_kat_H by (auto simp: times_nd_fun_def kcomp_def, pred_auto+)
+
+lemma H_seq_inv_1: "\<^bold>{P\<^bold>} X \<^bold>{P\<^bold>} \<Longrightarrow> \<^bold>{P\<^bold>} Y \<^bold>{Q\<^bold>} \<Longrightarrow> \<^bold>{P\<^bold>} X ; Y \<^bold>{Q\<^bold>}"
+  by (simp add: H_seq)
+
+lemma H_seq_inv_2: "\<^bold>{P\<^bold>} X \<^bold>{Q\<^bold>} \<Longrightarrow> \<^bold>{Q\<^bold>} Y \<^bold>{Q\<^bold>} \<Longrightarrow> \<^bold>{P\<^bold>} X ; Y \<^bold>{Q\<^bold>}"
+  by (simp add: H_seq)
 
 text \<open> Assignment laws \<close>
 

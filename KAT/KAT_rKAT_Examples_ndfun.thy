@@ -373,10 +373,10 @@ lemma thermostat_flow':
   assumes "0 < a" and "0 \<le> \<tau>" and "0 < T\<^sub>m" and "T\<^sub>M < L"
   shows "\<^bold>{I T\<^sub>m T\<^sub>M\<^bold>} therm T\<^sub>m T\<^sub>M a L \<tau> \<^bold>{I T\<^sub>m T\<^sub>M\<^bold>}"
   apply(rule H_loopI)
-    apply (simp only: Groups.mult_ac)
+    apply (simp add: Groups.mult_ac)
     apply (rule H_assign_init, simp add: usubst, simp add: usubst)
     apply (rule H_assign_init, simp add: usubst, simp add: usubst)
-    apply(rule_tac R="U(I T\<^sub>m T\<^sub>M \<and> t=0 \<and> T\<^sub>0 = T)" in H_seq)
+    apply(rule_tac H_seq_inv_1)
      apply(simp_all only: H_g_ode_therm[OF assms(1,2)] sH_cond, simp_all)
   using therm_dyn_up_real_arith[OF assms(1) _ _ assms(4), of T\<^sub>m]
     and therm_dyn_down_real_arith[OF assms(1,3), of _ T\<^sub>M] by rel_auto'
