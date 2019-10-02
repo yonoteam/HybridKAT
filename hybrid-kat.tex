@@ -473,7 +473,10 @@ also prove the standard laws of assignment in this setting:
 \begin{align*}
   x := x &~=~ \sskip \\
   x := e \seq x := f &~=~ x := f[e/x] \\
-  x := e \seq y := f &~=~ y := f \seq x := e & \textnormal{provided~} x \lindep y, x \unrest f, y \unrest e
+  x := e \seq y := f &~=~ y := f \seq x := e & \textnormal{if~} x \lindep y, x \unrest f, y \unrest e \\[.5ex]
+  x := e \seq \left(\begin{array}{l} \textbf{if}~ t \\ \textbf{then}~ \alpha \\ \textbf{else}~ \beta 
+                          \end{array}\right) &~=~ \left(\begin{array}{l} \textbf{if}~ t[e/x] \\ \textbf{then}~ x := e \seq \alpha \\ \textbf{else}~ x := e \seq \beta 
+                          \end{array}\right)
 \end{align*}
 
 Here, $x \unrest e$ means that the semantic expression $e$ does not
@@ -481,7 +484,9 @@ depend for its valuation on lens $x$~\cite{FosterZW16}. An assignment
 of $x$ to itself is simply $\sskip$. Two assignments to $x$ result in
 a single assignment, with a semantic substitution applied. Assignments
 to independent variables $x$ and $y$ commute provided that neither
-assigned expression depend on the corresponding variable.
+assigned expression depend on the corresponding variable.  Assignment
+can be distributed through conditionals by a substitution to the
+condition.
 
 % First we define a state update function
 % $f_a:V\to (S \to E) \to S\to S$ as
