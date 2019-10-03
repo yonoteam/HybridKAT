@@ -260,10 +260,10 @@ hide_const t
 abbreviation T :: "real \<Longrightarrow> real^4" where "T \<equiv> vec_lens 1"
 abbreviation t :: "real \<Longrightarrow> real^4" where "t \<equiv> vec_lens 2"
 abbreviation T\<^sub>0 :: "real \<Longrightarrow> real^4" where "T\<^sub>0 \<equiv> vec_lens 3"
-abbreviation \<Theta> :: "real \<Longrightarrow> real^4" where "\<Theta> \<equiv> vec_lens 4"
+abbreviation \<theta> :: "real \<Longrightarrow> real^4" where "\<theta> \<equiv> vec_lens 4"
 
 abbreviation ftherm :: "real \<Rightarrow> real \<Rightarrow> (real, 4) vec \<Rightarrow> (real, 4) vec" ("f")
-  where "f a c \<equiv> \<lbrakk>[T \<mapsto>\<^sub>s - (a * (T - c)), T\<^sub>0 \<mapsto>\<^sub>s 0, \<Theta> \<mapsto>\<^sub>s 0, t \<mapsto>\<^sub>s 1]\<rbrakk>\<^sub>e"
+  where "f a c \<equiv> \<lbrakk>[T \<mapsto>\<^sub>s - (a * (T - c)), T\<^sub>0 \<mapsto>\<^sub>s 0, \<theta> \<mapsto>\<^sub>s 0, t \<mapsto>\<^sub>s 1]\<rbrakk>\<^sub>e"
 
 abbreviation therm_guard :: "real \<Rightarrow> real \<Rightarrow> real \<Rightarrow> real \<Rightarrow> (real^4) upred" ("G")
   where "G T\<^sub>m T\<^sub>M a L \<equiv> U(t \<le> - (ln ((L-(if L=0 then T\<^sub>m else T\<^sub>M))/(L-T\<^sub>0)))/a)"
@@ -271,22 +271,22 @@ abbreviation therm_guard :: "real \<Rightarrow> real \<Rightarrow> real \<Righta
 no_utp_lift "therm_guard" (0 1 2 3)
 
 abbreviation therm_loop_inv :: "real \<Rightarrow> real \<Rightarrow> (real^4) upred" ("I")
-  where "I T\<^sub>m T\<^sub>M \<equiv> U(T\<^sub>m \<le> T \<and> T \<le> T\<^sub>M \<and> (\<Theta> = 0 \<or> \<Theta> = 1))"
+  where "I T\<^sub>m T\<^sub>M \<equiv> U(T\<^sub>m \<le> T \<and> T \<le> T\<^sub>M \<and> (\<theta> = 0 \<or> \<theta> = 1))"
 
 no_utp_lift "therm_loop_inv" (0 1)
 
 abbreviation therm_flow :: "real \<Rightarrow> real \<Rightarrow> real \<Rightarrow> (real^4) usubst" ("\<phi>") 
-  where "\<phi> a c \<tau> \<equiv> [T \<mapsto>\<^sub>s - exp(-a * \<tau>) * (c - T) + c, t \<mapsto>\<^sub>s \<tau> + t, T\<^sub>0 \<mapsto>\<^sub>s T\<^sub>0, \<Theta> \<mapsto>\<^sub>s \<Theta>]"
+  where "\<phi> a c \<tau> \<equiv> [T \<mapsto>\<^sub>s - exp(-a * \<tau>) * (c - T) + c, t \<mapsto>\<^sub>s \<tau> + t, T\<^sub>0 \<mapsto>\<^sub>s T\<^sub>0, \<theta> \<mapsto>\<^sub>s \<theta>]"
 
 abbreviation therm_ctrl :: "real \<Rightarrow> real \<Rightarrow> (real^4) nd_fun" ("ctrl")
   where "ctrl T\<^sub>m T\<^sub>M \<equiv> 
   (t ::= 0); (T\<^sub>0 ::= T);
-  (IF (\<Theta> = 0 \<and> T\<^sub>0 \<le> T\<^sub>m + 1) THEN (\<Theta> ::= 1) ELSE 
-   IF (\<Theta> = 1 \<and> T\<^sub>0 \<ge> T\<^sub>M - 1) THEN (\<Theta> ::= 0) ELSE skip)"
+  (IF (\<theta> = 0 \<and> T\<^sub>0 \<le> T\<^sub>m + 1) THEN (\<theta> ::= 1) ELSE 
+   IF (\<theta> = 1 \<and> T\<^sub>0 \<ge> T\<^sub>M - 1) THEN (\<theta> ::= 0) ELSE skip)"
 
 abbreviation therm_dyn :: "real \<Rightarrow> real \<Rightarrow> real \<Rightarrow> real \<Rightarrow> real \<Rightarrow> (real^4) nd_fun" ("dyn")
   where "dyn T\<^sub>m T\<^sub>M a L \<tau> \<equiv> 
-  (IF (\<Theta> = 0) THEN (x\<acute>= f a 0 & G T\<^sub>m T\<^sub>M a 0 on {0..\<tau>} UNIV @ 0) 
+  (IF (\<theta> = 0) THEN (x\<acute>= f a 0 & G T\<^sub>m T\<^sub>M a 0 on {0..\<tau>} UNIV @ 0) 
    ELSE (x\<acute>= f a L & G T\<^sub>m T\<^sub>M a L on {0..\<tau>} UNIV @ 0))"
 
 abbreviation "therm T\<^sub>m T\<^sub>M a L \<tau> \<equiv> LOOP (ctrl T\<^sub>m T\<^sub>M ; dyn T\<^sub>m T\<^sub>M a L \<tau>) INV (I T\<^sub>m T\<^sub>M)"
@@ -399,30 +399,18 @@ lemma thermostat_flow:
   using therm_dyn_up_real_arith[OF assms(1) _ _ assms(4), of T\<^sub>m]
     and therm_dyn_down_real_arith[OF assms(1,3), of _ T\<^sub>M] by rel_auto'
 
-lemma thermostat_flow': 
-  assumes "0 < a" and "0 \<le> \<tau>" and "0 < T\<^sub>m" and "T\<^sub>M < L"
-  shows "\<^bold>{I T\<^sub>m T\<^sub>M\<^bold>} therm T\<^sub>m T\<^sub>M a L \<tau> \<^bold>{I T\<^sub>m T\<^sub>M\<^bold>}"
-  apply(rule H_loopI)
-    apply (simp add: Groups.mult_ac)
-    apply (rule H_assign_init, simp add: usubst, simp add: usubst)
-    apply (rule H_assign_init, simp add: usubst, simp add: usubst)
-    apply(rule_tac H_seq_inv_1)
-     apply(simp_all only: H_g_ode_therm[OF assms(1,2)] sH_cond, simp_all)
-  using therm_dyn_up_real_arith[OF assms(1) _ _ assms(4), of T\<^sub>m]
-    and therm_dyn_down_real_arith[OF assms(1,3), of _ T\<^sub>M] by rel_auto'
-
 \<comment> \<open>Refined by providing solutions \<close>
 
 lemma R_therm_dyn_down: 
   assumes "a > 0" and "0 \<le> \<tau>" and "0 < T\<^sub>m" and "T\<^sub>M < L"
-  shows "\<^bold>[\<Theta> = 0 \<and> I T\<^sub>m T\<^sub>M \<and> t = 0 \<and> T\<^sub>0 = T, I T\<^sub>m T\<^sub>M\<^bold>] \<ge> (x\<acute>= f a 0 & G T\<^sub>m T\<^sub>M a 0 on {0..\<tau>} UNIV @ 0)"
+  shows "\<^bold>[\<theta> = 0 \<and> I T\<^sub>m T\<^sub>M \<and> t = 0 \<and> T\<^sub>0 = T, I T\<^sub>m T\<^sub>M\<^bold>] \<ge> (x\<acute>= f a 0 & G T\<^sub>m T\<^sub>M a 0 on {0..\<tau>} UNIV @ 0)"
   apply(rule local_flow.R_g_ode_ivl[OF local_flow_therm])
   using assms apply(simp_all, pred_simp)
   using therm_dyn_down_real_arith[OF assms(1,3), of _ T\<^sub>M] by auto
 
 lemma R_therm_dyn_up: 
   assumes "a > 0" and "0 \<le> \<tau>" and "0 < T\<^sub>m" and "T\<^sub>M < L"
-  shows "\<^bold>[\<not> \<Theta> = 0 \<and> I T\<^sub>m T\<^sub>M \<and> t = 0 \<and> T\<^sub>0 = T, I T\<^sub>m T\<^sub>M\<^bold>] \<ge> (x\<acute>= f a L & G T\<^sub>m T\<^sub>M a L on {0..\<tau>} UNIV @ 0)"
+  shows "\<^bold>[\<not> \<theta> = 0 \<and> I T\<^sub>m T\<^sub>M \<and> t = 0 \<and> T\<^sub>0 = T, I T\<^sub>m T\<^sub>M\<^bold>] \<ge> (x\<acute>= f a L & G T\<^sub>m T\<^sub>M a L on {0..\<tau>} UNIV @ 0)"
   apply(rule local_flow.R_g_ode_ivl[OF local_flow_therm])
   using assms apply(simp_all, pred_simp)
   using therm_dyn_up_real_arith[OF assms(1) _ _ assms(4), of T\<^sub>m] by auto
@@ -480,13 +468,13 @@ subsubsection \<open> Water tank \<close>  \<comment> \<open>Variation of Hespan
 
 abbreviation h :: "real \<Longrightarrow> real^4" where "h \<equiv> vec_lens 1"
 abbreviation h\<^sub>0 :: "real \<Longrightarrow> real^4" where "h\<^sub>0 \<equiv> vec_lens 3"
-abbreviation Pump :: "real \<Longrightarrow> real^4" where "Pump \<equiv> vec_lens 4"
+abbreviation \<pi> :: "real \<Longrightarrow> real^4" where "\<pi> \<equiv> vec_lens 4"
 
 abbreviation ftank :: "real \<Rightarrow> (real, 4) vec \<Rightarrow> (real, 4) vec" ("f")
-  where "f k \<equiv> \<lbrakk>[Pump \<mapsto>\<^sub>s 0, h \<mapsto>\<^sub>s k, h\<^sub>0 \<mapsto>\<^sub>s 0, t \<mapsto>\<^sub>s 1]\<rbrakk>\<^sub>e"
+  where "f k \<equiv> \<lbrakk>[\<pi> \<mapsto>\<^sub>s 0, h \<mapsto>\<^sub>s k, h\<^sub>0 \<mapsto>\<^sub>s 0, t \<mapsto>\<^sub>s 1]\<rbrakk>\<^sub>e"
 
 abbreviation tank_flow :: "real \<Rightarrow> real \<Rightarrow> (real^4) usubst" ("\<phi>") 
-  where "\<phi> k \<tau> \<equiv> [h \<mapsto>\<^sub>s k * \<tau> + h, t \<mapsto>\<^sub>s \<tau> + t, h\<^sub>0 \<mapsto>\<^sub>s h\<^sub>0, Pump \<mapsto>\<^sub>s Pump]"
+  where "\<phi> k \<tau> \<equiv> [h \<mapsto>\<^sub>s k * \<tau> + h, t \<mapsto>\<^sub>s \<tau> + t, h\<^sub>0 \<mapsto>\<^sub>s h\<^sub>0, \<pi> \<mapsto>\<^sub>s \<pi>]"
 
 abbreviation tank_guard :: "real \<Rightarrow> real \<Rightarrow> (real^4) upred" ("G")
   where "G h\<^sub>x k \<equiv> U(t \<le> (h\<^sub>x - h\<^sub>0)/k)"
@@ -494,13 +482,13 @@ abbreviation tank_guard :: "real \<Rightarrow> real \<Rightarrow> (real^4) upred
 no_utp_lift "tank_guard" (0 1)
 
 abbreviation tank_loop_inv :: "real \<Rightarrow> real \<Rightarrow> (real^4) upred" ("I")
-  where "I h\<^sub>m h\<^sub>M \<equiv> U(h\<^sub>m \<le> T \<and> T \<le> h\<^sub>M \<and> (Pump = 0 \<or> Pump = 1))"
+  where "I h\<^sub>m h\<^sub>M \<equiv> U(h\<^sub>m \<le> T \<and> T \<le> h\<^sub>M \<and> (\<pi> = 0 \<or> \<pi> = 1))"
 
 no_utp_lift "tank_loop_inv" (0 1)
 
 abbreviation tank_diff_inv :: "real \<Rightarrow> real \<Rightarrow> real \<Rightarrow> (real^4) upred" ("dI")
   where "dI h\<^sub>m h\<^sub>M k \<equiv> U(h = k \<cdot> t + h\<^sub>0 \<and> 0 \<le> t \<and> 
-    h\<^sub>m \<le> h\<^sub>0 \<and> h\<^sub>0 \<le> h\<^sub>M \<and> (Pump = 0 \<or> Pump = 1))"
+    h\<^sub>m \<le> h\<^sub>0 \<and> h\<^sub>0 \<le> h\<^sub>M \<and> (\<pi> = 0 \<or> \<pi> = 1))"
 
 no_utp_lift "tank_diff_inv" (0 1 2)
 
@@ -526,11 +514,11 @@ lemma tank_arith:
 
 abbreviation tank_ctrl :: "real \<Rightarrow> real \<Rightarrow> (real^4) nd_fun" ("ctrl")
   where "ctrl h\<^sub>m h\<^sub>M \<equiv> (t ::=0);(h\<^sub>0 ::= h);
-  (IF (Pump = 0 \<and> h\<^sub>0 \<le> h\<^sub>m + 1) THEN (Pump ::= 1) ELSE
-  (IF (Pump = 1 \<and> h\<^sub>0 \<ge> h\<^sub>M - 1) THEN (Pump ::= 0) ELSE skip))"
+  (IF (\<pi> = 0 \<and> h\<^sub>0 \<le> h\<^sub>m + 1) THEN (\<pi> ::= 1) ELSE
+  (IF (\<pi> = 1 \<and> h\<^sub>0 \<ge> h\<^sub>M - 1) THEN (\<pi> ::= 0) ELSE skip))"
 
 abbreviation tank_dyn_sol :: "real \<Rightarrow> real \<Rightarrow> real \<Rightarrow> real \<Rightarrow> real \<Rightarrow> (real^4) nd_fun" ("dyn")
-  where "dyn c\<^sub>i c\<^sub>o h\<^sub>m h\<^sub>M \<tau> \<equiv> (IF (Pump = 0) THEN 
+  where "dyn c\<^sub>i c\<^sub>o h\<^sub>m h\<^sub>M \<tau> \<equiv> (IF (\<pi> = 0) THEN 
     (x\<acute>= f (c\<^sub>i-c\<^sub>o) & G h\<^sub>M (c\<^sub>i-c\<^sub>o) on {0..\<tau>} UNIV @ 0)
   ELSE (x\<acute>= f (-c\<^sub>o) & G h\<^sub>m (-c\<^sub>o) on {0..\<tau>} UNIV @ 0))"
 
@@ -583,7 +571,7 @@ proof-
 qed
 
 abbreviation tank_dyn_dinv :: "real \<Rightarrow> real \<Rightarrow> real \<Rightarrow> real \<Rightarrow> real \<Rightarrow> (real^4) nd_fun" ("dyn")
-  where "dyn c\<^sub>i c\<^sub>o h\<^sub>m h\<^sub>M \<tau> \<equiv> (IF (Pump = 0) THEN 
+  where "dyn c\<^sub>i c\<^sub>o h\<^sub>m h\<^sub>M \<tau> \<equiv> (IF (\<pi> = 0) THEN 
     (x\<acute>= f (c\<^sub>i-c\<^sub>o) & G h\<^sub>M (c\<^sub>i-c\<^sub>o) on {0..\<tau>} UNIV @ 0 DINV (dI h\<^sub>m h\<^sub>M (c\<^sub>i-c\<^sub>o)))
   ELSE (x\<acute>= f (-c\<^sub>o) & G h\<^sub>m (-c\<^sub>o) on {0..\<tau>} UNIV @ 0 DINV (dI h\<^sub>m h\<^sub>M (-c\<^sub>o))))"
 
@@ -611,20 +599,20 @@ lemma R_tank_inv:
 proof-
   \<comment> \<open>First we refine the control. \<close>
   have ifbranch1: 
-    "Pump ::= 1 \<le> \<^bold>[Pump = 0 \<and> h\<^sub>0 \<le> h\<^sub>m + 1 \<and> I h\<^sub>m h\<^sub>M \<and> t = 0 \<and> h\<^sub>0 = h, I h\<^sub>m h\<^sub>M \<and> t = 0 \<and> h\<^sub>0 = h\<^bold>]" 
+    "\<pi> ::= 1 \<le> \<^bold>[\<pi> = 0 \<and> h\<^sub>0 \<le> h\<^sub>m + 1 \<and> I h\<^sub>m h\<^sub>M \<and> t = 0 \<and> h\<^sub>0 = h, I h\<^sub>m h\<^sub>M \<and> t = 0 \<and> h\<^sub>0 = h\<^bold>]" 
     (is "_ \<le> ?branch1") by (rule R_assign_rule, pred_simp)
   have ifbranch2: 
-    "(IF (Pump = 1 \<and> h\<^sub>0 \<ge> h\<^sub>M - 1) THEN (Pump ::= 0) ELSE skip) \<le> 
-    \<^bold>[\<not> (Pump = 0 \<and> h\<^sub>0 \<le> h\<^sub>m + 1) \<and> I h\<^sub>m h\<^sub>M \<and> t = 0 \<and> h\<^sub>0 = h, I h\<^sub>m h\<^sub>M \<and> t = 0 \<and> h\<^sub>0 = h\<^bold>]" 
+    "(IF (\<pi> = 1 \<and> h\<^sub>0 \<ge> h\<^sub>M - 1) THEN (\<pi> ::= 0) ELSE skip) \<le> 
+    \<^bold>[\<not> (\<pi> = 0 \<and> h\<^sub>0 \<le> h\<^sub>m + 1) \<and> I h\<^sub>m h\<^sub>M \<and> t = 0 \<and> h\<^sub>0 = h, I h\<^sub>m h\<^sub>M \<and> t = 0 \<and> h\<^sub>0 = h\<^bold>]" 
     (is "_ \<le> ?branch2") apply(rule order_trans, rule R_cond_mono) defer defer
     by (rule R_cond, auto intro!: R_assign_rule R_skip, rel_auto')
   have ifthenelse: 
-    "(IF (Pump = 0 \<and> h\<^sub>0 \<le> h\<^sub>m + 1) THEN ?branch1 ELSE ?branch2) \<le> 
+    "(IF (\<pi> = 0 \<and> h\<^sub>0 \<le> h\<^sub>m + 1) THEN ?branch1 ELSE ?branch2) \<le> 
     \<^bold>[I h\<^sub>m h\<^sub>M \<and> t = 0 \<and> h\<^sub>0 = h, I h\<^sub>m h\<^sub>M \<and> t = 0 \<and> h\<^sub>0 = h\<^bold>]" 
     (is "?ifthenelse \<le> _") by (rule R_cond, rel_auto')
   have 
-    "(IF (Pump = 0 \<and> h\<^sub>0 \<le> h\<^sub>m + 1) THEN (Pump ::= 1) ELSE 
-     (IF (Pump = 1 \<and> h\<^sub>0 \<ge> h\<^sub>M - 1) THEN (Pump ::= 0) ELSE skip)) \<le>
+    "(IF (\<pi> = 0 \<and> h\<^sub>0 \<le> h\<^sub>m + 1) THEN (\<pi> ::= 1) ELSE 
+     (IF (\<pi> = 1 \<and> h\<^sub>0 \<ge> h\<^sub>M - 1) THEN (\<pi> ::= 0) ELSE skip)) \<le>
      \<^bold>[I h\<^sub>m h\<^sub>M \<and> t = 0 \<and> h\<^sub>0 = h, I h\<^sub>m h\<^sub>M \<and> t = 0 \<and> h\<^sub>0 = h\<^bold>]"
     apply(rule_tac y="?ifthenelse" in order_trans, rule R_cond_mono)
     using ifbranch1 ifbranch2 ifthenelse by auto
@@ -636,13 +624,13 @@ proof-
   \<comment> \<open>Then we refine the dynamics. \<close>
   have dynup: 
     "(x\<acute>= f (c\<^sub>i-c\<^sub>o) & G h\<^sub>M (c\<^sub>i-c\<^sub>o) on {0..\<tau>} UNIV @ 0 DINV (dI h\<^sub>m h\<^sub>M (c\<^sub>i-c\<^sub>o))) \<le> 
-    \<^bold>[Pump = 0 \<and> I h\<^sub>m h\<^sub>M \<and> t = 0 \<and> h\<^sub>0 = h, I h\<^sub>m h\<^sub>M\<^bold>]"
+    \<^bold>[\<pi> = 0 \<and> I h\<^sub>m h\<^sub>M \<and> t = 0 \<and> h\<^sub>0 = h, I h\<^sub>m h\<^sub>M\<^bold>]"
     apply(rule R_g_ode_inv[OF tank_diff_inv[OF assms(1)]])
     using assms apply(simp_all, pred_simp, pred_simp)
     by (auto simp: tank_inv_arith1)
   have dyndown: 
     "(x\<acute>= f (-c\<^sub>o) & G h\<^sub>m (-c\<^sub>o) on {0..\<tau>} UNIV @ 0 DINV (dI h\<^sub>m h\<^sub>M (-c\<^sub>o))) \<le> 
-    \<^bold>[\<not> Pump = 0 \<and> I h\<^sub>m h\<^sub>M \<and> t = 0 \<and> h\<^sub>0 = h, I h\<^sub>m h\<^sub>M\<^bold>]"
+    \<^bold>[\<not> \<pi> = 0 \<and> I h\<^sub>m h\<^sub>M \<and> t = 0 \<and> h\<^sub>0 = h, I h\<^sub>m h\<^sub>M\<^bold>]"
     apply(rule R_g_ode_inv)
     using tank_diff_inv[OF assms(1), of "-c\<^sub>o"] apply(pred_simp)
     using assms by (simp_all, rel_auto' simp: tank_inv_arith2)
