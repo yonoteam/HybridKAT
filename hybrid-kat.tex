@@ -386,7 +386,7 @@ laws~\cite{FosterZW16}:
 \lput~s~(\lget~s) = s,
 \end{equation*}
 where $s \in S$ and $v, v' \in V$.
-%\gin{$V$ or $A$?} 
+\gin{$V$ or $A$?} 
 Lenses $x$ and $y$ can also be checked for independence using the
 predicate $x \lindep y$ to distinguish variables. Each program
 variable is a lens $x : \reals \lto S$. State spaces
@@ -443,6 +443,8 @@ $G:S\to \bools$ as
 {\left(x'= f\, \&\, G\right)} = \gamma^f_G.\label{eq:st-evl}\tag{st-evl}
 \end{equation}
 
+\gin{Link between $A$, nats and $V$ is missing.}
+
 Defining the state transformer semantics of assignments is
 standard~\cite{MuniveS19}, though we generalise using lenses. First,
 we use lenses to define state updates:
@@ -477,9 +479,11 @@ the standard laws of assignment algebraically:
 \begin{align*}
   x := x &~=~ \sskip, \\
   x := e \seq x := f &~=~ x := f[e/x], \\
-  x := e \seq y := f &~=~ y := f \seq x := e, \qquad\qquad \textnormal{if~} x \lindep y, x \unrest f, y \unrest e, \\[.5ex]
-  x := e \seq \textbf{if}~ t  \textbf{then}~ \alpha  \textbf{else}~ \beta 
-                          &~=~ \textbf{if}~ t[e/x]  \textbf{then}~ x := e \seq \alpha  \textbf{else}~ x := e \seq \beta.
+  x := e \seq y := f &~=~ y := f \seq x := e, \qquad\qquad
+                       \textnormal{if~} x \lindep y, x \unrest f, y
+                       \unrest e, \\
+  x := e \seq \textbf{if}~ t ~ \textbf{then}~ \alpha ~ \textbf{else}~ \beta 
+                          &~=~ \textbf{if}~ t[e/x]  ~\textbf{then}~ x := e \seq \alpha  ~\textbf{else}~ x := e \seq \beta.
 \end{align*}
 
 Here, $x \unrest e$ means that the semantic expression $e$ does not
@@ -571,7 +575,7 @@ evolution of hybrid program stores.
 
 The rule~(\ref{eq:h-evl}) supports the following procedure
 for reasoning with an evolution command $x' = f\, \&\, G$ and set $U$
-in this calculus:
+in $\dH$:
 \begin{enumerate}
 \item Check that vector field $f$ satisfies the conditions for
   Picard-Lindel\"of's theorem ($f$ is Lipschitz continuous and
@@ -585,15 +589,14 @@ in this calculus:
 \end{enumerate}
 
 \begin{example}[Thermostat verification via solutions]\label{ex:therm-sol}
-  A thermostat regulates a room's temperature between $T_m$ and
-  $T_M$. It uses variable $T_0$ to store an initial temperature and
-  $\theta$ to indicate wether the heater is switched on or
-  off. Variable $T$ denotes the room's temperature and $t$ is time. At
-  most every $\tau$ minutes, the thermostat resets time to
-  $0$, measures the room's temperature, and turns the heater on or
-  off accordingly. An Isabelle formalisation of a
-  hybrid program to model this behaviour, separated in discrete
-  control and continuous dynamics, is
+  A thermostat regulates the temperature $T$ of a room between bounds
+  $T_m\le T\le T_M$. Variable $T_0$ stores an initial
+  temperature;  $\theta$ indicates wether the heater is switched
+  on or off.  At most every $\tau$ minutes, the thermostat resets time to
+  $0$, measures the temperature, and turns the heater on or off
+  accordingly. The following hybrid program models 
+  its behaviour, separated in discrete control and continuous
+  dynamics.
 
 \gin{replace $\Theta$ by $\theta$.}
 
@@ -620,14 +623,14 @@ in this calculus:
 \end{isabellebody}
 
 We assume that $0<T_m$, $T_M<L$, $0 < a$ and
-$U={\isacharbraceleft}{\isadigit{0}}{\isachardot}{\isachardot}{\isasymtau}{\isacharbraceright}=[0,\tau]$. For
-specification purposes we write $;$ instead of $\cdot$ for sequential
+$U={\isacharbraceleft}{\isadigit{0}}{\isachardot}{\isachardot}{\isasymtau}{\isacharbraceright}=[0,\tau]$. We write $;$ instead of $\cdot$ for sequential
 composition. We use a guard to restrict evolutions between $T_m$ and
 $T_M$ by setting, for $c\in\{0,L\}$,
 \begin{equation*}
 G\, T_m\, T_M\, a\, c = \left(t\leq -\frac{1}{a}\ln\left(\frac{c-\Delta_c}{c-T_0}\right)\right),
 \end{equation*}
-where $\Delta_c = T_m$ if $c=0$, and $\Delta_c = T_M$ if $c=L$. We define the vector fields via
+where $\Delta_c = T_m$ if $c=0$, and $\Delta_c = T_M$ if $c=L$. We
+define the vector field as
 
 \begin{isabellebody}
 \isanewline
@@ -708,8 +711,9 @@ uses the fact that the flow for $f\, a\, c$ is
 %\isanewline
 %\end{isabellebody}
 for all $\tau\in\reals$. The remaining proof obligations are
-inequalities of exponentials and logarithms. They are discharged by
-supplying auxiliary lemmas to Isabelle's \isa{auto} method. \qed
+inequalities of transcendental functions. They are discharged
+automatically when
+supplying auxiliary lemmas to Isabelle. \qed
 \end{example}
 
 
@@ -786,13 +790,12 @@ using an invariant.
 
 \begin{example}[Water tank verification via invariants]\label{ex:tank-inv}
   A controller turns a water pump on and off to keep the level of
-  water $h$ in a tank within a safe region $h_m\leq h\leq h_M$. As in
-  Example~\ref{ex:therm-sol}, we use $t$ for time, $h_0$ for
-  water-level measurements and \isa{Pump} for indicating whether the
-  pump is on or off. The rate of change for the water-level in the
-  tank changes linearly with slope $k\in\{-c_o,c_i-c_o\}$ (assuming
-  $c_i>c_o$). The vector field mapping that represents this behaviour
-  is
+  water $h$ in a tank within a safe region $h_m\leq h\leq h_M$.
+  Variable $h_0$ indicates water-level measurements \gin{what does
+    this mean?}  and \isa{Pump} \gin{Write $\pi$ for pump?}  whether
+  the pump is on or off. The rate of change of the water-level in the
+  tank is linear with slope $k\in\{-c_o,c_i-c_o\}$ (assuming
+  $c_i>c_o$). The vector field for this behaviour is
 \begin{isabellebody}
 \isanewline
 \isacommand{abbreviation}\isamarkupfalse%
@@ -854,8 +857,7 @@ using an invariant.
 %
 %As before, in Isabelle we use \isa{{\isadigit{1}}}, \isa{{\isadigit{2}}}, \isa{{\isadigit{3}}}, and \isa{{\isadigit{4}}} for $h$, $t$, $h_0$ and $\Pi$ respectively, but f
 
-For this example, we use the invariant annotated version of evolution
-commands, which means that our correctness
+This time we reason with invariants. Hence our correctness
 specification for \isa{tank{\isacharunderscore}dinv\ c\isactrlsub i\
   c\isactrlsub o\ h\isactrlsub m\ h\isactrlsub M\ {\isasymtau}}  and
 its verification is 
@@ -887,12 +889,12 @@ its verification is
 \ force\ {\isacharparenleft}simp{\isacharcomma}\ pred{\isacharunderscore}simp{\isacharparenright}\isanewline
 \end{isabellebody}
 
-As in Example~\ref{ex:therm-sol}, the rule applications decompose the
-program structure of the hybrid program. We thus omit this part
-of the proof unitl an application of (\ref{eq:h-cond})
-splits the proof obligation into one for each evolution
-command. The result is discharged using rule (\ref{eq:h-invg}) followed by
-the fact that $dI\, h_m\, h_M\, k$ is an invariant for $f\, k$
+As in Example~\ref{ex:therm-sol}, the rule applications blast away the
+program structure. We thus omit this part of the proof until an
+application of (\ref{eq:h-cond}) splits the proof obligation into one
+for each evolution command. The result is discharged using rule
+(\ref{eq:h-invg}) followed by the fact that $dI\, h_m\, h_M\, k$ is an
+invariant for $f\, k$
 (\isa{tank{\isacharunderscore}diff{\isacharunderscore}inv}) and some
 arithmetical properties. \qed
 \end{example}
@@ -916,7 +918,6 @@ triple with precondition $p$ and postcondition $q$.  Indeed, in
 $\sta\, S$ and for $S\subseteq \reals^n$,
 $ [P,Q] = \bigcup \left\{f:S\to \Pow\, S \mid \{P\}\, f\,
   \{Q\}\right\}$. 
-
 
 Variants of Morgan's laws~\cite{Morgan94} of a \emph{propositional
   refinement calculus}---once more ignoring assignments---are then derivable in
@@ -977,16 +978,13 @@ two standard calculi mentioned and much more intricate than the
 approach presented.
 
 \begin{example}[Thermostat refinement via solutions]\label{ex:therm-rsol}
-Here we refine \isa{therm} from Example~\ref{ex:therm-sol} in a modular way. Proving
+  We now construct program \isa{therm} from Example~\ref{ex:therm-sol}
+  by step-wise refinement:
 \begin{equation*}
 \isa{therm\ T\isactrlsub m\ T\isactrlsub M\ a\ L\ {\isasymtau}\ {\isasymle}\ \isactrlbold {\isacharbrackleft}I\ T\isactrlsub m\ T\isactrlsub M{\isacharcomma}\ I\ T\isactrlsub m\ T\isactrlsub M\isactrlbold {\isacharbrackright}}
 \end{equation*} 
-amounts to showing that the body of the loop also refines the
-specification. For this we prove separate refinement statements for the
-control and dynamics, which we then compose. This implies
-ensuring that the loop invariant $I$ is a precondition of the control
-and a postcondition of the dynamics and that any postcondition of the
-control will be the precondition of the dynamics.
+We prove separate lemmas for the discrete control and the continuous
+dynamics and compose them step by step.
 \begin{isabellebody}
 \isanewline
 \isacommand{lemma}\isamarkupfalse%
@@ -1004,16 +1002,14 @@ control will be the precondition of the dynamics.
 \isacommand{by}\isamarkupfalse%
 \ {\isacharparenleft}auto\ intro{\isacharbang}{\isacharcolon}\ R{\isacharunderscore}cond{\isacharparenright}\isanewline
 \end{isabellebody}
-
-In particular, for the dynamics, we use (\ref{eq:r-evl}) to prove that
+For the dynamics, we use (\ref{eq:r-evl}) to prove that
 each branch of the if-statement refines the specification
 (\isa{R{\isacharunderscore}therm{\isacharunderscore}dyn{\isacharunderscore}down/up}). Then
 we combine them by transitivity and (\ref{eq:r-cond}).
 
 Finally, we show that the loop of the composition of the
 specifications for the control and the dynamics refines the initial
-specification. We use this fact and transitivity to show our main
-goal.
+specification. 
 
 \begin{isabellebody}
 
@@ -1037,14 +1033,13 @@ goal.
 \end{isabellebody}
 The final
 result\isa{R{\isacharunderscore}thermostat{\isacharunderscore}flow} is
-then a combination of the previous lemmas and the laws of our
-refinement calculus.\qed
+then a combination of these lemmas.\qed
 \end{example}
 
 \begin{example}[Water tank refinement via invariants]\label{ex:tank-rinv}
   We use invariants to refine \isa{tank{\isacharunderscore}dinv} from
-  Example~\ref{ex:tank-inv}. Instead of doing it modularly, we supply
-  a single structured proof. We omit uncritical parts using ellipses
+  Example~\ref{ex:tank-inv}. This tim we supply a single structured
+  proof. We omit uncritical parts using ellipses
   $\langle \dots\rangle$ and abbreviate long expressions with
   schematic variables
   \isa{{\isacharparenleft}{\isacharquery}ctrl{\isacharunderscore}ref{\isacharcomma}{\isacharquery}dyn{\isacharunderscore}ref{\isacharparenright}}. We
@@ -1149,7 +1144,7 @@ for such evolution commands.
 \begin{example}[Bouncing ball via Hoare logic]\label{ex:ball-hoare}
   Suppose a ball of mass $m$ falls down from height $h\geq 0$, with
   $x$ denoting its position, $v$ its velocity and $g$ its
-  acceleration. Its kinematics is modelled by the flow mapping
+  acceleration. Its kinematics is modelled by the flow
 \begin{isabellebody}
 \isanewline
 \isacommand{abbreviation}\isamarkupfalse%
