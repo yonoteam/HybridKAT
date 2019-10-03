@@ -591,18 +591,28 @@ in $\dH$:
 \begin{example}[Thermostat verification via solutions]\label{ex:therm-sol}
   A thermostat regulates the temperature $T$ of a room between bounds
   $T_m\le T\le T_M$. Variable $T_0$ stores an initial
-  temperature;  $\theta$ indicates wether the heater is switched
+  temperature;  $\vartheta$ indicates wether the heater is switched
   on or off.  At most every $\tau$ minutes, the thermostat resets time to
   $0$, measures the temperature, and turns the heater on or off
   accordingly. The following hybrid program models 
   its behaviour, separated in discrete control and continuous
   dynamics.
 
+\gin{1. Can we drop some some of the type declarations? 2. Would it be
+shorter to write $T_-$ and $T_+$? 3. Vector field and guard must be defined before
+being used! 4. What is $L$? 5. Proof automation is underwhelming. Why
+does tactic need a parameter? Where is flow declared? Why all these
+OFs? Can't Isabelle figure out assumptions? They are bloating the
+proof.  6. Some names are excessively long. They take too much space!}
+
 \begin{isabellebody}
+
 \isanewline
-\isacommand{abbreviation}\isamarkupfalse%
+\isacommand{abbreviation}
+\isamarkupfalse%
 \ therm{\isacharunderscore}loop{\isacharunderscore}inv\ {\isacharcolon}{\isacharcolon}\ {\isachardoublequoteopen}real\ {\isasymRightarrow}\ real\ {\isasymRightarrow}\ {\isacharparenleft}real{\isacharcircum}{\isadigit{4}}{\isacharparenright}\ upred{\isachardoublequoteclose}\ {\isacharparenleft}{\isachardoublequoteopen}I{\isachardoublequoteclose}{\isacharparenright}\isanewline
-\ \ \isakeyword{where}\ {\isachardoublequoteopen}I\ T\isactrlsub m\ T\isactrlsub M\ {\isasymequiv}\ U{\isacharparenleft}T\isactrlsub m\ {\isasymle}\ T\ {\isasymand}\ T\ {\isasymle}\ T\isactrlsub M\ {\isasymand}\ {\isacharparenleft}{\isasymtheta}\ {\isacharequal}\ {\isadigit{0}}\ {\isasymor}\ {\isasymtheta}\ {\isacharequal}\ {\isadigit{1}}{\isacharparenright}{\isacharparenright}{\isachardoublequoteclose}\isanewline
+\  \isakeyword{where}
+\ {\isachardoublequoteopen}I\ T\isactrlsub m\ T\isactrlsub M\ {\isasymequiv}\ U{\isacharparenleft}T\isactrlsub m\ {\isasymle}\ T\ {\isasymand}\ T\ {\isasymle}\ T\isactrlsub M\ {\isasymand}\ {\isacharparenleft}{\isasymtheta}\ {\isacharequal}\ {\isadigit{0}}\ {\isasymor}\ {\isasymtheta}\ {\isacharequal}\ {\isadigit{1}}{\isacharparenright}{\isacharparenright}{\isachardoublequoteclose}\isanewline
 \isanewline
 \isacommand{abbreviation}\isamarkupfalse%
 \ therm{\isacharunderscore}ctrl\ {\isacharcolon}{\isacharcolon}\ {\isachardoublequoteopen}real\ {\isasymRightarrow}\ real\ {\isasymRightarrow}\ {\isacharparenleft}real{\isacharcircum}{\isadigit{4}}{\isacharparenright}\ nd{\isacharunderscore}fun{\isachardoublequoteclose}\ {\isacharparenleft}{\isachardoublequoteopen}ctrl{\isachardoublequoteclose}{\isacharparenright}\isanewline
@@ -693,7 +703,7 @@ possible because lemma
 \isa{H{\isacharunderscore}g{\isacharunderscore}ode{\isacharunderscore}therm}
 uses the fact that, for all $\tau\in\reals$, the flow for $f\, a\, c$ is
 \begin{equation*}
-\flow\, a\, c\, \tau = (-e^{-a\cdot\tau}(c-T)+c, \tau+t, T_0, \Theta)^\top.
+\flow\, a\, c\, \tau = (-e^{-a\cdot\tau}(c-T)+c, \tau+t, T_0, \vartheta)^\top.
 \end{equation*}
 %\begin{isabellebody}
 %\isanewline
@@ -792,7 +802,12 @@ using an invariant.
 \ ftank\ {\isacharcolon}{\isacharcolon}\ {\isachardoublequoteopen}real\ {\isasymRightarrow}\ {\isacharparenleft}real{\isacharcomma}\ {\isadigit{4}}{\isacharparenright}\ vec\ {\isasymRightarrow}\ {\isacharparenleft}real{\isacharcomma}\ {\isadigit{4}}{\isacharparenright}\ vec{\isachardoublequoteclose}\ {\isacharparenleft}{\isachardoublequoteopen}f{\isachardoublequoteclose}{\isacharparenright}\isanewline
 \ \ \isakeyword{where}\ {\isachardoublequoteopen}f\ k\ {\isasymequiv}\ {\isasymlbrakk}{\isacharbrackleft}h\ {\isasymmapsto}\isactrlsub s\ k{\isacharcomma}\ t\ {\isasymmapsto}\isactrlsub s\ {\isadigit{1}}{\isacharcomma}\ h\isactrlsub {\isadigit{0}}\ {\isasymmapsto}\isactrlsub s\ {\isadigit{0}}{\isacharcomma}\ {\isasympi}\ {\isasymmapsto}\isactrlsub s\ {\isadigit{0}}{\isacharbrackright}{\isasymrbrakk}\isactrlsub e{\isachardoublequoteclose}\isanewline
 \end{isabellebody}
-\noindent Thus, a hybrid program to model the controller and the water-level is
+\noindent Thus, a hybrid program to model the controller and the
+water-level is
+
+\gin{1. Can types be deleted? Use $h_-$ and $h_+$? 2. Indentations
+  need to be fixed. What is $h_x$? Again, why all these OFs? And why
+  parameter to tactic? How is procedure applied to invariant? }
 \begin{isabellebody}
 \isanewline
 \isacommand{abbreviation}\isamarkupfalse%
@@ -972,6 +987,7 @@ approach presented.
 \begin{example}[Thermostat refinement via solutions]\label{ex:therm-rsol}
   We now construct program \isa{therm} from Example~\ref{ex:therm-sol}
   by step-wise refinement:
+\gin{turn equation around like in proofs}
 \begin{equation*}
 \isa{therm\ T\isactrlsub m\ T\isactrlsub M\ a\ L\ {\isasymtau}\ {\isasymle}\ \isactrlbold {\isacharbrackleft}I\ T\isactrlsub m\ T\isactrlsub M{\isacharcomma}\ I\ T\isactrlsub m\ T\isactrlsub M\isactrlbold {\isacharbrackright}}
 \end{equation*} 
@@ -1003,8 +1019,11 @@ Finally, we show that the loop of the composition of the
 specifications for the control and the dynamics refines the initial
 specification. 
 
-\begin{isabellebody}
+\gin{again too many OFs. Otherwise snd proof might fit into one
+  line. And we need a refinement tactic that picks the right rule and
+  applies it.}
 
+\begin{isabellebody}
 \isanewline
 \isacommand{lemma}\isamarkupfalse%
 \ R{\isacharunderscore}therm{\isacharunderscore}loop{\isacharcolon}\ {\isachardoublequoteopen}\isactrlbold {\isacharbrackleft}I\ T\isactrlsub m\ T\isactrlsub M{\isacharcomma}\ I\ T\isactrlsub m\ T\isactrlsub M\isactrlbold {\isacharbrackright}\ {\isasymge}\ \isanewline
@@ -1038,6 +1057,9 @@ then a combination of these lemmas.\qed
   follow the strategy of Example~\ref{ex:therm-rsol} except that the
   dynamics is refined using the fact that $dI\, h_m\, h_M\, k$ from
   Example~\ref{ex:tank-inv} is an invariant for $f\, k$.
+
+\gin{This is not how refinement works. You do it step by step like in
+  the exercises in my lecture. As is it looks messy. And is the indentation right?}
 \begin{isabellebody}
 \isanewline
 \isacommand{lemma}\isamarkupfalse%
@@ -1170,10 +1192,12 @@ program~\cite{Platzer18}
 \isanewline
 \isacommand{abbreviation}\isamarkupfalse%
 \ {\isachardoublequoteopen}bb{\isacharunderscore}evol\ g\ h\ T\ {\isasymequiv}\ \isanewline
-\ \ {\isacharparenleft}LOOP\ {\isacharparenleft}\isanewline
-\ \ \ \ {\isacharparenleft}EVOL\ {\isacharparenleft}{\isasymphi}\ g{\isacharparenright}\ {\isacharparenleft}x\ {\isasymge}\ {\isadigit{0}}{\isacharparenright}\ T{\isacharparenright}{\isacharsemicolon}\isanewline
-\ \ \ \ {\isacharparenleft}IF\ {\isacharparenleft}v\ {\isacharequal}\ {\isadigit{0}}{\isacharparenright}\ THEN\ {\isacharparenleft}v\ {\isacharcolon}{\isacharcolon}{\isacharequal}\ {\isacharminus}v{\isacharparenright}\ ELSE\ skip{\isacharparenright}{\isacharparenright}\ \isanewline
-\ \ INV\ {\isacharparenleft}{\isadigit{0}}\ {\isasymle}\ x\ {\isasymand}\ {\isadigit{2}}\ {\isasymcdot}\ g\ {\isasymcdot}\ x\ {\isacharequal}\ {\isadigit{2}}\ {\isasymcdot}\ g\ {\isasymcdot}\ h\ {\isacharplus}\ v\ {\isasymcdot}\ v{\isacharparenright}{\isacharparenright}{\isachardoublequoteclose}\isanewline
+\ \ {\isacharparenleft}LOOP\
+{\isacharparenleft}{\isacharparenleft}EVOL\
+{\isacharparenleft}{\isasymphi}\ g{\isacharparenright}\
+{\isacharparenleft}x\ {\isasymge}\ {\isadigit{0}}{\isacharparenright}\
+T{\isacharparenright}{\isacharsemicolon} {\isacharparenleft}IF\ {\isacharparenleft}v\ {\isacharequal}\ {\isadigit{0}}{\isacharparenright}\ THEN\ {\isacharparenleft}v\ {\isacharcolon}{\isacharcolon}{\isacharequal}\ {\isacharminus}v{\isacharparenright}\ ELSE\ skip{\isacharparenright}{\isacharparenright}\ \isanewline
+\ \ \  INV\ {\isacharparenleft}{\isadigit{0}}\ {\isasymle}\ x\ {\isasymand}\ {\isadigit{2}}\ {\isasymcdot}\ g\ {\isasymcdot}\ x\ {\isacharequal}\ {\isadigit{2}}\ {\isasymcdot}\ g\ {\isasymcdot}\ h\ {\isacharplus}\ v\ {\isasymcdot}\ v{\isacharparenright}{\isacharparenright}{\isachardoublequoteclose}\isanewline
 \end{isabellebody}
 Its loop invariant is a conjunction of the guard $G$ and a variation of the law of conservation of energy. The correctness specification in Hoare-triple style and its refinement version are then formalised as below
 %\begin{align*}
