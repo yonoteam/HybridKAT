@@ -443,7 +443,7 @@ $G:S\to \bools$ as
 {\left(x'= f\, \&\, G\right)} = \gamma^f_G.\label{eq:st-evl}\tag{st-evl}
 \end{equation}
 
-\gin{Link between $A$, nats and $V$ is missing.}
+%\gin{Link between $A$, nats and $V$ is missing.}
 
 Defining the state transformer semantics of assignments is
 standard~\cite{MuniveS19}, though we generalise using lenses. First,
@@ -596,11 +596,11 @@ in $\dH$:
 
 \begin{example}[Thermostat verification via solutions]\label{ex:therm-sol}
   A thermostat regulates the temperature $T$ of a room between bounds
-  $T_l\le T\le T_h$. Variable $T_0$ stores an initial
-  temperature;  $\vartheta$ indicates wether the heater is switched
-  on or off.  At most every $\tau$ minutes, the thermostat resets time to
-  $0$, measures the temperature, and turns the heater on or off
-  accordingly.
+  $T_l\le T\le T_h$. Variable $T_0$ stores an initial temperature;
+  $\vartheta$ indicates wether the heater is switched on or off.
+  Within time intervals of at most $\tau$ minutes, the thermostat
+  resets time to $0$, measures the temperature, and turns the heater
+  on or off dependent on the value obtained.
 
 We assume that $0<T_l$, $T_h<T_u$, $0 < a$,
 $U={\isacharbraceleft}{\isadigit{0}}{\isachardot}{\isachardot}{\isasymtau}{\isacharbraceright}=[0,\tau]$, and define the vector field, for $c\in\{0,T_u\}$, as
@@ -612,14 +612,17 @@ $U={\isacharbraceleft}{\isadigit{0}}{\isachardot}{\isachardot}{\isasymtau}{\isac
 %\ \ \isakeyword{where}\ 
 {\isachardoublequoteopen}f\ a\ c\ {\isasymequiv}\ {\isasymlbrakk}{\isacharbrackleft}T\ {\isasymmapsto}\isactrlsub s\ {\isacharminus}\ a\ {\isacharasterisk}\ {\isacharparenleft}T\ {\isacharminus}\ c{\isacharparenright}{\isacharcomma}\ t\ {\isasymmapsto}\isactrlsub s\ {\isadigit{1}}{\isacharcomma}\ $T_0$\ {\isasymmapsto}\isactrlsub s\ {\isadigit{0}}{\isacharcomma}\ {\isasymtheta}\ {\isasymmapsto}\isactrlsub s\ {\isadigit{0}}{\isacharbrackright}{\isasymrbrakk}\isactrlsub e{\isachardoublequoteclose}\isanewline
 \end{isabellebody} 
-
-We write $;$ instead of $\cdot$ for sequential
-composition and use a guard $G$ to restrict evolutions between $T_l$ and
-$T_h$ by setting
+The brackets around the right-hand expression are rudiments of
+Isabelle/UTP syntax without conceptual relevance. We write $;$ instead
+of $\cdot$ for sequential composition and use a guard $G$ to restrict
+evolutions between $T_l$ and $T_h$ by setting
 \begin{equation*}
 G\, T_l\, T_h\, a\, c = \left(t\leq -\frac{1}{a}\ln\left(\frac{c-\Delta_c}{c-T_0}\right)\right),
 \end{equation*}
-where $\Delta_c = T_l$ if $c=0$, and $\Delta_c = T_h$ if $c=T_u$. Below, the hybrid program $\isa{therm}\ T_l\ T_h\ a\ T_u$ models the thermostat's behaviour. We separate it in loop invariant, discrete control and continuous dynamics.
+where $\Delta_c = T_l$ if $c=0$, and $\Delta_c = T_h$ if $c=T_u$. The
+hybrid program $\isa{therm}\ T_l\ T_h\ a\ T_u$ below models the
+behaviour of the thermostat. To simplify notation, we separate it in
+loop invariant, discrete control and continuous dynamics.
 
 \begin{isabellebody}
 
@@ -646,10 +649,10 @@ where $\Delta_c = T_l$ if $c=0$, and $\Delta_c = T_h$ if $c=T_u$. Below, the hyb
 \ \ \ ELSE\ x{\isasymacute}{\isacharequal}\ f\ a\ $T_u$\ {\isacharampersand}\ G\ $T_l$\ $T_h$\ a\ $T_u$\ on\ {\isacharbraceleft}{\isadigit{0}}{\isachardot}{\isachardot}{\isasymtau}{\isacharbraceright}\ UNIV\ {\isacharat}\ {\isadigit{0}}{\isachardoublequoteclose}\isanewline
 \isanewline
 \isacommand{abbreviation}\ {\isachardoublequoteopen}therm\ $T_l$\ $T_h$\ a\ $T_u$\ {\isasymtau}\ {\isasymequiv}\isanewline 
-\ \ LOOP\ {\isacharparenleft}ctrl\ $T_l$\ $T_h$\ {\isacharsemicolon}\ dyn\ $T_l$\ $T_h$\ a\ $T_u$\ {\isasymtau}{\isacharparenright}\ INV\ {\isacharparenleft}I\ $T_l$\ $T_h${\isacharparenright}{\isachardoublequoteclose}\isanewline
+\ \ LOOP\ {\isacharparenleft}ctrl\ $T_l$\ $T_h${\isacharsemicolon}\ dyn\ $T_l$\ $T_h$\ a\ $T_u$\ {\isasymtau}{\isacharparenright}\ INV\ {\isacharparenleft}I\ $T_l$\ $T_h${\isacharparenright}{\isachardoublequoteclose}\isanewline
 \end{isabellebody}
 
-The correctness specification and verification of the thermostat is then
+\noindent The correctness specification and verification of the thermostat is then
 \begin{isabellebody}
 \isanewline
 \isacommand{lemma}\isamarkupfalse%
@@ -668,8 +671,10 @@ The correctness specification and verification of the thermostat is then
 \ rel{\isacharunderscore}auto{\isacharprime}\isanewline
 \end{isabellebody}
 
-The first line blasts away the program structure of
-\isa{therm} with the rules of $\dH$. With lemma \isa{local{\isacharunderscore}flow{\isacharunderscore}therm}, whose proof required the procedure described above, the second line supplies the flow for $f\, a\, c$. That is,
+The first line uses tactic \isa{hyb-hoare} to blast away the program
+structure of \isa{therm} using $\dH$. Lemma \isa{local-flow-therm},
+whose proof captures the procedure described above, supplies the flow
+for $f\, a\, c$:
 \begin{equation*}
 \flow\, a\, c\, \tau = (-e^{-a\cdot\tau}(c-T)+c, \tau+t, T_0, \vartheta)^\top,
 \end{equation*}
@@ -681,8 +686,8 @@ The first line blasts away the program structure of
 %\isanewline
 %\end{isabellebody}
 for all $\tau\in\reals$. The remaining proof obligations are
-inequalities of transcendental functions that are discharged
-automatically with auxiliary lemmas. \qed
+inequalities of transcendental functions. They are discharged
+automatically using auxiliary lemmas. \qed
 \end{example}
 
 
