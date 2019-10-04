@@ -385,8 +385,8 @@ laws~\cite{FosterZW16}:
 \lget~(\lput~s~v) = v, \qquad \lput~(\lput~s~v')~v = \lput~s~v, \qquad
 \lput~s~(\lget~s) = s,
 \end{equation*}
-where $s \in S$ and $v, v' \in V$.
-\gin{$V$ or $A$?} 
+where $s \in S$ and $v, v' \in A$.
+
 Lenses $x$ and $y$ can also be checked for independence using the
 predicate $x \lindep y$ to distinguish variables. Each program
 variable is a lens $x : \reals \lto S$. State spaces
@@ -449,7 +449,7 @@ Defining the state transformer semantics of assignments is
 standard~\cite{MuniveS19}, though we generalise using lenses. First,
 we use lenses to define state updates:
 $$\sigma(x\mapsto e) = \lambda s.\ \lput_x ~ (\sigma~s) ~ (e~s)$$
-for $x : V \lto S$, $e : S \to V$, and $\sigma : S \to S$.
+for $x : A \lto S$, $e : S \to A$, and $\sigma : S \to S$.
 Intuitively, this updates the value of variable $x$ in the state
 update $\sigma : S \to S$ to have the value given by $e$. Here, the
 function $e$ models an ``expression'' that is evaluated in
@@ -459,9 +459,9 @@ $\lambda s. \ \lget_x~s / (2 + \lget_y~s)$. We can also update $n$
 variables simultaneously:
 $$[x_1 \mapsto e_1, x_2 \mapsto e_2, \cdots, x_n \mapsto e_n] = id(x_1 \mapsto e_1)(x_2 \mapsto e_2)\cdots(x_n \mapsto e_n),$$ 
 where $id$ is the identity function. We also define a substitution
-operator for state updates, $\sigma \dagger e = e \circ s$,
-\gin{$\sigma$?} that simply composes expression $e$ with $\sigma$. We
-can then define a semantic analog of the substitution operator,
+operator for state updates, $\sigma \dagger e = e \circ \sigma$, that
+simply composes expression $e$ with $\sigma$. We can then define a
+semantic analog of the substitution operator,
 $e[f/x] = [x \mapsto f] \subapp e$ with the usual
 laws~\cite{FosterZW16}. Finally, we define a generalised assignment
 operator:
@@ -472,7 +472,7 @@ operator:
 %
 This applies the function $\sigma : S \to S$ as an assignment. With
 our state update function, singleton assignment is simply a special
-case: $x := e =\langle x \mapsto e \rangle$, and we can also assign
+case: $(x := e) =\langle x \mapsto e \rangle$, and we can also assign
 several variables simultaneously. Thes foundations allow us to derive
 the standard laws of assignment algebraically:
 %
