@@ -612,7 +612,7 @@ $U={\isacharbraceleft}{\isadigit{0}}{\isachardot}{\isachardot}{\isasymtau}{\isac
 %\ \ \isakeyword{where}\ 
 {\isachardoublequoteopen}f\ a\ c\ {\isasymequiv}\ {\isasymlbrakk}{\isacharbrackleft}T\ {\isasymmapsto}\isactrlsub s\ {\isacharminus}\ a\ {\isacharasterisk}\ {\isacharparenleft}T\ {\isacharminus}\ c{\isacharparenright}{\isacharcomma}\ t\ {\isasymmapsto}\isactrlsub s\ {\isadigit{1}}{\isacharcomma}\ $T_0$\ {\isasymmapsto}\isactrlsub s\ {\isadigit{0}}{\isacharcomma}\ {\isasymtheta}\ {\isasymmapsto}\isactrlsub s\ {\isadigit{0}}{\isacharbrackright}{\isasymrbrakk}\isactrlsub e{\isachardoublequoteclose}\isanewline
 \end{isabellebody} 
-The brackets around the right-hand expression are rudiments of
+\noindent The brackets around the right-hand expression are rudiments of
 Isabelle/UTP syntax without conceptual relevance. We write $;$ instead
 of $\cdot$ for sequential composition and use a guard $G$ to restrict
 evolutions between $T_l$ and $T_h$ by setting
@@ -652,26 +652,28 @@ loop invariant, discrete control and continuous dynamics.
 \ \ LOOP\ {\isacharparenleft}ctrl\ $T_l$\ $T_h${\isacharsemicolon}\ dyn\ $T_l$\ $T_h$\ a\ $T_u$\ {\isasymtau}{\isacharparenright}\ INV\ {\isacharparenleft}I\ $T_l$\ $T_h${\isacharparenright}{\isachardoublequoteclose}\isanewline
 \end{isabellebody}
 
-\noindent The correctness specification and verification of the thermostat is then
+\noindent The correctness specification and verification of the
+thermostatwith $\dH$  is then
 \begin{isabellebody}
 \isanewline
 \isacommand{lemma}\isamarkupfalse%
 \ thermostat{\isacharunderscore}flow{\isacharcolon}\ \isanewline
 \ \ \isakeyword{assumes}\ {\isachardoublequoteopen}{\isadigit{0}}\ {\isacharless}\ a{\isachardoublequoteclose}\ \isakeyword{and}\ {\isachardoublequoteopen}{\isadigit{0}}\ {\isasymle}\ {\isasymtau}{\isachardoublequoteclose}\ \isakeyword{and}\ {\isachardoublequoteopen}{\isadigit{0}}\ {\isacharless}\ $T_l${\isachardoublequoteclose}\ \isakeyword{and}\ {\isachardoublequoteopen}$T_h$\ {\isacharless}\ $T_u${\isachardoublequoteclose}\isanewline
 \ \ \isakeyword{shows}\ {\isachardoublequoteopen}\ \isactrlbold {\isacharbraceleft}I\ $T_l$\ $T_h$\isactrlbold {\isacharbraceright}\ therm\ $T_l$\ $T_h$\ a\ $T_u$\ {\isasymtau}\ \isactrlbold {\isacharbraceleft}I\ $T_l$\ $T_h$\isactrlbold {\isacharbraceright}{\isachardoublequoteclose}\isanewline
-\isacommand{apply}\isamarkupfalse%
+\ \ \isacommand{apply}\isamarkupfalse%
 {\isacharparenleft}hyb{\isacharunderscore}hoare\ {\isachardoublequoteopen}U{\isacharparenleft}I\ T\isactrlsub m\ T\isactrlsub M\ {\isasymand}\ t{\isacharequal}{\isadigit{0}}\ {\isasymand}\ T\isactrlsub {\isadigit{0}}\ {\isacharequal}\ T{\isacharparenright}{\isachardoublequoteclose}{\isacharparenright}\isanewline
-\isacommand{prefer}\isamarkupfalse%
+\ \ \isacommand{prefer}\isamarkupfalse%
 \ {\isadigit{4}}\ \isacommand{prefer}\isamarkupfalse%
 \ {\isadigit{8}}\ \isacommand{using}\isamarkupfalse%
-\ local{\isacharunderscore}flow{\isacharunderscore}therm\ assms\ \isacommand{apply}\isamarkupfalse%
-\ force{\isacharplus}\isanewline
-\isacommand{using}\isamarkupfalse%
+\ local{\isacharunderscore}flow{\isacharunderscore}therm\ assms\ \isacommand{apply}\isamarkupfalse\ force{\isacharplus}\isanewline
+\ \ \isacommand{using}\isamarkupfalse%
 \ assms\ therm{\isacharunderscore}dyn{\isacharunderscore}up\ therm{\isacharunderscore}dyn{\isacharunderscore}down\ \isacommand{by}\isamarkupfalse%
 \ rel{\isacharunderscore}auto{\isacharprime}\isanewline
 \end{isabellebody}
 
-The first line uses tactic \isa{hyb-hoare} to blast away the program
+\gin{Say why tactic has parameter? And what is $U$ above?}
+
+\noindent The first line uses tactic \isa{hyb-hoare} to blast away the program
 structure of \isa{therm} using $\dH$. Lemma \isa{local-flow-therm},
 whose proof captures the procedure described above, supplies the flow
 for $f\, a\, c$:
@@ -763,12 +765,12 @@ using an invariant.
 \end{enumerate}
 
 \begin{example}[Water tank verification via invariants]\label{ex:tank-inv}
-  A controller turns a water pump on and off to keep the level of
-  water $h$ in a tank within a safe region $h_l\leq h\leq h_h$.
-  Variable $h_0$ stores an initial water level, and $\pi$ whether
-  the pump is on or off. The rate of change of the water-level in the
-  tank is linear with slope $k\in\{-c_o,c_i-c_o\}$ (assuming
-  $c_i>c_o$). The vector field for this behaviour is
+  A controller turns a water pump on and off to keep the water level
+  $h$ in a tank within safe bounds $h_l\leq h\leq h_h$.  Variable
+  $h_0$ stores an initial water level;  $\pi$ indicates whether the pump is
+  on or off. The rate of change of the water-level in the tank is
+  linear with slope $k\in\{-c_o,c_i-c_o\}$ (assuming $c_i>c_o$). The
+  vector field for this behaviour is
 \begin{isabellebody}
 \isanewline
 \isacommand{abbreviation}\ %\isamarkupfalse%
@@ -776,12 +778,12 @@ using an invariant.
 %\ \ \isakeyword{where}\ 
 {\isachardoublequoteopen}f\ k\ {\isasymequiv}\ {\isasymlbrakk}{\isacharbrackleft}h\ {\isasymmapsto}\isactrlsub s\ k{\isacharcomma}\ t\ {\isasymmapsto}\isactrlsub s\ {\isadigit{1}}{\isacharcomma}\ $h_0$\ {\isasymmapsto}\isactrlsub s\ {\isadigit{0}}{\isacharcomma}\ {\isasympi}\ {\isasymmapsto}\isactrlsub s\ {\isadigit{0}}{\isacharbrackright}{\isasymrbrakk}\isactrlsub e{\isachardoublequoteclose}\isanewline
 \end{isabellebody}
-\noindent Thus, a hybrid program to model the controller and the
-water-level is
-
-\gin{1. Can types be deleted? Use $h_-$ and $h_+$? 2. Indentations
-  need to be fixed. What is $h_x$? Again, why all these OFs? And why
-  parameter to tactic? How is procedure applied to invariant? }
+\noindent It differs from that of the thermostat in
+Example~\ref{ex:therm-sol}. A hybrid program for the controller of the
+water tank is given as follows. Once again we introduce the guard $G$,
+loop invariant $I$ control and dynamic part before the program
+itself---and this tim a differential invariant \isa{dI} as well:
+\gin{What is $h_x$? }
 \begin{isabellebody}
 \isanewline
 \isacommand{abbreviation}\ %\isamarkupfalse%
@@ -817,7 +819,7 @@ water-level is
 \isanewline
 \isacommand{abbreviation}\isamarkupfalse%
 \ {\isachardoublequoteopen}tank{\isacharunderscore}dinv\ c\isactrlsub i\ c\isactrlsub o\ $h_l$\ $h_h$\ {\isasymtau}\ {\isasymequiv}\isanewline 
-\ \ LOOP\ {\isacharparenleft}ctrl\ $h_l$\ $h_h$\ {\isacharsemicolon}\ dyn\ c\isactrlsub i\ c\isactrlsub o\ $h_l$\ $h_h$\ {\isasymtau}{\isacharparenright}\ INV\ {\isacharparenleft}I\ $h_l$\ $h_h${\isacharparenright}{\isachardoublequoteclose}\isanewline
+\ \ LOOP\ {\isacharparenleft}ctrl\ $h_l$\ $h_h${\isacharsemicolon}\ dyn\ c\isactrlsub i\ c\isactrlsub o\ $h_l$\ $h_h$\ {\isasymtau}{\isacharparenright}\ INV\ {\isacharparenleft}I\ $h_l$\ $h_h${\isacharparenright}{\isachardoublequoteclose}\isanewline
 \end{isabellebody}
 %\begin{align*}
 %	\mathsf{Cntrl} = &\ {t:=(\lambda\, s.\ 0)};{h_0:=(\lambda\, s.\ s_h)};\\
@@ -842,34 +844,33 @@ water-level is
 %
 %As before, in Isabelle we use \isa{{\isadigit{1}}}, \isa{{\isadigit{2}}}, \isa{{\isadigit{3}}}, and \isa{{\isadigit{4}}} for $h$, $t$, $h_0$ and $\Pi$ respectively, but f
 
-This time we reason with invariants. Hence our correctness
-specification for \isa{tank{\isacharunderscore}dinv\ c\isactrlsub i\
-  c\isactrlsub o\ $h_l$\ $h_h$\ {\isasymtau}}  and
-its verification is 
+\noindent The correctness specification and verification of the water
+tank is with $\dH$ then
 \begin{isabellebody}
 \isanewline
 \isacommand{lemma}\isamarkupfalse%
 \ tank{\isacharunderscore}inv{\isacharcolon}\isanewline
 \ \ \isakeyword{assumes}\ {\isachardoublequoteopen}{\isadigit{0}}\ {\isasymle}\ {\isasymtau}{\isachardoublequoteclose}\ \isakeyword{and}\ {\isachardoublequoteopen}{\isadigit{0}}\ {\isacharless}\ c\isactrlsub o{\isachardoublequoteclose}\ \isakeyword{and}\ {\isachardoublequoteopen}c\isactrlsub o\ {\isacharless}\ c\isactrlsub i{\isachardoublequoteclose}\isanewline
 \ \ \isakeyword{shows}\ {\isachardoublequoteopen}\ \isactrlbold {\isacharbraceleft}I\ $h_l$\ $h_h$\isactrlbold {\isacharbraceright}\ tank{\isacharunderscore}dinv\ c\isactrlsub i\ c\isactrlsub o\ $h_l$\ $h_h$\ {\isasymtau}\ \isactrlbold {\isacharbraceleft}I\ $h_l$\ $h_h$\isactrlbold {\isacharbraceright}{\isachardoublequoteclose}\isanewline
-\isacommand{apply}\isamarkupfalse%
+\ \ \isacommand{apply}\isamarkupfalse%
 {\isacharparenleft}hyb{\isacharunderscore}hoare\ {\isachardoublequoteopen}U{\isacharparenleft}I\ h\isactrlsub m\ h\isactrlsub M\ {\isasymand}\ t\ {\isacharequal}\ {\isadigit{0}}\ {\isasymand}\ h\isactrlsub {\isadigit{0}}\ {\isacharequal}\ h{\isacharparenright}{\isachardoublequoteclose}{\isacharparenright}\isanewline
-\isacommand{prefer}\isamarkupfalse%
+\ \ \isacommand{prefer}\isamarkupfalse%
 \ {\isadigit{4}}\ \isacommand{prefer}\isamarkupfalse%
 \ {\isadigit{7}}\ \isacommand{using}\isamarkupfalse%
 \ tank{\isacharunderscore}diff{\isacharunderscore}inv\ assms\ \isacommand{apply}\isamarkupfalse%
 \ force{\isacharplus}\isanewline
-\isacommand{using}\isamarkupfalse%
+\ \ \isacommand{using}\isamarkupfalse%
 \ assms\ tank{\isacharunderscore}inv{\isacharunderscore}arith{\isadigit{1}}\ tank{\isacharunderscore}inv{\isacharunderscore}arith{\isadigit{2}}\ \isacommand{by}\isamarkupfalse%
 \ rel{\isacharunderscore}auto{\isacharprime}\isanewline
 \end{isabellebody}
 
-As in Example~\ref{ex:therm-sol}, the rule applications blast away the
-program structure. The first two lines discharge obligations for the discrete
-part, while the continuous part is discharged using (twice) the rule
-(\ref{eq:h-invg}), followed by the fact that $dI\, h_m\, h_M\, k$ is an
-invariant for $f\, k$
-(\isa{tank{\isacharunderscore}diff{\isacharunderscore}inv}) and arithmetical properties. \qed
+\noindent As in Example~\ref{ex:therm-sol}, tactic \isa{hyb-hoare} blasts away
+the control structure of this program. The second line of the proof
+uses lemma \isa{tank-diff-inv} to check that \isa{dI} is an invariant,
+following the procedure outlined (technical details can be found in
+our repository). The final line discharges the remaining arithmetic
+proof obligations using auxiliary lemmas. 
+\qed
 \end{example}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -952,12 +953,17 @@ approach presented.
 
 \begin{example}[Thermostat refinement via solutions]\label{ex:therm-rsol}
   We now construct program \isa{therm} from Example~\ref{ex:therm-sol}
-  by step-wise refinement:
+  by step-wise refinement using the rules of $\dR$:
 \begin{equation*}
-\isa{\isactrlbold {\isacharbrackleft}I\ $T_l$\ $T_h${\isacharcomma}\ I\ $T_l$\ $T_h$\isactrlbold {\isacharbrackright}\ {\isasymge}\ therm\ $T_l$\ $T_h$\ a\ $T_u$\ {\isasymtau}}
+\isa{\isactrlbold {\isacharbrackleft}I\ $T_l$\ $T_h${\isacharcomma}\ I\ $T_l$\ $T_h$\isactrlbold {\isacharbrackright}\ {\isasymge}\ therm\ $T_l$\ $T_h$\ a\ $T_u$\ {\isasymtau}}.
 \end{equation*} 
-We prove separate lemmas for the discrete control and the continuous
-dynamics and compose them step by step.
+First we refine hybrid programs for the discrete control and the
+continuous dynamics separately from specification statements. Then we
+combine them into a refinement statement of the loop, and finally we
+add refinements for the variable initialisations to construct the
+entire program from its specification.  
+
+\gin{shall we show proof of the control part? add refinement tactic?}
 \begin{isabellebody}
 \isanewline
 \isacommand{lemma}\isamarkupfalse%
@@ -968,61 +974,41 @@ dynamics and compose them step by step.
 \ R{\isacharunderscore}therm{\isacharunderscore}dyn{\isacharcolon}\isanewline
 \ \ \isakeyword{assumes}\ {\isachardoublequoteopen}a\ {\isachargreater}\ {\isadigit{0}}{\isachardoublequoteclose}\ \isakeyword{and}\ {\isachardoublequoteopen}{\isadigit{0}}\ {\isasymle}\ {\isasymtau}{\isachardoublequoteclose}\ \isakeyword{and}\ {\isachardoublequoteopen}{\isadigit{0}}\ {\isacharless}\ $T_l${\isachardoublequoteclose}\ \isakeyword{and}\ {\isachardoublequoteopen}$T_h$\ {\isacharless}\ $T_u${\isachardoublequoteclose}\isanewline
 \ \ \isakeyword{shows}\ {\isachardoublequoteopen}\isactrlbold {\isacharbrackleft}I\ $T_l$\ $T_h$\ {\isasymand}\ t\ {\isacharequal}\ {\isadigit{0}}\ {\isasymand}\ $T_0$\ {\isacharequal}\ T{\isacharcomma}\ I\ $T_l$\ $T_h$\isactrlbold {\isacharbrackright}\ {\isasymge}\ dyn\ $T_l$\ $T_h$\ a\ $T_u$\ {\isasymtau}{\isachardoublequoteclose}\isanewline
-\isacommand{apply}\isamarkupfalse%
+\ \ \isacommand{apply}\isamarkupfalse%
 {\isacharparenleft}rule\ order{\isacharunderscore}trans{\isacharcomma}\ rule\ R{\isacharunderscore}cond{\isacharunderscore}mono{\isacharparenright}\isanewline
 \ \ \isacommand{using}\isamarkupfalse%
 \ R{\isacharunderscore}therm{\isacharunderscore}dyn{\isacharunderscore}down{\isacharbrackleft}OF\ assms{\isacharbrackright}\ R{\isacharunderscore}therm{\isacharunderscore}dyn{\isacharunderscore}up{\isacharbrackleft}OF\ assms{\isacharbrackright}\isanewline 
-\isacommand{by}\isamarkupfalse%
+\ \ \isacommand{by}\isamarkupfalse%
 \ {\isacharparenleft}auto\ intro{\isacharbang}{\isacharcolon}\ R{\isacharunderscore}cond{\isacharparenright}\isanewline
-\end{isabellebody}
-For the dynamics, we use (\ref{eq:r-evl}) to prove that
-each branch of the if-statement refines the specification
-(\isa{R{\isacharunderscore}therm{\isacharunderscore}dyn{\isacharunderscore}down/up}). Then
-we combine them by transitivity and (\ref{eq:r-cond}).
 
-Finally, we show that the loop of the composition of the
-specifications for the control and the dynamics refines the initial
-specification. 
-
-\gin{again too many OFs. Otherwise snd proof might fit into one
-  line. And we need a refinement tactic that picks the right rule and
-  applies it.}
-
-\begin{isabellebody}
-\isanewline
 \isacommand{lemma}\isamarkupfalse%
 \ R{\isacharunderscore}therm{\isacharunderscore}loop{\isacharcolon}\ {\isachardoublequoteopen}\isactrlbold {\isacharbrackleft}I\ $T_l$\ $T_h${\isacharcomma}\ I\ $T_l$\ $T_h$\isactrlbold {\isacharbrackright}\ {\isasymge}\ \isanewline
 \ \ LOOP\ \isactrlbold {\isacharbrackleft}I\ $T_l$\ $T_h${\isacharcomma}\ I\ $T_l$\ $T_h$\ {\isasymand}\ t\ {\isacharequal}\ {\isadigit{0}}\ {\isasymand}\ $T_0$\ {\isacharequal}\ T\isactrlbold {\isacharbrackright}{\isacharsemicolon}\ \isactrlbold {\isacharbrackleft}I\ $T_l$\ $T_h$\ {\isasymand}\ t\ {\isacharequal}\ {\isadigit{0}}\ {\isasymand}\ $T_0$\ {\isacharequal}\ T{\isacharcomma}\ I\ $T_l$\ $T_h$\isactrlbold {\isacharbrackright}\isanewline
 \ \ INV\ I\ $T_l$\ $T_h${\isachardoublequoteclose}\isanewline
-\isacommand{by}\isamarkupfalse%
+\ \ \isacommand{by}\isamarkupfalse%
 \ {\isacharparenleft}intro\ R{\isacharunderscore}loop\ R{\isacharunderscore}seq{\isacharcomma}\ simp{\isacharunderscore}all{\isacharparenright}\isanewline
 \isanewline
 \isacommand{lemma}\isamarkupfalse%
 \ R{\isacharunderscore}thermostat{\isacharunderscore}flow{\isacharcolon}\ \isanewline
 \ \ \isakeyword{assumes}\ {\isachardoublequoteopen}a\ {\isachargreater}\ {\isadigit{0}}{\isachardoublequoteclose}\ \isakeyword{and}\ {\isachardoublequoteopen}{\isadigit{0}}\ {\isasymle}\ {\isasymtau}{\isachardoublequoteclose}\ \isakeyword{and}\ {\isachardoublequoteopen}{\isadigit{0}}\ {\isacharless}\ $T_l${\isachardoublequoteclose}\ \isakeyword{and}\ {\isachardoublequoteopen}$T_h$\ {\isacharless}\ $T_u${\isachardoublequoteclose}\isanewline
 \ \ \isakeyword{shows}\ {\isachardoublequoteopen}\isactrlbold {\isacharbrackleft}I\ $T_l$\ $T_h${\isacharcomma}\ I\ $T_l$\ $T_h$\isactrlbold {\isacharbrackright}\ {\isasymge}\ therm\ $T_l$\ $T_h$\ a\ $T_u$\ {\isasymtau}{\isachardoublequoteclose}\isanewline
-\isacommand{by}\isamarkupfalse%
-\ {\isacharparenleft}intro\ order{\isacharunderscore}trans{\isacharbrackleft}OF\ {\isacharunderscore}\ R{\isacharunderscore}therm{\isacharunderscore}loop{\isacharbrackright}\ R{\isacharunderscore}loop{\isacharunderscore}mono\ \isanewline
-\ \ \ \ \ \ R{\isacharunderscore}seq{\isacharunderscore}mono\ R{\isacharunderscore}therm{\isacharunderscore}ctrl\ R{\isacharunderscore}therm{\isacharunderscore}dyn{\isacharbrackleft}OF\ assms{\isacharbrackright}{\isacharparenright}\isanewline
+\ \ \isacommand{by}\isamarkupfalse%
+\ {\isacharparenleft}intro\ order{\isacharunderscore}trans{\isacharbrackleft}OF\ {\isacharunderscore}\ R{\isacharunderscore}therm{\isacharunderscore}loop{\isacharbrackright}\ R{\isacharunderscore}loop{\isacharunderscore}mono\
+R{\isacharunderscore}seq{\isacharunderscore}mono \isanewline 
+\ \ \ \ \ \ \ R{\isacharunderscore}therm{\isacharunderscore}ctrl\ R{\isacharunderscore}therm{\isacharunderscore}dyn{\isacharbrackleft}OF\ assms{\isacharbrackright}{\isacharparenright}\isanewline
 \end{isabellebody}
-The final
-result\isa{R{\isacharunderscore}thermostat{\isacharunderscore}flow} is
-then a combination of these lemmas.\qed
+\gin{Comments?}\qed
 \end{example}
 
 \begin{example}[Water tank refinement via invariants]\label{ex:tank-rinv}
-  We use invariants to refine \isa{tank{\isacharunderscore}dinv} from
-  Example~\ref{ex:tank-inv}. This time we supply a single structured
-  proof. We omit uncritical parts using ellipses
-  $\langle \dots\rangle$ and abbreviate long expressions with
-  schematic variables
-  \isa{{\isacharparenleft}{\isacharquery}ctrl{\isacharunderscore}ref{\isacharcomma}{\isacharquery}dyn{\isacharunderscore}ref{\isacharparenright}}. We
-  follow the strategy of Example~\ref{ex:therm-rsol} except that the
-  dynamics is refined using the fact that $dI\, h_m\, h_M\, k$ from
-  Example~\ref{ex:tank-inv} is an invariant for $f\, k$.
-
-\gin{This is not how refinement works. You do it step by step like in
-  the exercises in my lecture. As is it looks messy. And is the indentation right?}
+  Alternatively we can use the differential invariant to refine
+  \isa{tank{\isacharunderscore}dinv} from Example~\ref{ex:tank-inv}
+  using $\dR$. This time we supply a single structured proof to show
+  another style of refinement. We omit some parts of the proof
+and
+  abbreviate long expressions with schematic variables.
+ 
+\gin{redo proof. what is the first proof good for?}
 \begin{isabellebody}
 \isanewline
 \isacommand{lemma}\isamarkupfalse%
@@ -1161,9 +1147,11 @@ program~\cite{Platzer18}
 {\isacharparenleft}{\isasymphi}\ g{\isacharparenright}\
 {\isacharparenleft}x\ {\isasymge}\ {\isadigit{0}}{\isacharparenright}\
 T{\isacharsemicolon} {\isacharparenleft}IF\ {\isacharparenleft}v\ {\isacharequal}\ {\isadigit{0}}{\isacharparenright}\ THEN\ {\isacharparenleft}v\ {\isacharcolon}{\isacharcolon}{\isacharequal}\ {\isacharminus}v{\isacharparenright}\ ELSE\ skip{\isacharparenright}{\isacharparenright}\ \isanewline
-\ \ \  INV\ {\isacharparenleft}{\isadigit{0}}\ {\isasymle}\ x\ {\isasymand}\ {\isadigit{2}}\ {\isasymcdot}\ g\ {\isasymcdot}\ x\ {\isacharequal}\ {\isadigit{2}}\ {\isasymcdot}\ g\ {\isasymcdot}\ h\ {\isacharplus}\ v\ {\isasymcdot}\ v{\isacharparenright}{\isachardoublequoteclose}\isanewline
+\ \   INV\ {\isacharparenleft}{\isadigit{0}}\ {\isasymle}\ x\ {\isasymand}\ {\isadigit{2}}\ {\isasymcdot}\ g\ {\isasymcdot}\ x\ {\isacharequal}\ {\isadigit{2}}\ {\isasymcdot}\ g\ {\isasymcdot}\ h\ {\isacharplus}\ v\ {\isasymcdot}\ v{\isacharparenright}{\isachardoublequoteclose}\isanewline
 \end{isabellebody}
-Its loop invariant is a conjunction of the guard $G$ and a variation of the law of conservation of energy. The correctness specification in Hoare-triple style and its refinement version are then formalised as below
+\noindent Its loop invariant is a conjunction of the guard $G$ with a
+variation of the law of energy conservation. The correctness
+specification and proof with $\dH$ and $\dR$ are then straightforward.
 %\begin{align*}
 %	\mathsf{Cntrl} &= \IF {(\lambda\, s.\ s_x=0)} {v:=(\lambda\, s.\ - s_v)} \mathit{skip},\\
 %	\mathsf{Ball} &= ({\mathbf{evol}\, \flow\, G}\,  {;}\, \mathsf{Cntrl})^\ast.
@@ -1179,7 +1167,7 @@ Its loop invariant is a conjunction of the guard $G$ and a variation of the law 
 \ bouncing{\isacharunderscore}ball{\isacharunderscore}dyn{\isacharcolon}\ \isanewline
 \ \ \isakeyword{assumes}\ {\isachardoublequoteopen}g\ {\isacharless}\ {\isadigit{0}}{\isachardoublequoteclose}\ \isakeyword{and}\ {\isachardoublequoteopen}h\ {\isasymge}\ {\isadigit{0}}{\isachardoublequoteclose}\isanewline
 \ \ \isakeyword{shows}\ {\isachardoublequoteopen}\ \isactrlbold {\isacharbraceleft}x\ {\isacharequal}\ h\ {\isasymand}\ v\ {\isacharequal}\ {\isadigit{0}}\isactrlbold {\isacharbraceright}\ bb{\isacharunderscore}evol\ g\ h\ T\ \isactrlbold {\isacharbraceleft}{\isadigit{0}}\ {\isasymle}\ x\ {\isasymand}\ x\ {\isasymle}\ h\isactrlbold {\isacharbraceright}{\isachardoublequoteclose}\isanewline
-\isacommand{apply}\isamarkupfalse%
+\ \ \isacommand{apply}\isamarkupfalse%
 {\isacharparenleft}hyb{\isacharunderscore}hoare\ {\isachardoublequoteopen}U{\isacharparenleft}{\isadigit{0}}\ {\isasymle}\ x\ {\isasymand}\ {\isadigit{2}}\ {\isasymcdot}\ g\ {\isasymcdot}\ x\ {\isacharequal}\ {\isadigit{2}}\ {\isasymcdot}\ g\ {\isasymcdot}\ h\ {\isacharplus}\ v\ {\isasymcdot}\ v{\isacharparenright}{\isachardoublequoteclose}{\isacharparenright}\isanewline
 \ \ \isacommand{using}\isamarkupfalse%
 \ assms\ \isacommand{by}\isamarkupfalse%
@@ -1191,16 +1179,9 @@ Its loop invariant is a conjunction of the guard $G$ and a variation of the law 
 \ \ $\langle \isa{\dots}\rangle$\ \isacommand{by}\isamarkupfalse%
 \ {\isacharparenleft}rule\ R{\isacharunderscore}g{\isacharunderscore}evol{\isacharunderscore}rule{\isacharcomma}\ rel{\isacharunderscore}auto{\isacharprime}\ simp{\isacharcolon}\ bb{\isacharunderscore}real{\isacharunderscore}arith{\isacharparenright}\isanewline
 \end{isabellebody}
+\gin{expand refinement proof? add comments.}
 
-For the Hoare triple version, there is no need to supply any flow as
-it is already annotated in the specification. Therefore, as soon as
-the only sequential composition is discharged, the proof is finished
-automatically using basic arithmetic
-(\isa{bb{\isacharunderscore}real{\isacharunderscore}arith}). For the
-refinement version, the proof for the control is longer (abbreviated with ellipsis) as we
-refine each of its atomic programs. However, the dynamics is quickly
-discharged with (\ref{eq:h-evlfl}) and the same arithmetical
-facts. \qed
+\qed
 \end{example}
 
 
