@@ -389,11 +389,11 @@ where $s \in S$ and $v, v' \in A$.
 
 Lenses $x$ and $y$ can also be checked for independence using the
 predicate $x \lindep y$ to distinguish variables. Each program
-variable is a lens $x : \reals \lto S$. State spaces
+variable is a lens $x : \reals \lto S$. State spaces of the form
 $S \subseteq \reals^n$ thus have $n$ independent lenses
 $x_1 \cdots x_n$ corresponding to projections from $\reals^n$. Yet
-more complex state spaces using matrices or infinite Euclidean
-spaces can be supported as well.
+more complex state spaces using matrices or infinite Euclidean spaces
+can be supported as well.
 
 Systems of equations are modelled using vector fields: functions of
 type $S\to S$ on some open set $S$. Geometrically, vector field $f$
@@ -535,6 +535,12 @@ semantics yields the expected theorem:
 \begin{equation}
 \left\{P[e/x]\right\}\,  x:=e\, \{P\}. \label{eq:h-assgn}\tag{h-assgn}
 \end{equation}
+
+% Optimised assignment laws, in case it's needed.
+% \begin{equation}
+% \left\{x = e[x_0/x] \wedge p[x_0/x]\right\}, S \, \left\{q\right\} \Longrightarrow \left\{p \right\}\, x := e \seq S \,\left\{ q \right\}
+% \end{equation}
+
 Hence all we need to add to Hoare logic is a rule for evolution
 commands.  We restrict our attention to Lipschitz-continuous vector
 fields for which unique solutions to IVPs are guaranteed by
