@@ -341,7 +341,10 @@ next
     using hyps main \<open>s \<in> S\<close> by auto
 qed
 
-lemma H_g_ode_ivl:
+lemma H_g_ode_ivl: "\<tau> \<ge> 0 \<Longrightarrow> \<tau> \<in> T \<Longrightarrow>  (\<forall>s\<in>S. \<lbrakk>P\<rbrakk>\<^sub>e s \<longrightarrow> (\<forall>t\<in>{0..\<tau>}. (\<forall>\<tau>\<in>{0..t}. \<lbrakk>G\<rbrakk>\<^sub>e (\<phi> \<tau> s)) \<longrightarrow> \<lbrakk>Q\<rbrakk>\<^sub>e (\<phi> t s))) \<Longrightarrow> Hoare \<lceil>P\<rceil> (x\<acute>= f & G on {0..\<tau>} S @ 0) \<lceil>Q\<rceil>"
+  unfolding sH_g_ode_ivl by simp
+
+lemma H_g_ode_ivl2:
   assumes "P = (U(&\<^bold>v \<in> \<guillemotleft>S\<guillemotright>) \<Rightarrow> (\<^bold>\<forall>t\<in>\<guillemotleft>{0..\<tau>}\<guillemotright> \<bullet> (\<^bold>\<forall> \<tau> \<in> \<guillemotleft>{0..t}\<guillemotright> \<bullet> G\<lbrakk>\<guillemotleft>\<phi> \<tau>\<guillemotright> |> &\<^bold>v/&\<^bold>v\<rbrakk>) \<Rightarrow> Q\<lbrakk>\<guillemotleft>\<phi> t\<guillemotright> |> &\<^bold>v/&\<^bold>v\<rbrakk>))" 
      and "\<tau> \<ge> 0" and "\<tau> \<in> T"
   shows "Hoare \<lceil>P\<rceil> (x\<acute>= f & G on {0..\<tau>} S @ 0) \<lceil>Q\<rceil>"

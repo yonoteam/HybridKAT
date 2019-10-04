@@ -188,10 +188,10 @@ proof-
 qed
 
 abbreviation "bb_evol g h T \<equiv> 
-  (LOOP (
-    (EVOL (\<phi> g) (x \<ge> 0) T);
-    (IF (v = 0) THEN (v ::= -v) ELSE skip)) 
-  INV (0 \<le> x \<and> 2 \<cdot> g \<cdot> x = 2 \<cdot> g \<cdot> h + v \<cdot> v))"
+  LOOP 
+    EVOL (\<phi> g) (x \<ge> 0) T;
+    (IF (v = 0) THEN (v ::= -v) ELSE skip)
+  INV (0 \<le> x \<and> 2 \<cdot> g \<cdot> x = 2 \<cdot> g \<cdot> h + v \<cdot> v)"
 
 lemma bouncing_ball_dyn: 
   assumes "g < 0" and "h \<ge> 0"
@@ -254,7 +254,7 @@ At most every @{text "\<tau>"} minutes, it sets its chronometer to @{term "0::re
 the room temperature, and it turns the heater on (or off) based on this reading. The temperature 
 follows the ODE @{text "T' = - a * (T - c)"} where @{text "c = L \<ge> 0"} when the heater 
 is on, and @{text "c = 0"} when it is off. We prove that the thermostat keeps the room's 
-temperature between @{text "T\<^sub>m"} and @{text "T\<^sub>M"}. \<close>
+temperature between @{text "T\<^sub>l"} and @{text "T\<^sub>h"}. \<close>
 
 hide_const t
 
@@ -267,12 +267,12 @@ abbreviation ftherm :: "real \<Rightarrow> real \<Rightarrow> (real, 4) vec \<Ri
   where "f a c \<equiv> \<lbrakk>[T \<mapsto>\<^sub>s - (a * (T - c)), T\<^sub>0 \<mapsto>\<^sub>s 0, \<theta> \<mapsto>\<^sub>s 0, t \<mapsto>\<^sub>s 1]\<rbrakk>\<^sub>e"
 
 abbreviation therm_guard :: "real \<Rightarrow> real \<Rightarrow> real \<Rightarrow> real \<Rightarrow> (real^4) upred" ("G")
-  where "G T\<^sub>m T\<^sub>M a L \<equiv> U(t \<le> - (ln ((L-(if L=0 then T\<^sub>m else T\<^sub>M))/(L-T\<^sub>0)))/a)"
+  where "G T\<^sub>l T\<^sub>h a L \<equiv> U(t \<le> - (ln ((L-(if L=0 then T\<^sub>l else T\<^sub>h))/(L-T\<^sub>0)))/a)"
 
 no_utp_lift "therm_guard" (0 1 2 3)
 
 abbreviation therm_loop_inv :: "real \<Rightarrow> real \<Rightarrow> (real^4) upred" ("I")
-  where "I T\<^sub>m T\<^sub>M \<equiv> U(T\<^sub>m \<le> T \<and> T \<le> T\<^sub>M \<and> (\<theta> = 0 \<or> \<theta> = 1))"
+  where "I T\<^sub>l T\<^sub>h \<equiv> U(T\<^sub>l \<le> T \<and> T \<le> T\<^sub>h \<and> (\<theta> = 0 \<or> \<theta> = 1))"
 
 no_utp_lift "therm_loop_inv" (0 1)
 
@@ -280,17 +280,17 @@ abbreviation therm_flow :: "real \<Rightarrow> real \<Rightarrow> real \<Rightar
   where "\<phi> a c \<tau> \<equiv> [T \<mapsto>\<^sub>s - exp(-a * \<tau>) * (c - T) + c, t \<mapsto>\<^sub>s \<tau> + t, T\<^sub>0 \<mapsto>\<^sub>s T\<^sub>0, \<theta> \<mapsto>\<^sub>s \<theta>]"
 
 abbreviation therm_ctrl :: "real \<Rightarrow> real \<Rightarrow> (real^4) nd_fun" ("ctrl")
-  where "ctrl T\<^sub>m T\<^sub>M \<equiv> 
+  where "ctrl T\<^sub>l T\<^sub>h \<equiv> 
   (t ::= 0); (T\<^sub>0 ::= T);
-  (IF (\<theta> = 0 \<and> T\<^sub>0 \<le> T\<^sub>m + 1) THEN (\<theta> ::= 1) ELSE 
-   IF (\<theta> = 1 \<and> T\<^sub>0 \<ge> T\<^sub>M - 1) THEN (\<theta> ::= 0) ELSE skip)"
+  (IF (\<theta> = 0 \<and> T\<^sub>0 \<le> T\<^sub>l + 1) THEN (\<theta> ::= 1) ELSE 
+   IF (\<theta> = 1 \<and> T\<^sub>0 \<ge> T\<^sub>h - 1) THEN (\<theta> ::= 0) ELSE skip)"
 
 abbreviation therm_dyn :: "real \<Rightarrow> real \<Rightarrow> real \<Rightarrow> real \<Rightarrow> real \<Rightarrow> (real^4) nd_fun" ("dyn")
-  where "dyn T\<^sub>m T\<^sub>M a L \<tau> \<equiv> 
-  (IF (\<theta> = 0) THEN (x\<acute>= f a 0 & G T\<^sub>m T\<^sub>M a 0 on {0..\<tau>} UNIV @ 0) 
-   ELSE (x\<acute>= f a L & G T\<^sub>m T\<^sub>M a L on {0..\<tau>} UNIV @ 0))"
+  where "dyn T\<^sub>l T\<^sub>h a L \<tau> \<equiv> 
+  IF (\<theta> = 0) THEN x\<acute>= f a 0 & G T\<^sub>l T\<^sub>h a 0 on {0..\<tau>} UNIV @ 0 
+   ELSE x\<acute>= f a L & G T\<^sub>l T\<^sub>h a L on {0..\<tau>} UNIV @ 0"
 
-abbreviation "therm T\<^sub>m T\<^sub>M a L \<tau> \<equiv> LOOP (ctrl T\<^sub>m T\<^sub>M ; dyn T\<^sub>m T\<^sub>M a L \<tau>) INV (I T\<^sub>m T\<^sub>M)"
+abbreviation "therm T\<^sub>l T\<^sub>h a L \<tau> \<equiv> LOOP (ctrl T\<^sub>l T\<^sub>h ; dyn T\<^sub>l T\<^sub>h a L \<tau>) INV (I T\<^sub>l T\<^sub>h)"
 
 \<comment> \<open>Verified by providing solutions \<close>
 
@@ -325,50 +325,50 @@ lemma local_flow_therm: "a > 0 \<Longrightarrow> local_flow (f a L) UNIV UNIV (\
 
 lemma therm_dyn_down:
   fixes T::real
-  assumes "a > 0" and Thyps: "0 < T\<^sub>m" "T\<^sub>m \<le> T" "T \<le> T\<^sub>M"
-    and thyps: "0 \<le> (\<tau>::real)" "\<forall>\<tau>\<in>{0..\<tau>}. \<tau> \<le> - (ln (T\<^sub>m / T) / a) "
-  shows "T\<^sub>m \<le> exp (-a * \<tau>) * T" and "exp (-a * \<tau>) * T \<le> T\<^sub>M"
+  assumes "a > 0" and Thyps: "0 < T\<^sub>l" "T\<^sub>l \<le> T" "T \<le> T\<^sub>h"
+    and thyps: "0 \<le> (\<tau>::real)" "\<forall>\<tau>\<in>{0..\<tau>}. \<tau> \<le> - (ln (T\<^sub>l / T) / a) "
+  shows "T\<^sub>l \<le> exp (-a * \<tau>) * T" and "exp (-a * \<tau>) * T \<le> T\<^sub>h"
 proof-
-  have "0 \<le> \<tau> \<and> \<tau> \<le> - (ln (T\<^sub>m / T) / a)"
+  have "0 \<le> \<tau> \<and> \<tau> \<le> - (ln (T\<^sub>l / T) / a)"
     using thyps by auto
-  hence "ln (T\<^sub>m / T) \<le> - a * \<tau> \<and> - a * \<tau> \<le> 0"
+  hence "ln (T\<^sub>l / T) \<le> - a * \<tau> \<and> - a * \<tau> \<le> 0"
     using assms(1) divide_le_cancel by fastforce
-  also have "T\<^sub>m / T > 0"
+  also have "T\<^sub>l / T > 0"
     using Thyps by auto
-  ultimately have obs: "T\<^sub>m / T \<le> exp (-a * \<tau>)" "exp (-a * \<tau>) \<le> 1"
+  ultimately have obs: "T\<^sub>l / T \<le> exp (-a * \<tau>)" "exp (-a * \<tau>) \<le> 1"
     using exp_ln exp_le_one_iff by (metis exp_less_cancel_iff not_less, simp)
-  thus "T\<^sub>m \<le> exp (-a * \<tau>) * T"
+  thus "T\<^sub>l \<le> exp (-a * \<tau>) * T"
     using Thyps by (simp add: pos_divide_le_eq)
-  show "exp (-a * \<tau>) * T \<le> T\<^sub>M"
+  show "exp (-a * \<tau>) * T \<le> T\<^sub>h"
     using Thyps mult_left_le_one_le[OF _ exp_ge_zero obs(2), of T] 
       less_eq_real_def order_trans_rules(23) by blast
 qed
 
 lemma therm_dyn_up:
   fixes T::real
-  assumes "a > 0" and Thyps: "T\<^sub>m \<le> T" "T \<le> T\<^sub>M" "T\<^sub>M < (L::real)"
-    and thyps: "0 \<le> \<tau>" "\<forall>\<tau>\<in>{0..\<tau>}. \<tau> \<le> - (ln ((L - T\<^sub>M) / (L - T)) / a) "
-  shows "L - T\<^sub>M \<le> exp (-(a * \<tau>)) * (L - T)" 
-    and "L - exp (-(a * \<tau>)) * (L - T) \<le> T\<^sub>M" 
-    and "T\<^sub>m \<le> L - exp (-(a * \<tau>)) * (L - T)"
+  assumes "a > 0" and Thyps: "T\<^sub>l \<le> T" "T \<le> T\<^sub>h" "T\<^sub>h < (L::real)"
+    and thyps: "0 \<le> \<tau>" "\<forall>\<tau>\<in>{0..\<tau>}. \<tau> \<le> - (ln ((L - T\<^sub>h) / (L - T)) / a) "
+  shows "L - T\<^sub>h \<le> exp (-(a * \<tau>)) * (L - T)" 
+    and "L - exp (-(a * \<tau>)) * (L - T) \<le> T\<^sub>h" 
+    and "T\<^sub>l \<le> L - exp (-(a * \<tau>)) * (L - T)"
 proof-
-  have "0 \<le> \<tau> \<and> \<tau> \<le> - (ln ((L - T\<^sub>M) / (L - T)) / a)"
+  have "0 \<le> \<tau> \<and> \<tau> \<le> - (ln ((L - T\<^sub>h) / (L - T)) / a)"
     using thyps by auto
-  hence "ln ((L - T\<^sub>M) / (L - T)) \<le> - a * \<tau> \<and> - a * \<tau> \<le> 0"
+  hence "ln ((L - T\<^sub>h) / (L - T)) \<le> - a * \<tau> \<and> - a * \<tau> \<le> 0"
     using assms(1) divide_le_cancel by fastforce
-  also have "(L - T\<^sub>M) / (L - T) > 0"
+  also have "(L - T\<^sub>h) / (L - T) > 0"
     using Thyps by auto
-  ultimately have "(L - T\<^sub>M) / (L - T) \<le> exp (-a * \<tau>) \<and> exp (-a * \<tau>) \<le> 1"
+  ultimately have "(L - T\<^sub>h) / (L - T) \<le> exp (-a * \<tau>) \<and> exp (-a * \<tau>) \<le> 1"
     using exp_ln exp_le_one_iff by (metis exp_less_cancel_iff not_less)
   moreover have "L - T > 0"
     using Thyps by auto
-  ultimately have obs: "(L - T\<^sub>M) \<le> exp (-a * \<tau>) * (L - T) \<and> exp (-a * \<tau>) * (L - T) \<le> (L - T)"
+  ultimately have obs: "(L - T\<^sub>h) \<le> exp (-a * \<tau>) * (L - T) \<and> exp (-a * \<tau>) * (L - T) \<le> (L - T)"
     by (simp add: pos_divide_le_eq)
-  thus "(L - T\<^sub>M) \<le> exp (-(a * \<tau>)) * (L - T)"
+  thus "(L - T\<^sub>h) \<le> exp (-(a * \<tau>)) * (L - T)"
     by auto
-  thus "L - exp (-(a * \<tau>)) * (L - T) \<le> T\<^sub>M"
+  thus "L - exp (-(a * \<tau>)) * (L - T) \<le> T\<^sub>h"
     by auto
-  show "T\<^sub>m \<le> L - exp (-(a * \<tau>)) * (L - T)"
+  show "T\<^sub>l \<le> L - exp (-(a * \<tau>)) * (L - T)"
     using Thyps and obs by auto
 qed
 
@@ -393,41 +393,41 @@ lemma sH_condl: "\<^bold>{P\<^bold>} (Z; (IF B THEN X ELSE Y)) \<^bold>{Q\<^bold
       rule_tac x=x in exI, pred_simp, simp)+
 
 lemma thermostat_flow: 
-  assumes "0 < a" and "0 \<le> \<tau>" and "0 < T\<^sub>m" and "T\<^sub>M < L"
-  shows "\<^bold>{I T\<^sub>m T\<^sub>M\<^bold>} therm T\<^sub>m T\<^sub>M a L \<tau> \<^bold>{I T\<^sub>m T\<^sub>M\<^bold>}"
-  apply(hyb_hoare "U(I T\<^sub>m T\<^sub>M \<and> t=0 \<and> T\<^sub>0 = T)")
+  assumes "0 < a" and "0 \<le> \<tau>" and "0 < T\<^sub>l" and "T\<^sub>h < L"
+  shows "\<^bold>{I T\<^sub>l T\<^sub>h\<^bold>} therm T\<^sub>l T\<^sub>h a L \<tau> \<^bold>{I T\<^sub>l T\<^sub>h\<^bold>}"
+  apply(hyb_hoare "U(I T\<^sub>l T\<^sub>h \<and> t=0 \<and> T\<^sub>0 = T)")
               prefer 4 prefer 8 using local_flow_therm assms apply force+
   using assms therm_dyn_up therm_dyn_down by rel_auto'
 
 \<comment> \<open>Refined by providing solutions \<close>
 
 lemma R_therm_dyn_down: 
-  assumes "a > 0" and "0 \<le> \<tau>" and "0 < T\<^sub>m" and "T\<^sub>M < L"
-  shows "\<^bold>[\<theta> = 0 \<and> I T\<^sub>m T\<^sub>M \<and> t = 0 \<and> T\<^sub>0 = T, I T\<^sub>m T\<^sub>M\<^bold>] \<ge> (x\<acute>= f a 0 & G T\<^sub>m T\<^sub>M a 0 on {0..\<tau>} UNIV @ 0)"
+  assumes "a > 0" and "0 \<le> \<tau>" and "0 < T\<^sub>l" and "T\<^sub>h < L"
+  shows "\<^bold>[\<theta> = 0 \<and> I T\<^sub>l T\<^sub>h \<and> t = 0 \<and> T\<^sub>0 = T, I T\<^sub>l T\<^sub>h\<^bold>] \<ge> (x\<acute>= f a 0 & G T\<^sub>l T\<^sub>h a 0 on {0..\<tau>} UNIV @ 0)"
   apply(rule local_flow.R_g_ode_ivl[OF local_flow_therm])
   using assms apply(simp_all, pred_simp)
-  using therm_dyn_down[OF assms(1,3), of _ T\<^sub>M] by auto
+  using therm_dyn_down[OF assms(1,3), of _ T\<^sub>h] by auto
 
 lemma R_therm_dyn_up: 
-  assumes "a > 0" and "0 \<le> \<tau>" and "0 < T\<^sub>m" and "T\<^sub>M < L"
-  shows "\<^bold>[\<not> \<theta> = 0 \<and> I T\<^sub>m T\<^sub>M \<and> t = 0 \<and> T\<^sub>0 = T, I T\<^sub>m T\<^sub>M\<^bold>] \<ge> (x\<acute>= f a L & G T\<^sub>m T\<^sub>M a L on {0..\<tau>} UNIV @ 0)"
+  assumes "a > 0" and "0 \<le> \<tau>" and "0 < T\<^sub>l" and "T\<^sub>h < L"
+  shows "\<^bold>[\<not> \<theta> = 0 \<and> I T\<^sub>l T\<^sub>h \<and> t = 0 \<and> T\<^sub>0 = T, I T\<^sub>l T\<^sub>h\<^bold>] \<ge> (x\<acute>= f a L & G T\<^sub>l T\<^sub>h a L on {0..\<tau>} UNIV @ 0)"
   apply(rule local_flow.R_g_ode_ivl[OF local_flow_therm])
   using assms apply(simp_all, pred_simp)
-  using therm_dyn_up[OF assms(1) _ _ assms(4), of T\<^sub>m] by auto
+  using therm_dyn_up[OF assms(1) _ _ assms(4), of T\<^sub>l] by auto
 
 lemma R_therm_dyn:
-  assumes "a > 0" and "0 \<le> \<tau>" and "0 < T\<^sub>m" and "T\<^sub>M < L"
-  shows "\<^bold>[I T\<^sub>m T\<^sub>M \<and> t = 0 \<and> T\<^sub>0 = T, I T\<^sub>m T\<^sub>M\<^bold>] \<ge> dyn T\<^sub>m T\<^sub>M a L \<tau>"
+  assumes "a > 0" and "0 \<le> \<tau>" and "0 < T\<^sub>l" and "T\<^sub>h < L"
+  shows "\<^bold>[I T\<^sub>l T\<^sub>h \<and> t = 0 \<and> T\<^sub>0 = T, I T\<^sub>l T\<^sub>h\<^bold>] \<ge> dyn T\<^sub>l T\<^sub>h a L \<tau>"
   apply(rule order_trans, rule R_cond_mono)
   using R_therm_dyn_down[OF assms] R_therm_dyn_up[OF assms] by (auto intro!: R_cond)
 
-lemma R_therm_assign1: "\<^bold>[I T\<^sub>m T\<^sub>M, I T\<^sub>m T\<^sub>M \<and> t = 0\<^bold>] \<ge> (t ::= 0)"
+lemma R_therm_assign1: "\<^bold>[I T\<^sub>l T\<^sub>h, I T\<^sub>l T\<^sub>h \<and> t = 0\<^bold>] \<ge> (t ::= 0)"
   by (rule R_assign_rule, pred_simp)
 
-lemma R_therm_assign2: "\<^bold>[I T\<^sub>m T\<^sub>M \<and> t = 0, I T\<^sub>m T\<^sub>M \<and> t = 0 \<and> T\<^sub>0 = T\<^bold>] \<ge> (T\<^sub>0 ::= T)"
+lemma R_therm_assign2: "\<^bold>[I T\<^sub>l T\<^sub>h \<and> t = 0, I T\<^sub>l T\<^sub>h \<and> t = 0 \<and> T\<^sub>0 = T\<^bold>] \<ge> (T\<^sub>0 ::= T)"
   by (rule R_assign_rule, pred_simp)
 
-lemma R_therm_ctrl: "\<^bold>[I T\<^sub>m T\<^sub>M, I T\<^sub>m T\<^sub>M \<and> t = 0 \<and> T\<^sub>0 = T\<^bold>] \<ge> ctrl T\<^sub>m T\<^sub>M"
+lemma R_therm_ctrl: "\<^bold>[I T\<^sub>l T\<^sub>h, I T\<^sub>l T\<^sub>h \<and> t = 0 \<and> T\<^sub>0 = T\<^bold>] \<ge> ctrl T\<^sub>l T\<^sub>h"
   apply(rule R_seq_rule, rule R_therm_assign1)
   apply(rule R_seq_rule, rule R_therm_assign2)
   apply(rule order_trans)
@@ -443,16 +443,16 @@ lemma R_therm_ctrl: "\<^bold>[I T\<^sub>m T\<^sub>M, I T\<^sub>m T\<^sub>M \<and
        apply (rule R_cond)
   by (simp_all, rel_auto')
 
-lemma R_therm_loop: "\<^bold>[I T\<^sub>m T\<^sub>M, I T\<^sub>m T\<^sub>M\<^bold>] \<ge> 
-  (LOOP 
-    \<^bold>[I T\<^sub>m T\<^sub>M, I T\<^sub>m T\<^sub>M \<and> t = 0 \<and> T\<^sub>0 = T\<^bold>];
-    \<^bold>[I T\<^sub>m T\<^sub>M \<and> t = 0 \<and> T\<^sub>0 = T, I T\<^sub>m T\<^sub>M\<^bold>]
-  INV I T\<^sub>m T\<^sub>M)"
+lemma R_therm_loop: "\<^bold>[I T\<^sub>l T\<^sub>h, I T\<^sub>l T\<^sub>h\<^bold>] \<ge> 
+  LOOP 
+    \<^bold>[I T\<^sub>l T\<^sub>h, I T\<^sub>l T\<^sub>h \<and> t = 0 \<and> T\<^sub>0 = T\<^bold>];
+    \<^bold>[I T\<^sub>l T\<^sub>h \<and> t = 0 \<and> T\<^sub>0 = T, I T\<^sub>l T\<^sub>h\<^bold>]
+  INV I T\<^sub>l T\<^sub>h"
   by (intro R_loop R_seq, simp_all)
 
 lemma R_thermostat_flow: 
-  assumes "a > 0" and "0 \<le> \<tau>" and "0 < T\<^sub>m" and "T\<^sub>M < L"
-  shows "\<^bold>[I T\<^sub>m T\<^sub>M, I T\<^sub>m T\<^sub>M\<^bold>] \<ge> therm T\<^sub>m T\<^sub>M a L \<tau>"
+  assumes "a > 0" and "0 \<le> \<tau>" and "0 < T\<^sub>l" and "T\<^sub>h < L"
+  shows "\<^bold>[I T\<^sub>l T\<^sub>h, I T\<^sub>l T\<^sub>h\<^bold>] \<ge> therm T\<^sub>l T\<^sub>h a L \<tau>"
   by (intro order_trans[OF _ R_therm_loop] R_loop_mono 
       R_seq_mono R_therm_ctrl R_therm_dyn[OF assms])
 
@@ -482,12 +482,12 @@ abbreviation tank_guard :: "real \<Rightarrow> real \<Rightarrow> (real^4) upred
 no_utp_lift "tank_guard" (0 1)
 
 abbreviation tank_loop_inv :: "real \<Rightarrow> real \<Rightarrow> (real^4) upred" ("I")
-  where "I h\<^sub>m h\<^sub>M \<equiv> U(h\<^sub>m \<le> T \<and> T \<le> h\<^sub>M \<and> (\<pi> = 0 \<or> \<pi> = 1))"
+  where "I h\<^sub>l h\<^sub>h \<equiv> U(h\<^sub>l \<le> T \<and> T \<le> h\<^sub>h \<and> (\<pi> = 0 \<or> \<pi> = 1))"
 
 no_utp_lift "tank_loop_inv" (0 1)
 
 abbreviation tank_diff_inv :: "real \<Rightarrow> real \<Rightarrow> real \<Rightarrow> (real^4) upred" ("dI")
-  where "dI h\<^sub>m h\<^sub>M k \<equiv> U(h = k \<cdot> t + h\<^sub>0 \<and> 0 \<le> t \<and> h\<^sub>m \<le> h\<^sub>0 \<and> h\<^sub>0 \<le> h\<^sub>M \<and> (\<pi> = 0 \<or> \<pi> = 1))"
+  where "dI h\<^sub>l h\<^sub>h k \<equiv> U(h = k \<cdot> t + h\<^sub>0 \<and> 0 \<le> t \<and> h\<^sub>l \<le> h\<^sub>0 \<and> h\<^sub>0 \<le> h\<^sub>h \<and> (\<pi> = 0 \<or> \<pi> = 1))"
 
 no_utp_lift "tank_diff_inv" (0 1 2)
 
@@ -503,32 +503,32 @@ lemma local_flow_tank: "local_flow (f k) UNIV UNIV (\<lambda> t. \<lbrakk>\<phi>
 lemma tank_arith:
   fixes y::real
   assumes "0 \<le> (\<tau>::real)" and "0 < c\<^sub>o" and "c\<^sub>o < c\<^sub>i"
-  shows "\<forall>\<tau>\<in>{0..\<tau>}. \<tau> \<le> - ((h\<^sub>m - y) / c\<^sub>o) \<Longrightarrow>  h\<^sub>m \<le> y - c\<^sub>o * \<tau>"
-    and "\<forall>\<tau>\<in>{0..\<tau>}. \<tau> \<le> (h\<^sub>M - y) / (c\<^sub>i - c\<^sub>o) \<Longrightarrow>  (c\<^sub>i - c\<^sub>o) * \<tau> + y \<le> h\<^sub>M"
-    and "h\<^sub>m \<le> y \<Longrightarrow> h\<^sub>m \<le> (c\<^sub>i - c\<^sub>o) \<cdot> \<tau> + y"
-    and "y \<le> h\<^sub>M \<Longrightarrow> y - c\<^sub>o \<cdot> \<tau> \<le> h\<^sub>M"
+  shows "\<forall>\<tau>\<in>{0..\<tau>}. \<tau> \<le> - ((h\<^sub>l - y) / c\<^sub>o) \<Longrightarrow>  h\<^sub>l \<le> y - c\<^sub>o * \<tau>"
+    and "\<forall>\<tau>\<in>{0..\<tau>}. \<tau> \<le> (h\<^sub>h - y) / (c\<^sub>i - c\<^sub>o) \<Longrightarrow>  (c\<^sub>i - c\<^sub>o) * \<tau> + y \<le> h\<^sub>h"
+    and "h\<^sub>l \<le> y \<Longrightarrow> h\<^sub>l \<le> (c\<^sub>i - c\<^sub>o) \<cdot> \<tau> + y"
+    and "y \<le> h\<^sub>h \<Longrightarrow> y - c\<^sub>o \<cdot> \<tau> \<le> h\<^sub>h"
   apply(simp_all add: field_simps le_divide_eq assms)
   using assms apply (meson add_mono less_eq_real_def mult_left_mono)
   using assms by (meson add_increasing2 less_eq_real_def mult_nonneg_nonneg) 
 
 abbreviation tank_ctrl :: "real \<Rightarrow> real \<Rightarrow> (real^4) nd_fun" ("ctrl")
-  where "ctrl h\<^sub>m h\<^sub>M \<equiv> (t ::=0);(h\<^sub>0 ::= h);
-  (IF (\<pi> = 0 \<and> h\<^sub>0 \<le> h\<^sub>m + 1) THEN (\<pi> ::= 1) ELSE
-  (IF (\<pi> = 1 \<and> h\<^sub>0 \<ge> h\<^sub>M - 1) THEN (\<pi> ::= 0) ELSE skip))"
+  where "ctrl h\<^sub>l h\<^sub>h \<equiv> (t ::=0);(h\<^sub>0 ::= h);
+  (IF (\<pi> = 0 \<and> h\<^sub>0 \<le> h\<^sub>l + 1) THEN (\<pi> ::= 1) ELSE
+  (IF (\<pi> = 1 \<and> h\<^sub>0 \<ge> h\<^sub>h - 1) THEN (\<pi> ::= 0) ELSE skip))"
 
 abbreviation tank_dyn_sol :: "real \<Rightarrow> real \<Rightarrow> real \<Rightarrow> real \<Rightarrow> real \<Rightarrow> (real^4) nd_fun" ("dyn")
-  where "dyn c\<^sub>i c\<^sub>o h\<^sub>m h\<^sub>M \<tau> \<equiv> (IF (\<pi> = 0) THEN 
-    (x\<acute>= f (c\<^sub>i-c\<^sub>o) & G h\<^sub>M (c\<^sub>i-c\<^sub>o) on {0..\<tau>} UNIV @ 0)
-  ELSE (x\<acute>= f (-c\<^sub>o) & G h\<^sub>m (-c\<^sub>o) on {0..\<tau>} UNIV @ 0))"
+  where "dyn c\<^sub>i c\<^sub>o h\<^sub>l h\<^sub>h \<tau> \<equiv> (IF (\<pi> = 0) THEN 
+    (x\<acute>= f (c\<^sub>i-c\<^sub>o) & G h\<^sub>h (c\<^sub>i-c\<^sub>o) on {0..\<tau>} UNIV @ 0)
+  ELSE (x\<acute>= f (-c\<^sub>o) & G h\<^sub>l (-c\<^sub>o) on {0..\<tau>} UNIV @ 0))"
 
-abbreviation "tank_sol c\<^sub>i c\<^sub>o h\<^sub>m h\<^sub>M \<tau> \<equiv> LOOP (ctrl h\<^sub>m h\<^sub>M ; dyn c\<^sub>i c\<^sub>o h\<^sub>m h\<^sub>M \<tau>) INV (I h\<^sub>m h\<^sub>M)"
+abbreviation "tank_sol c\<^sub>i c\<^sub>o h\<^sub>l h\<^sub>h \<tau> \<equiv> LOOP (ctrl h\<^sub>l h\<^sub>h ; dyn c\<^sub>i c\<^sub>o h\<^sub>l h\<^sub>h \<tau>) INV (I h\<^sub>l h\<^sub>h)"
 
 lemmas H_g_ode_tank = local_flow.sH_g_ode_ivl[OF local_flow_tank _ UNIV_I]
 
 lemma tank_flow:
   assumes "0 \<le> \<tau>" and "0 < c\<^sub>o" and "c\<^sub>o < c\<^sub>i"
-  shows "\<^bold>{I h\<^sub>m h\<^sub>M\<^bold>} tank_sol c\<^sub>i c\<^sub>o h\<^sub>m h\<^sub>M \<tau> \<^bold>{I h\<^sub>m h\<^sub>M\<^bold>}"
-  apply(hyb_hoare "U(I h\<^sub>m h\<^sub>M \<and> t = 0 \<and> h\<^sub>0 = h)")
+  shows "\<^bold>{I h\<^sub>l h\<^sub>h\<^bold>} tank_sol c\<^sub>i c\<^sub>o h\<^sub>l h\<^sub>h \<tau> \<^bold>{I h\<^sub>l h\<^sub>h\<^bold>}"
+  apply(hyb_hoare "U(I h\<^sub>l h\<^sub>h \<and> t = 0 \<and> h\<^sub>0 = h)")
               prefer 4 prefer 8 using assms local_flow_tank apply force+
   using assms tank_arith by rel_auto'
 
@@ -537,7 +537,7 @@ no_notation tank_dyn_sol ("dyn")
 \<comment> \<open>Verified with invariants \<close>
 
 lemma tank_diff_inv:
-  "0 \<le> \<tau> \<Longrightarrow> diff_invariant  \<lbrakk>dI h\<^sub>m h\<^sub>M k\<rbrakk>\<^sub>e (f k) {0..\<tau>} UNIV 0 Guard"
+  "0 \<le> \<tau> \<Longrightarrow> diff_invariant  \<lbrakk>dI h\<^sub>l h\<^sub>h k\<rbrakk>\<^sub>e (f k) {0..\<tau>} UNIV 0 Guard"
   apply(pred_simp, intro diff_invariant_conj_rule)
       apply(force intro!: poly_derivatives diff_invariant_rules)
      apply(rule_tac \<nu>'="\<lambda>t. 0" and \<mu>'="\<lambda>t. 1" in diff_invariant_leq_rule, simp_all add: forall_4)
@@ -545,41 +545,41 @@ lemma tank_diff_inv:
   by (auto intro!: poly_derivatives diff_invariant_rules)
 
 lemma tank_inv_arith1:
-  assumes "0 \<le> (\<tau>::real)" and "c\<^sub>o < c\<^sub>i" and b: "h\<^sub>m \<le> y\<^sub>0" and g: "\<tau> \<le> (h\<^sub>M - y\<^sub>0) / (c\<^sub>i - c\<^sub>o)"
-  shows "h\<^sub>m \<le> (c\<^sub>i - c\<^sub>o) \<cdot> \<tau> + y\<^sub>0" and "(c\<^sub>i - c\<^sub>o) \<cdot> \<tau> + y\<^sub>0 \<le> h\<^sub>M"
+  assumes "0 \<le> (\<tau>::real)" and "c\<^sub>o < c\<^sub>i" and b: "h\<^sub>l \<le> y\<^sub>0" and g: "\<tau> \<le> (h\<^sub>h - y\<^sub>0) / (c\<^sub>i - c\<^sub>o)"
+  shows "h\<^sub>l \<le> (c\<^sub>i - c\<^sub>o) \<cdot> \<tau> + y\<^sub>0" and "(c\<^sub>i - c\<^sub>o) \<cdot> \<tau> + y\<^sub>0 \<le> h\<^sub>h"
 proof-
-  have "(c\<^sub>i - c\<^sub>o) \<cdot> \<tau> \<le> (h\<^sub>M - y\<^sub>0)"
+  have "(c\<^sub>i - c\<^sub>o) \<cdot> \<tau> \<le> (h\<^sub>h - y\<^sub>0)"
     using g assms(2,3) by (metis diff_gt_0_iff_gt mult.commute pos_le_divide_eq) 
-  thus "(c\<^sub>i - c\<^sub>o) \<cdot> \<tau> + y\<^sub>0 \<le> h\<^sub>M"
+  thus "(c\<^sub>i - c\<^sub>o) \<cdot> \<tau> + y\<^sub>0 \<le> h\<^sub>h"
     by auto
-  show "h\<^sub>m \<le> (c\<^sub>i - c\<^sub>o) \<cdot> \<tau> + y\<^sub>0"
+  show "h\<^sub>l \<le> (c\<^sub>i - c\<^sub>o) \<cdot> \<tau> + y\<^sub>0"
     using b assms(1,2) by (metis add.commute add_increasing2 diff_ge_0_iff_ge 
         less_eq_real_def mult_nonneg_nonneg) 
 qed
 
 lemma tank_inv_arith2:
-  assumes "0 \<le> (\<tau>::real)" and "0 < c\<^sub>o" and b: "y\<^sub>0 \<le> h\<^sub>M" and g: "\<tau> \<le> - ((h\<^sub>m - y\<^sub>0) / c\<^sub>o)"
-  shows "h\<^sub>m \<le> y\<^sub>0 - c\<^sub>o \<cdot> \<tau>" and "y\<^sub>0 - c\<^sub>o \<cdot> \<tau> \<le> h\<^sub>M"
+  assumes "0 \<le> (\<tau>::real)" and "0 < c\<^sub>o" and b: "y\<^sub>0 \<le> h\<^sub>h" and g: "\<tau> \<le> - ((h\<^sub>l - y\<^sub>0) / c\<^sub>o)"
+  shows "h\<^sub>l \<le> y\<^sub>0 - c\<^sub>o \<cdot> \<tau>" and "y\<^sub>0 - c\<^sub>o \<cdot> \<tau> \<le> h\<^sub>h"
 proof-
-  have "\<tau> \<cdot> c\<^sub>o \<le> y\<^sub>0 - h\<^sub>m"
+  have "\<tau> \<cdot> c\<^sub>o \<le> y\<^sub>0 - h\<^sub>l"
     using g \<open>0 < c\<^sub>o\<close> pos_le_minus_divide_eq by fastforce 
-  thus "h\<^sub>m \<le> y\<^sub>0 - c\<^sub>o \<cdot> \<tau>"
+  thus "h\<^sub>l \<le> y\<^sub>0 - c\<^sub>o \<cdot> \<tau>"
     by (auto simp: mult.commute)
-  show "y\<^sub>0 - c\<^sub>o \<cdot> \<tau> \<le> h\<^sub>M" 
+  show "y\<^sub>0 - c\<^sub>o \<cdot> \<tau> \<le> h\<^sub>h" 
     using b assms(1,2) by (smt linordered_field_class.sign_simps(39) mult_less_cancel_right) 
 qed
 
 abbreviation tank_dyn_dinv :: "real \<Rightarrow> real \<Rightarrow> real \<Rightarrow> real \<Rightarrow> real \<Rightarrow> (real^4) nd_fun" ("dyn")
-  where "dyn c\<^sub>i c\<^sub>o h\<^sub>m h\<^sub>M \<tau> \<equiv> (IF (\<pi> = 0) THEN 
-    (x\<acute>= f (c\<^sub>i-c\<^sub>o) & G h\<^sub>M (c\<^sub>i-c\<^sub>o) on {0..\<tau>} UNIV @ 0 DINV (dI h\<^sub>m h\<^sub>M (c\<^sub>i-c\<^sub>o)))
-  ELSE (x\<acute>= f (-c\<^sub>o) & G h\<^sub>m (-c\<^sub>o) on {0..\<tau>} UNIV @ 0 DINV (dI h\<^sub>m h\<^sub>M (-c\<^sub>o))))"
+  where "dyn c\<^sub>i c\<^sub>o h\<^sub>l h\<^sub>h \<tau> \<equiv> IF (\<pi> = 0) THEN 
+    x\<acute>= f (c\<^sub>i-c\<^sub>o) & G h\<^sub>h (c\<^sub>i-c\<^sub>o) on {0..\<tau>} UNIV @ 0 DINV (dI h\<^sub>l h\<^sub>h (c\<^sub>i-c\<^sub>o))
+  ELSE x\<acute>= f (-c\<^sub>o) & G h\<^sub>l (-c\<^sub>o) on {0..\<tau>} UNIV @ 0 DINV (dI h\<^sub>l h\<^sub>h (-c\<^sub>o))"
 
-abbreviation "tank_dinv c\<^sub>i c\<^sub>o h\<^sub>m h\<^sub>M \<tau> \<equiv> LOOP (ctrl h\<^sub>m h\<^sub>M ; dyn c\<^sub>i c\<^sub>o h\<^sub>m h\<^sub>M \<tau>) INV (I h\<^sub>m h\<^sub>M)"
+abbreviation "tank_dinv c\<^sub>i c\<^sub>o h\<^sub>l h\<^sub>h \<tau> \<equiv> LOOP (ctrl h\<^sub>l h\<^sub>h ; dyn c\<^sub>i c\<^sub>o h\<^sub>l h\<^sub>h \<tau>) INV (I h\<^sub>l h\<^sub>h)"
 
 lemma tank_inv:
   assumes "0 \<le> \<tau>" and "0 < c\<^sub>o" and "c\<^sub>o < c\<^sub>i"
-  shows "\<^bold>{I h\<^sub>m h\<^sub>M\<^bold>} tank_dinv c\<^sub>i c\<^sub>o h\<^sub>m h\<^sub>M \<tau> \<^bold>{I h\<^sub>m h\<^sub>M\<^bold>}"
-  apply(hyb_hoare "U(I h\<^sub>m h\<^sub>M \<and> t = 0 \<and> h\<^sub>0 = h)")
+  shows "\<^bold>{I h\<^sub>l h\<^sub>h\<^bold>} tank_dinv c\<^sub>i c\<^sub>o h\<^sub>l h\<^sub>h \<tau> \<^bold>{I h\<^sub>l h\<^sub>h\<^bold>}"
+  apply(hyb_hoare "U(I h\<^sub>l h\<^sub>h \<and> t = 0 \<and> h\<^sub>0 = h)")
             prefer 4 prefer 7 using tank_diff_inv assms apply force+
   using assms tank_inv_arith1 tank_inv_arith2 by rel_auto'
 
@@ -587,61 +587,61 @@ lemma tank_inv:
 
 lemma R_tank_inv:
   assumes "0 \<le> \<tau>" and "0 < c\<^sub>o" and "c\<^sub>o < c\<^sub>i"
-  shows "\<^bold>[I h\<^sub>m h\<^sub>M, I h\<^sub>m h\<^sub>M\<^bold>] \<ge> tank_dinv c\<^sub>i c\<^sub>o h\<^sub>m h\<^sub>M \<tau>"
+  shows "\<^bold>[I h\<^sub>l h\<^sub>h, I h\<^sub>l h\<^sub>h\<^bold>] \<ge> tank_dinv c\<^sub>i c\<^sub>o h\<^sub>l h\<^sub>h \<tau>"
 proof-
   \<comment> \<open>First we refine the control. \<close>
   have ifbranch1: 
-    "\<pi> ::= 1 \<le> \<^bold>[\<pi> = 0 \<and> h\<^sub>0 \<le> h\<^sub>m + 1 \<and> I h\<^sub>m h\<^sub>M \<and> t = 0 \<and> h\<^sub>0 = h, I h\<^sub>m h\<^sub>M \<and> t = 0 \<and> h\<^sub>0 = h\<^bold>]" 
+    "\<pi> ::= 1 \<le> \<^bold>[\<pi> = 0 \<and> h\<^sub>0 \<le> h\<^sub>l + 1 \<and> I h\<^sub>l h\<^sub>h \<and> t = 0 \<and> h\<^sub>0 = h, I h\<^sub>l h\<^sub>h \<and> t = 0 \<and> h\<^sub>0 = h\<^bold>]" 
     (is "_ \<le> ?branch1") by (rule R_assign_rule, pred_simp)
   have ifbranch2: 
-    "(IF (\<pi> = 1 \<and> h\<^sub>0 \<ge> h\<^sub>M - 1) THEN (\<pi> ::= 0) ELSE skip) \<le> 
-    \<^bold>[\<not> (\<pi> = 0 \<and> h\<^sub>0 \<le> h\<^sub>m + 1) \<and> I h\<^sub>m h\<^sub>M \<and> t = 0 \<and> h\<^sub>0 = h, I h\<^sub>m h\<^sub>M \<and> t = 0 \<and> h\<^sub>0 = h\<^bold>]" 
+    "(IF (\<pi> = 1 \<and> h\<^sub>0 \<ge> h\<^sub>h - 1) THEN (\<pi> ::= 0) ELSE skip) \<le> 
+    \<^bold>[\<not> (\<pi> = 0 \<and> h\<^sub>0 \<le> h\<^sub>l + 1) \<and> I h\<^sub>l h\<^sub>h \<and> t = 0 \<and> h\<^sub>0 = h, I h\<^sub>l h\<^sub>h \<and> t = 0 \<and> h\<^sub>0 = h\<^bold>]" 
     (is "_ \<le> ?branch2") apply(rule order_trans, rule R_cond_mono) defer defer
     by (rule R_cond, auto intro!: R_assign_rule R_skip, rel_auto')
   have ifthenelse: 
-    "(IF (\<pi> = 0 \<and> h\<^sub>0 \<le> h\<^sub>m + 1) THEN ?branch1 ELSE ?branch2) \<le> 
-    \<^bold>[I h\<^sub>m h\<^sub>M \<and> t = 0 \<and> h\<^sub>0 = h, I h\<^sub>m h\<^sub>M \<and> t = 0 \<and> h\<^sub>0 = h\<^bold>]" 
+    "(IF (\<pi> = 0 \<and> h\<^sub>0 \<le> h\<^sub>l + 1) THEN ?branch1 ELSE ?branch2) \<le> 
+    \<^bold>[I h\<^sub>l h\<^sub>h \<and> t = 0 \<and> h\<^sub>0 = h, I h\<^sub>l h\<^sub>h \<and> t = 0 \<and> h\<^sub>0 = h\<^bold>]" 
     (is "?ifthenelse \<le> _") by (rule R_cond, rel_auto')
   have 
-    "(IF (\<pi> = 0 \<and> h\<^sub>0 \<le> h\<^sub>m + 1) THEN (\<pi> ::= 1) ELSE 
-     (IF (\<pi> = 1 \<and> h\<^sub>0 \<ge> h\<^sub>M - 1) THEN (\<pi> ::= 0) ELSE skip)) \<le>
-     \<^bold>[I h\<^sub>m h\<^sub>M \<and> t = 0 \<and> h\<^sub>0 = h, I h\<^sub>m h\<^sub>M \<and> t = 0 \<and> h\<^sub>0 = h\<^bold>]"
+    "(IF (\<pi> = 0 \<and> h\<^sub>0 \<le> h\<^sub>l + 1) THEN (\<pi> ::= 1) ELSE 
+     (IF (\<pi> = 1 \<and> h\<^sub>0 \<ge> h\<^sub>h - 1) THEN (\<pi> ::= 0) ELSE skip)) \<le>
+     \<^bold>[I h\<^sub>l h\<^sub>h \<and> t = 0 \<and> h\<^sub>0 = h, I h\<^sub>l h\<^sub>h \<and> t = 0 \<and> h\<^sub>0 = h\<^bold>]"
     apply(rule_tac y="?ifthenelse" in order_trans, rule R_cond_mono)
     using ifbranch1 ifbranch2 ifthenelse by auto
-  hence ctrl: "ctrl h\<^sub>m h\<^sub>M \<le> \<^bold>[I h\<^sub>m h\<^sub>M, I h\<^sub>m h\<^sub>M \<and> t = 0 \<and> h\<^sub>0 = h\<^bold>]" (is "_ \<le> ?ctrl_ref")
-     apply(rule_tac R="U(I h\<^sub>m h\<^sub>M \<and> t = 0)" in R_seq_rule)
+  hence ctrl: "ctrl h\<^sub>l h\<^sub>h \<le> \<^bold>[I h\<^sub>l h\<^sub>h, I h\<^sub>l h\<^sub>h \<and> t = 0 \<and> h\<^sub>0 = h\<^bold>]" (is "_ \<le> ?ctrl_ref")
+     apply(rule_tac R="U(I h\<^sub>l h\<^sub>h \<and> t = 0)" in R_seq_rule)
     apply(rule R_assign_rule, pred_simp)
-    apply(rule_tac R="U(I h\<^sub>m h\<^sub>M \<and> t = 0 \<and> h\<^sub>0 = h)" in R_seq_rule)
+    apply(rule_tac R="U(I h\<^sub>l h\<^sub>h \<and> t = 0 \<and> h\<^sub>0 = h)" in R_seq_rule)
     apply(rule R_assign_rule, pred_simp) .
   \<comment> \<open>Then we refine the dynamics. \<close>
   have dynup: 
-    "(x\<acute>= f (c\<^sub>i-c\<^sub>o) & G h\<^sub>M (c\<^sub>i-c\<^sub>o) on {0..\<tau>} UNIV @ 0 DINV (dI h\<^sub>m h\<^sub>M (c\<^sub>i-c\<^sub>o))) \<le> 
-    \<^bold>[\<pi> = 0 \<and> I h\<^sub>m h\<^sub>M \<and> t = 0 \<and> h\<^sub>0 = h, I h\<^sub>m h\<^sub>M\<^bold>]"
+    "(x\<acute>= f (c\<^sub>i-c\<^sub>o) & G h\<^sub>h (c\<^sub>i-c\<^sub>o) on {0..\<tau>} UNIV @ 0 DINV (dI h\<^sub>l h\<^sub>h (c\<^sub>i-c\<^sub>o))) \<le> 
+    \<^bold>[\<pi> = 0 \<and> I h\<^sub>l h\<^sub>h \<and> t = 0 \<and> h\<^sub>0 = h, I h\<^sub>l h\<^sub>h\<^bold>]"
     apply(rule R_g_ode_inv[OF tank_diff_inv[OF assms(1)]])
     using assms apply(simp_all, pred_simp, pred_simp)
     by (auto simp: tank_inv_arith1)
   have dyndown: 
-    "(x\<acute>= f (-c\<^sub>o) & G h\<^sub>m (-c\<^sub>o) on {0..\<tau>} UNIV @ 0 DINV (dI h\<^sub>m h\<^sub>M (-c\<^sub>o))) \<le> 
-    \<^bold>[\<not> \<pi> = 0 \<and> I h\<^sub>m h\<^sub>M \<and> t = 0 \<and> h\<^sub>0 = h, I h\<^sub>m h\<^sub>M\<^bold>]"
+    "(x\<acute>= f (-c\<^sub>o) & G h\<^sub>l (-c\<^sub>o) on {0..\<tau>} UNIV @ 0 DINV (dI h\<^sub>l h\<^sub>h (-c\<^sub>o))) \<le> 
+    \<^bold>[\<not> \<pi> = 0 \<and> I h\<^sub>l h\<^sub>h \<and> t = 0 \<and> h\<^sub>0 = h, I h\<^sub>l h\<^sub>h\<^bold>]"
     apply(rule R_g_ode_inv)
     using tank_diff_inv[OF assms(1), of "-c\<^sub>o"] apply(pred_simp)
     using assms by (simp_all, rel_auto' simp: tank_inv_arith2)
-  have dyn: "dyn c\<^sub>i c\<^sub>o h\<^sub>m h\<^sub>M \<tau> \<le> \<^bold>[I h\<^sub>m h\<^sub>M \<and> t = 0 \<and> h\<^sub>0 = h, I h\<^sub>m h\<^sub>M\<^bold>]" (is "_ \<le> ?dyn_ref")
+  have dyn: "dyn c\<^sub>i c\<^sub>o h\<^sub>l h\<^sub>h \<tau> \<le> \<^bold>[I h\<^sub>l h\<^sub>h \<and> t = 0 \<and> h\<^sub>0 = h, I h\<^sub>l h\<^sub>h\<^bold>]" (is "_ \<le> ?dyn_ref")
     apply(rule order_trans, rule R_cond_mono)
     using dynup dyndown apply(force, force)
     by (rule R_cond, rel_auto')
   \<comment> \<open>Finally we put everything together. \<close>
-  have pre_pos: "\<lceil>I h\<^sub>m h\<^sub>M\<rceil> \<le> \<lceil>I h\<^sub>m h\<^sub>M\<rceil>"
+  have pre_pos: "\<lceil>I h\<^sub>l h\<^sub>h\<rceil> \<le> \<lceil>I h\<^sub>l h\<^sub>h\<rceil>"
     by simp
-  have inv_inv: "?ctrl_ref; ?dyn_ref \<le> \<^bold>[I h\<^sub>m h\<^sub>M, I h\<^sub>m h\<^sub>M\<^bold>]"
+  have inv_inv: "?ctrl_ref; ?dyn_ref \<le> \<^bold>[I h\<^sub>l h\<^sub>h, I h\<^sub>l h\<^sub>h\<^bold>]"
     by (rule R_seq)
-  have loopref: "LOOP ?ctrl_ref; ?dyn_ref INV I h\<^sub>m h\<^sub>M \<le> \<^bold>[I h\<^sub>m h\<^sub>M, I h\<^sub>m h\<^sub>M\<^bold>]"
+  have loopref: "LOOP ?ctrl_ref; ?dyn_ref INV I h\<^sub>l h\<^sub>h \<le> \<^bold>[I h\<^sub>l h\<^sub>h, I h\<^sub>l h\<^sub>h\<^bold>]"
     apply(rule R_loop)
     using pre_pos inv_inv by auto
-  have obs: "(ctrl h\<^sub>m h\<^sub>M;dyn c\<^sub>i c\<^sub>o h\<^sub>m h\<^sub>M \<tau>) \<le> ?ctrl_ref; ?dyn_ref"
+  have obs: "(ctrl h\<^sub>l h\<^sub>h;dyn c\<^sub>i c\<^sub>o h\<^sub>l h\<^sub>h \<tau>) \<le> ?ctrl_ref; ?dyn_ref"
     apply(rule R_seq_mono)
     using ctrl dyn by auto
-  show "tank_dinv c\<^sub>i c\<^sub>o h\<^sub>m h\<^sub>M \<tau> \<le> \<^bold>[I h\<^sub>m h\<^sub>M, I h\<^sub>m h\<^sub>M\<^bold>]"
+  show "tank_dinv c\<^sub>i c\<^sub>o h\<^sub>l h\<^sub>h \<tau> \<le> \<^bold>[I h\<^sub>l h\<^sub>h, I h\<^sub>l h\<^sub>h\<^bold>]"
     by (rule order_trans[OF _ loopref], rule R_loop_mono[OF obs])
 qed
 
