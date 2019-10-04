@@ -768,20 +768,25 @@ using an invariant.
   Variable $h_0$ stores an initial water level, and $\pi$ whether
   the pump is on or off. The rate of change of the water-level in the
   tank is linear with slope $k\in\{-c_o,c_i-c_o\}$ (assuming
-  $c_i>c_o$). The vector field for this behaviour is
+  $c_i>c_o$). The vector field for this behaviour and its invariant are
 \begin{isabellebody}
 \isanewline
 \isacommand{abbreviation}\ %\isamarkupfalse%
 %\ ftank\ {\isacharcolon}{\isacharcolon}\ {\isachardoublequoteopen}real\ {\isasymRightarrow}\ {\isacharparenleft}real{\isacharcomma}\ {\isadigit{4}}{\isacharparenright}\ vec\ {\isasymRightarrow}\ {\isacharparenleft}real{\isacharcomma}\ {\isadigit{4}}{\isacharparenright}\ vec{\isachardoublequoteclose}\ {\isacharparenleft}{\isachardoublequoteopen}f{\isachardoublequoteclose}{\isacharparenright}\isanewline
 %\ \ \isakeyword{where}\ 
 {\isachardoublequoteopen}f\ k\ {\isasymequiv}\ {\isasymlbrakk}{\isacharbrackleft}h\ {\isasymmapsto}\isactrlsub s\ k{\isacharcomma}\ t\ {\isasymmapsto}\isactrlsub s\ {\isadigit{1}}{\isacharcomma}\ $h_0$\ {\isasymmapsto}\isactrlsub s\ {\isadigit{0}}{\isacharcomma}\ {\isasympi}\ {\isasymmapsto}\isactrlsub s\ {\isadigit{0}}{\isacharbrackright}{\isasymrbrakk}\isactrlsub e{\isachardoublequoteclose}\isanewline
+\isanewline
+\isacommand{abbreviation}\ %\isamarkupfalse%
+%\ tank{\isacharunderscore}diff{\isacharunderscore}inv\ {\isacharcolon}{\isacharcolon}\ {\isachardoublequoteopen}real\ {\isasymRightarrow}\ real\ {\isasymRightarrow}\ real\ {\isasymRightarrow}\ {\isacharparenleft}real{\isacharcircum}{\isadigit{4}}{\isacharparenright}\ upred{\isachardoublequoteclose}\ {\isacharparenleft}{\isachardoublequoteopen}dI{\isachardoublequoteclose}{\isacharparenright}\isanewline
+%\ \ \isakeyword{where}\ 
+{\isachardoublequoteopen}dI\ $h_l$\ $h_h$\ k\ {\isasymequiv}\isanewline
+\ \ U{\isacharparenleft}h\ {\isacharequal}\ k\ {\isasymcdot}\ t\ {\isacharplus}\ $h_0$\ {\isasymand}\ {\isadigit{0}}\ {\isasymle}\ t\ {\isasymand}\ $h_l$\ {\isasymle}\ $h_0$\ {\isasymand}\ $h_0$\ {\isasymle}\ $h_h$\ {\isasymand}\ {\isacharparenleft}{\isasympi}\ {\isacharequal}\ {\isadigit{0}}\ {\isasymor}\ {\isasympi}\ {\isacharequal}\ {\isadigit{1}}{\isacharparenright}{\isacharparenright}{\isachardoublequoteclose}\isanewline
 \end{isabellebody}
-\noindent Thus, a hybrid program to model the controller and the
-water-level is
+\noindent The invariant describes the behaviour of each variable, including the orbit for $h$. Below we show a hybrid program to model the controller and the
+water level. The guard $G\ h_x\ k$ with $h_x\in\{h_l,h_h\}$, restricts the evolution to 
+go beyond $h_x$, and the structure is separated in
+loop invariant, control and dynamics.
 
-\gin{1. Can types be deleted? Use $h_-$ and $h_+$? 2. Indentations
-  need to be fixed. What is $h_x$? Again, why all these OFs? And why
-  parameter to tactic? How is procedure applied to invariant? }
 \begin{isabellebody}
 \isanewline
 \isacommand{abbreviation}\ %\isamarkupfalse%
@@ -793,12 +798,6 @@ water-level is
 %\ tank{\isacharunderscore}loop{\isacharunderscore}inv\ {\isacharcolon}{\isacharcolon}\ {\isachardoublequoteopen}real\ {\isasymRightarrow}\ real\ {\isasymRightarrow}\ {\isacharparenleft}real{\isacharcircum}{\isadigit{4}}{\isacharparenright}\ upred{\isachardoublequoteclose}\ {\isacharparenleft}{\isachardoublequoteopen}I{\isachardoublequoteclose}{\isacharparenright}\isanewline
 %\ \ \isakeyword{where}\ 
 {\isachardoublequoteopen}I\ $h_l$\ $h_h$\ {\isasymequiv}\ U{\isacharparenleft}$h_l$\ {\isasymle}\ T\ {\isasymand}\ T\ {\isasymle}\ $h_h$\ {\isasymand}\ {\isacharparenleft}{\isasympi}\ {\isacharequal}\ {\isadigit{0}}\ {\isasymor}\ {\isasympi}\ {\isacharequal}\ {\isadigit{1}}{\isacharparenright}{\isacharparenright}{\isachardoublequoteclose}\isanewline
-\isanewline
-\isacommand{abbreviation}\ %\isamarkupfalse%
-%\ tank{\isacharunderscore}diff{\isacharunderscore}inv\ {\isacharcolon}{\isacharcolon}\ {\isachardoublequoteopen}real\ {\isasymRightarrow}\ real\ {\isasymRightarrow}\ real\ {\isasymRightarrow}\ {\isacharparenleft}real{\isacharcircum}{\isadigit{4}}{\isacharparenright}\ upred{\isachardoublequoteclose}\ {\isacharparenleft}{\isachardoublequoteopen}dI{\isachardoublequoteclose}{\isacharparenright}\isanewline
-%\ \ \isakeyword{where}\ 
-{\isachardoublequoteopen}dI\ $h_l$\ $h_h$\ k\ {\isasymequiv}\isanewline
-\ \ U{\isacharparenleft}h\ {\isacharequal}\ k\ {\isasymcdot}\ t\ {\isacharplus}\ $h_0$\ {\isasymand}\ {\isadigit{0}}\ {\isasymle}\ t\ {\isasymand}\ $h_l$\ {\isasymle}\ $h_0$\ {\isasymand}\ $h_0$\ {\isasymle}\ $h_h$\ {\isasymand}\ {\isacharparenleft}{\isasympi}\ {\isacharequal}\ {\isadigit{0}}\ {\isasymor}\ {\isasympi}\ {\isacharequal}\ {\isadigit{1}}{\isacharparenright}{\isacharparenright}{\isachardoublequoteclose}\isanewline
 \isanewline
 \isacommand{abbreviation}\ %\isamarkupfalse%
 %\ tank{\isacharunderscore}ctrl\ {\isacharcolon}{\isacharcolon}\ {\isachardoublequoteopen}real\ {\isasymRightarrow}\ real\ {\isasymRightarrow}\ {\isacharparenleft}real{\isacharcircum}{\isadigit{4}}{\isacharparenright}\ nd{\isacharunderscore}fun{\isachardoublequoteclose}\ {\isacharparenleft}{\isachardoublequoteopen}ctrl{\isachardoublequoteclose}{\isacharparenright}\isanewline
@@ -842,11 +841,15 @@ water-level is
 %
 %As before, in Isabelle we use \isa{{\isadigit{1}}}, \isa{{\isadigit{2}}}, \isa{{\isadigit{3}}}, and \isa{{\isadigit{4}}} for $h$, $t$, $h_0$ and $\Pi$ respectively, but f
 
-This time we reason with invariants. Hence our correctness
-specification for \isa{tank{\isacharunderscore}dinv\ c\isactrlsub i\
-  c\isactrlsub o\ $h_l$\ $h_h$\ {\isasymtau}}  and
-its verification is 
+Our correctness
+specification for this hybrid program and
+its verification are 
 \begin{isabellebody}
+\isanewline
+\isacommand{lemma}\isamarkupfalse%
+\ tank{\isacharunderscore}diff{\isacharunderscore}inv{\isacharcolon}\isanewline
+\ \ {\isachardoublequoteopen}{\isadigit{0}}\ {\isasymle}\ {\isasymtau}\ {\isasymLongrightarrow}\ diff{\isacharunderscore}invariant\ \ {\isasymlbrakk}dI\ $h_l$\ $h_h$\ k{\isasymrbrakk}\isactrlsub e\ {\isacharparenleft}f\ k{\isacharparenright}\ {\isacharbraceleft}{\isadigit{0}}{\isachardot}{\isachardot}{\isasymtau}{\isacharbraceright}\ UNIV\ {\isadigit{0}}\ Guard{\isachardoublequoteclose}\isanewline
+\ \ $\langle \isa{proof}\rangle$\isanewline
 \isanewline
 \isacommand{lemma}\isamarkupfalse%
 \ tank{\isacharunderscore}inv{\isacharcolon}\isanewline
@@ -864,12 +867,9 @@ its verification is
 \ rel{\isacharunderscore}auto{\isacharprime}\isanewline
 \end{isabellebody}
 
-As in Example~\ref{ex:therm-sol}, the rule applications blast away the
-program structure. The first two lines discharge obligations for the discrete
-part, while the continuous part is discharged using (twice) the rule
-(\ref{eq:h-invg}), followed by the fact that $dI\, h_m\, h_M\, k$ is an
-invariant for $f\, k$
-(\isa{tank{\isacharunderscore}diff{\isacharunderscore}inv}) and arithmetical properties. \qed
+As in Example~\ref{ex:therm-sol}, tactic \isa{hyb-hoare} blasts away the
+program structure. The introduces the fact that $dI\, h_m\, h_M\, k$ is an
+invariant for $f\, k$ and its proof required the procedure described for invariants above. Finally, the third line supplies arithmetical properties to discharge the remaining proof obligations. \qed
 \end{example}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1024,11 +1024,6 @@ then a combination of these lemmas.\qed
 \gin{This is not how refinement works. You do it step by step like in
   the exercises in my lecture. As is it looks messy. And is the indentation right?}
 \begin{isabellebody}
-\isanewline
-\isacommand{lemma}\isamarkupfalse%
-\ tank{\isacharunderscore}diff{\isacharunderscore}inv{\isacharcolon}\isanewline
-\ \ {\isachardoublequoteopen}{\isadigit{0}}\ {\isasymle}\ {\isasymtau}\ {\isasymLongrightarrow}\ diff{\isacharunderscore}invariant\ \ {\isasymlbrakk}dI\ $h_l$\ $h_h$\ k{\isasymrbrakk}\isactrlsub e\ {\isacharparenleft}f\ k{\isacharparenright}\ {\isacharbraceleft}{\isadigit{0}}{\isachardot}{\isachardot}{\isasymtau}{\isacharbraceright}\ UNIV\ {\isadigit{0}}\ Guard{\isachardoublequoteclose}\isanewline
-\ \ $\langle \isa{proof}\rangle$\isanewline
 \isanewline
 \isacommand{lemma}\isamarkupfalse%
 \ R{\isacharunderscore}tank{\isacharunderscore}inv{\isacharcolon}\isanewline
