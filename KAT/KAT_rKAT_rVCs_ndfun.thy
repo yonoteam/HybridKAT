@@ -282,21 +282,6 @@ locale ue_local_flow = local_flow "\<lbrakk>\<sigma>\<rbrakk>\<^sub>e" T S "\<la
 context local_flow
 begin
 
-lemma H_g_ode:
-  assumes "P = (U(&\<^bold>v \<in> \<guillemotleft>S\<guillemotright>) \<Rightarrow> (\<^bold>\<forall>t\<in>\<guillemotleft>T\<guillemotright> \<bullet> (\<^bold>\<forall> \<tau> \<in> \<guillemotleft>down T t\<guillemotright> \<bullet> G\<lbrakk>\<guillemotleft>\<phi> \<tau>\<guillemotright> |> &\<^bold>v/&\<^bold>v\<rbrakk>) \<Rightarrow> Q\<lbrakk>\<guillemotleft>\<phi> t\<guillemotright> |> &\<^bold>v/&\<^bold>v\<rbrakk>))" 
-  shows "Hoare \<lceil>P\<rceil> (x\<acute>= f & G on T S @ 0) \<lceil>Q\<rceil>"
-proof(unfold ndfun_kat_H g_ode_def g_orbital_eq assms, pred_simp)       
-  fix s t X
-  assume hyps: "t \<in> T" "\<forall>x. x \<in> T \<and> x \<le> t \<longrightarrow> \<lbrakk>G\<rbrakk>\<^sub>e (X x)" "X \<in> Sols (\<lambda>t. f) T S 0 s"
-     and main: "s \<in> S \<longrightarrow> (\<forall>t. t \<in> T \<longrightarrow> (\<forall>\<tau>. \<tau> \<in> T \<and> \<tau> \<le> t \<longrightarrow> \<lbrakk>G\<rbrakk>\<^sub>e (\<phi> \<tau> s)) \<longrightarrow> \<lbrakk>Q\<rbrakk>\<^sub>e (\<phi> t s))"
-  have "s \<in> S"
-    using ivp_solsD[OF hyps(3)] init_time by auto
-  hence "\<forall>\<tau>\<in>down T t. X \<tau> = \<phi> \<tau> s"
-    using eq_solution hyps by blast
-  thus "\<lbrakk>Q\<rbrakk>\<^sub>e (X t)"
-    using main \<open>s \<in> S\<close> hyps by fastforce
-qed
-
 lemma sH_g_ode: "Hoare \<lceil>P\<rceil> (x\<acute>= f & G on T S @ 0) \<lceil>Q\<rceil> = 
   (\<forall>s\<in>S. \<lbrakk>P\<rbrakk>\<^sub>e s \<longrightarrow> (\<forall>t\<in>T. (\<forall>\<tau>\<in>down T t. \<lbrakk>G\<rbrakk>\<^sub>e (\<phi> \<tau> s)) \<longrightarrow> \<lbrakk>Q\<rbrakk>\<^sub>e (\<phi> t s)))"
 proof(unfold sH_g_orbital, rel_simp, safe)
@@ -318,6 +303,11 @@ next
   thus "\<lbrakk>Q\<rbrakk>\<^sub>e (X t)"
     using hyps main obs by auto
 qed
+
+lemma H_g_ode:
+  assumes "P = (U(&\<^bold>v \<in> \<guillemotleft>S\<guillemotright>) \<Rightarrow> (\<^bold>\<forall>t\<in>\<guillemotleft>T\<guillemotright> \<bullet> (\<^bold>\<forall> \<tau> \<in> \<guillemotleft>down T t\<guillemotright> \<bullet> G\<lbrakk>\<guillemotleft>\<phi> \<tau>\<guillemotright> |> &\<^bold>v/&\<^bold>v\<rbrakk>) \<Rightarrow> Q\<lbrakk>\<guillemotleft>\<phi> t\<guillemotright> |> &\<^bold>v/&\<^bold>v\<rbrakk>))" 
+  shows "Hoare \<lceil>P\<rceil> (x\<acute>= f & G on T S @ 0) \<lceil>Q\<rceil>"
+  using assms unfolding sH_g_ode by pred_simp
 
 lemma sH_g_ode_ivl: "\<tau> \<ge> 0 \<Longrightarrow> \<tau> \<in> T \<Longrightarrow> Hoare \<lceil>P\<rceil> (x\<acute>= f & G on {0..\<tau>} S @ 0) \<lceil>Q\<rceil> = 
   (\<forall>s\<in>S. \<lbrakk>P\<rbrakk>\<^sub>e s \<longrightarrow> (\<forall>t\<in>{0..\<tau>}. (\<forall>\<tau>\<in>{0..t}. \<lbrakk>G\<rbrakk>\<^sub>e (\<phi> \<tau> s)) \<longrightarrow> \<lbrakk>Q\<rbrakk>\<^sub>e (\<phi> t s)))"
@@ -350,6 +340,12 @@ next
   thus "\<lbrakk>Q\<rbrakk>\<^sub>e (X t)"
     using hyps main \<open>s \<in> S\<close> by auto
 qed
+
+lemma H_g_ode_ivl:
+  assumes "P = (U(&\<^bold>v \<in> \<guillemotleft>S\<guillemotright>) \<Rightarrow> (\<^bold>\<forall>t\<in>\<guillemotleft>{0..\<tau>}\<guillemotright> \<bullet> (\<^bold>\<forall> \<tau> \<in> \<guillemotleft>{0..t}\<guillemotright> \<bullet> G\<lbrakk>\<guillemotleft>\<phi> \<tau>\<guillemotright> |> &\<^bold>v/&\<^bold>v\<rbrakk>) \<Rightarrow> Q\<lbrakk>\<guillemotleft>\<phi> t\<guillemotright> |> &\<^bold>v/&\<^bold>v\<rbrakk>))" 
+     and "\<tau> \<ge> 0" and "\<tau> \<in> T"
+  shows "Hoare \<lceil>P\<rceil> (x\<acute>= f & G on {0..\<tau>} S @ 0) \<lceil>Q\<rceil>"
+  unfolding sH_g_ode_ivl[OF assms(2,3)] using assms by pred_simp
 
 lemma sH_orbit: "Hoare \<lceil>P\<rceil> (\<gamma>\<^sup>\<phi>\<^sup>\<bullet>) \<lceil>Q\<rceil> = (\<forall>s \<in> S. \<lbrakk>P\<rbrakk>\<^sub>e s \<longrightarrow> (\<forall> t \<in> T. \<lbrakk>Q\<rbrakk>\<^sub>e (\<phi> t s)))"
   using sH_g_ode[of P "true_upred" Q] unfolding orbit_def g_ode_def by pred_simp

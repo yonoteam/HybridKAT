@@ -32,16 +32,18 @@ lemma vec_lens_indep [simp]: "(i \<noteq> j) \<Longrightarrow> (vec_lens i \<bow
 
 \<comment> \<open>A tactic for hybrid programs \<close>
 
-named_theorems ctrl_hoareI
+named_theorems hoare_intros
 
-declare H_assign_init [ctrl_hoareI]
-    and H_cond [ctrl_hoareI]
+declare H_assign_init [hoare_intros]
+    and H_cond [hoare_intros]
+    and local_flow.H_g_ode_ivl [hoare_intros]
+    and H_g_ode_inv [hoare_intros]
 
-method ctrl_hoare 
-  = (rule ctrl_hoareI,(simp)?;ctrl_hoare?)
+method body_hoare 
+  = (rule hoare_intros,(simp)?; body_hoare?)
 
 method hyb_hoare for P::"'a upred" 
-  = (rule H_loopI, rule H_seq[where R=P]; ctrl_hoare?)
+  = (rule H_loopI, rule H_seq[where R=P]; body_hoare?)
 
 subsubsection \<open>Pendulum\<close>
 
@@ -136,8 +138,7 @@ abbreviation "bb_dinv g h \<equiv>
 
 lemma bouncing_ball_inv: "g < 0 \<Longrightarrow> h \<ge> 0 \<Longrightarrow> \<^bold>{x = h \<and> v = 0\<^bold>} bb_dinv g h \<^bold>{0 \<le> x \<and> x \<le> h\<^bold>}"
   apply(hyb_hoare "U(0 \<le> x \<and> 2 \<cdot> g \<cdot> x = 2 \<cdot> g \<cdot> h + v \<cdot> v)")
-     apply(rule H_g_ode_inv, pred_simp, force intro!: poly_derivatives diff_invariant_rules)
-  by (simp_all, rel_auto' simp: bb_real_arith)
+  using fball_invariant by (simp_all, rel_auto' simp: bb_real_arith)
 
 \<comment> \<open>Verified with annotated dynamics \<close>
 
@@ -202,9 +203,9 @@ lemma bouncing_ball_dyn:
 
 lemma local_flow_ball: "local_flow (f g) UNIV UNIV (\<lambda> t. \<lbrakk>\<phi> g t\<rbrakk>\<^sub>e)"
   apply(unfold_locales, simp_all add: local_lipschitz_def lipschitz_on_def vec_eq_iff, clarsimp)
-  apply(rule_tac x="1/2" in exI, clarsimp, rule_tac x=1 in exI, pred_simp)
-    apply(simp add: dist_norm norm_vec_def L2_set_def UNIV_2)
-  by (simp add: forall_2, pred_simp, force intro!: poly_derivatives, pred_simp)
+  apply(rule_tac x="1/2" in exI, clarsimp, rule_tac x=1 in exI)
+    apply(rel_auto' simp: forall_2 dist_norm norm_vec_def L2_set_def UNIV_2)
+  by (auto intro!: poly_derivatives)
 
 abbreviation "bb_sol g h \<equiv>
   (LOOP (
@@ -322,7 +323,7 @@ lemma local_flow_therm: "a > 0 \<Longrightarrow> local_flow (f a L) UNIV UNIV (\
    apply(simp add: forall_4, pred_simp, force intro!: poly_derivatives)
   by (pred_simp, force simp: vec_eq_iff)
 
-lemma therm_dyn_down_real_arith:
+lemma therm_dyn_down:
   fixes T::real
   assumes "a > 0" and Thyps: "0 < T\<^sub>m" "T\<^sub>m \<le> T" "T \<le> T\<^sub>M"
     and thyps: "0 \<le> (\<tau>::real)" "\<forall>\<tau>\<in>{0..\<tau>}. \<tau> \<le> - (ln (T\<^sub>m / T) / a) "
@@ -343,7 +344,7 @@ proof-
       less_eq_real_def order_trans_rules(23) by blast
 qed
 
-lemma therm_dyn_up_real_arith:
+lemma therm_dyn_up:
   fixes T::real
   assumes "a > 0" and Thyps: "T\<^sub>m \<le> T" "T \<le> T\<^sub>M" "T\<^sub>M < (L::real)"
     and thyps: "0 \<le> \<tau>" "\<forall>\<tau>\<in>{0..\<tau>}. \<tau> \<le> - (ln ((L - T\<^sub>M) / (L - T)) / a) "
@@ -395,9 +396,8 @@ lemma thermostat_flow:
   assumes "0 < a" and "0 \<le> \<tau>" and "0 < T\<^sub>m" and "T\<^sub>M < L"
   shows "\<^bold>{I T\<^sub>m T\<^sub>M\<^bold>} therm T\<^sub>m T\<^sub>M a L \<tau> \<^bold>{I T\<^sub>m T\<^sub>M\<^bold>}"
   apply(hyb_hoare "U(I T\<^sub>m T\<^sub>M \<and> t=0 \<and> T\<^sub>0 = T)")
-  apply(simp_all add: H_g_ode_therm[OF assms(1,2)])
-  using therm_dyn_up_real_arith[OF assms(1) _ _ assms(4), of T\<^sub>m]
-    and therm_dyn_down_real_arith[OF assms(1,3), of _ T\<^sub>M] by rel_auto'
+              prefer 4 prefer 8 using local_flow_therm assms apply force+
+  using assms therm_dyn_up therm_dyn_down by rel_auto'
 
 \<comment> \<open>Refined by providing solutions \<close>
 
@@ -406,14 +406,14 @@ lemma R_therm_dyn_down:
   shows "\<^bold>[\<theta> = 0 \<and> I T\<^sub>m T\<^sub>M \<and> t = 0 \<and> T\<^sub>0 = T, I T\<^sub>m T\<^sub>M\<^bold>] \<ge> (x\<acute>= f a 0 & G T\<^sub>m T\<^sub>M a 0 on {0..\<tau>} UNIV @ 0)"
   apply(rule local_flow.R_g_ode_ivl[OF local_flow_therm])
   using assms apply(simp_all, pred_simp)
-  using therm_dyn_down_real_arith[OF assms(1,3), of _ T\<^sub>M] by auto
+  using therm_dyn_down[OF assms(1,3), of _ T\<^sub>M] by auto
 
 lemma R_therm_dyn_up: 
   assumes "a > 0" and "0 \<le> \<tau>" and "0 < T\<^sub>m" and "T\<^sub>M < L"
   shows "\<^bold>[\<not> \<theta> = 0 \<and> I T\<^sub>m T\<^sub>M \<and> t = 0 \<and> T\<^sub>0 = T, I T\<^sub>m T\<^sub>M\<^bold>] \<ge> (x\<acute>= f a L & G T\<^sub>m T\<^sub>M a L on {0..\<tau>} UNIV @ 0)"
   apply(rule local_flow.R_g_ode_ivl[OF local_flow_therm])
   using assms apply(simp_all, pred_simp)
-  using therm_dyn_up_real_arith[OF assms(1) _ _ assms(4), of T\<^sub>m] by auto
+  using therm_dyn_up[OF assms(1) _ _ assms(4), of T\<^sub>m] by auto
 
 lemma R_therm_dyn:
   assumes "a > 0" and "0 \<le> \<tau>" and "0 < T\<^sub>m" and "T\<^sub>M < L"
@@ -487,8 +487,7 @@ abbreviation tank_loop_inv :: "real \<Rightarrow> real \<Rightarrow> (real^4) up
 no_utp_lift "tank_loop_inv" (0 1)
 
 abbreviation tank_diff_inv :: "real \<Rightarrow> real \<Rightarrow> real \<Rightarrow> (real^4) upred" ("dI")
-  where "dI h\<^sub>m h\<^sub>M k \<equiv> U(h = k \<cdot> t + h\<^sub>0 \<and> 0 \<le> t \<and> 
-    h\<^sub>m \<le> h\<^sub>0 \<and> h\<^sub>0 \<le> h\<^sub>M \<and> (\<pi> = 0 \<or> \<pi> = 1))"
+  where "dI h\<^sub>m h\<^sub>M k \<equiv> U(h = k \<cdot> t + h\<^sub>0 \<and> 0 \<le> t \<and> h\<^sub>m \<le> h\<^sub>0 \<and> h\<^sub>0 \<le> h\<^sub>M \<and> (\<pi> = 0 \<or> \<pi> = 1))"
 
 no_utp_lift "tank_diff_inv" (0 1 2)
 
@@ -530,8 +529,8 @@ lemma tank_flow:
   assumes "0 \<le> \<tau>" and "0 < c\<^sub>o" and "c\<^sub>o < c\<^sub>i"
   shows "\<^bold>{I h\<^sub>m h\<^sub>M\<^bold>} tank_sol c\<^sub>i c\<^sub>o h\<^sub>m h\<^sub>M \<tau> \<^bold>{I h\<^sub>m h\<^sub>M\<^bold>}"
   apply(hyb_hoare "U(I h\<^sub>m h\<^sub>M \<and> t = 0 \<and> h\<^sub>0 = h)")
-  apply(simp_all add: H_g_ode_tank[OF assms(1)])
-  using assms tank_arith[OF _ assms(2,3)] by rel_auto'
+              prefer 4 prefer 8 using assms local_flow_tank apply force+
+  using assms tank_arith by rel_auto'
 
 no_notation tank_dyn_sol ("dyn")
 
@@ -581,15 +580,8 @@ lemma tank_inv:
   assumes "0 \<le> \<tau>" and "0 < c\<^sub>o" and "c\<^sub>o < c\<^sub>i"
   shows "\<^bold>{I h\<^sub>m h\<^sub>M\<^bold>} tank_dinv c\<^sub>i c\<^sub>o h\<^sub>m h\<^sub>M \<tau> \<^bold>{I h\<^sub>m h\<^sub>M\<^bold>}"
   apply(hyb_hoare "U(I h\<^sub>m h\<^sub>M \<and> t = 0 \<and> h\<^sub>0 = h)")
-        apply(pred_simp, pred_simp, simp, pred_simp)
-  apply(rule H_g_ode_inv, simp)
-  using tank_diff_inv[OF assms(1)] apply(pred_simp)
-      apply(simp, pred_simp, simp, pred_simp)
-  using assms tank_inv_arith1 apply force
-    apply(rule H_g_ode_inv, simp, pred_simp)
-  using assms tank_diff_inv[of _ "-c\<^sub>o" h\<^sub>m h\<^sub>M] apply(pred_simp)
-      apply(simp, pred_simp, simp, pred_simp)
-  using assms tank_inv_arith2 by force (simp, pred_simp)
+            prefer 4 prefer 7 using tank_diff_inv assms apply force+
+  using assms tank_inv_arith1 tank_inv_arith2 by rel_auto'
 
 \<comment> \<open>Refined with invariants \<close>
 
