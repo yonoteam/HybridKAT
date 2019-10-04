@@ -768,22 +768,36 @@ using an invariant.
   A controller turns a water pump on and off to keep the water level
   $h$ in a tank within safe bounds $h_l\leq h\leq h_h$.  Variable
   $h_0$ stores an initial water level;  $\pi$ indicates whether the pump is
-  on or off. The rate of change of the water-level in the tank is
+  on or off. The rate of change of the water-level is
   linear with slope $k\in\{-c_o,c_i-c_o\}$ (assuming $c_i>c_o$). The
-  vector field for this behaviour is
+  vector field for this behaviour and its invariant are
 \begin{isabellebody}
 \isanewline
 \isacommand{abbreviation}\ %\isamarkupfalse%
 %\ ftank\ {\isacharcolon}{\isacharcolon}\ {\isachardoublequoteopen}real\ {\isasymRightarrow}\ {\isacharparenleft}real{\isacharcomma}\ {\isadigit{4}}{\isacharparenright}\ vec\ {\isasymRightarrow}\ {\isacharparenleft}real{\isacharcomma}\ {\isadigit{4}}{\isacharparenright}\ vec{\isachardoublequoteclose}\ {\isacharparenleft}{\isachardoublequoteopen}f{\isachardoublequoteclose}{\isacharparenright}\isanewline
 %\ \ \isakeyword{where}\ 
 {\isachardoublequoteopen}f\ k\ {\isasymequiv}\ {\isasymlbrakk}{\isacharbrackleft}h\ {\isasymmapsto}\isactrlsub s\ k{\isacharcomma}\ t\ {\isasymmapsto}\isactrlsub s\ {\isadigit{1}}{\isacharcomma}\ $h_0$\ {\isasymmapsto}\isactrlsub s\ {\isadigit{0}}{\isacharcomma}\ {\isasympi}\ {\isasymmapsto}\isactrlsub s\ {\isadigit{0}}{\isacharbrackright}{\isasymrbrakk}\isactrlsub e{\isachardoublequoteclose}\isanewline
+\isanewline
+\isacommand{abbreviation}\ %\isamarkupfalse%
+%\ tank{\isacharunderscore}diff{\isacharunderscore}inv\ {\isacharcolon}{\isacharcolon}\ {\isachardoublequoteopen}real\ {\isasymRightarrow}\ real\ {\isasymRightarrow}\ real\ {\isasymRightarrow}\ {\isacharparenleft}real{\isacharcircum}{\isadigit{4}}{\isacharparenright}\ upred{\isachardoublequoteclose}\ {\isacharparenleft}{\isachardoublequoteopen}dI{\isachardoublequoteclose}{\isacharparenright}\isanewline
+%\ \ \isakeyword{where}\ 
+{\isachardoublequoteopen}dI\ $h_l$\ $h_h$\ k\ {\isasymequiv}\isanewline
+\ \ U{\isacharparenleft}h\ {\isacharequal}\ k\ {\isasymcdot}\ t\
+{\isacharplus}\ $h_0$\ {\isasymand}\ {\isadigit{0}}\ {\isasymle}\ t\
+{\isasymand}\ $h_l$\ {\isasymle}\ $h_0$\ {\isasymand}\ $h_0$\
+{\isasymle}\ $h_h$\ {\isasymand}\ {\isacharparenleft}{\isasympi}\
+{\isacharequal}\ {\isadigit{0}}\ {\isasymor}\ {\isasympi}\
+{\isacharequal}\
+{\isadigit{1}}{\isacharparenright}{\isacharparenright}{\isachardoublequoteclose}
+\isanewline
 \end{isabellebody}
-\noindent It differs from that of the thermostat in
+\noindent The vector field differs from that of the thermostat in
 Example~\ref{ex:therm-sol}. A hybrid program for the controller of the
-water tank is given as follows. Once again we introduce the guard $G$,
+water tank is given as follows. Once again we introduce the guard $G\
+h_x\ k$ with $h_x\in\{h_l,h_h\}$, which restricts the evolution to 
+go beyond $h_x$,
 loop invariant $I$ control and dynamic part before the program
-itself---and this tim a differential invariant \isa{dI} as well:
-\gin{What is $h_x$? }
+itself---and this time a differential invariant \isa{dI} as well:
 \begin{isabellebody}
 \isanewline
 \isacommand{abbreviation}\ %\isamarkupfalse%
@@ -795,12 +809,6 @@ itself---and this tim a differential invariant \isa{dI} as well:
 %\ tank{\isacharunderscore}loop{\isacharunderscore}inv\ {\isacharcolon}{\isacharcolon}\ {\isachardoublequoteopen}real\ {\isasymRightarrow}\ real\ {\isasymRightarrow}\ {\isacharparenleft}real{\isacharcircum}{\isadigit{4}}{\isacharparenright}\ upred{\isachardoublequoteclose}\ {\isacharparenleft}{\isachardoublequoteopen}I{\isachardoublequoteclose}{\isacharparenright}\isanewline
 %\ \ \isakeyword{where}\ 
 {\isachardoublequoteopen}I\ $h_l$\ $h_h$\ {\isasymequiv}\ U{\isacharparenleft}$h_l$\ {\isasymle}\ T\ {\isasymand}\ T\ {\isasymle}\ $h_h$\ {\isasymand}\ {\isacharparenleft}{\isasympi}\ {\isacharequal}\ {\isadigit{0}}\ {\isasymor}\ {\isasympi}\ {\isacharequal}\ {\isadigit{1}}{\isacharparenright}{\isacharparenright}{\isachardoublequoteclose}\isanewline
-\isanewline
-\isacommand{abbreviation}\ %\isamarkupfalse%
-%\ tank{\isacharunderscore}diff{\isacharunderscore}inv\ {\isacharcolon}{\isacharcolon}\ {\isachardoublequoteopen}real\ {\isasymRightarrow}\ real\ {\isasymRightarrow}\ real\ {\isasymRightarrow}\ {\isacharparenleft}real{\isacharcircum}{\isadigit{4}}{\isacharparenright}\ upred{\isachardoublequoteclose}\ {\isacharparenleft}{\isachardoublequoteopen}dI{\isachardoublequoteclose}{\isacharparenright}\isanewline
-%\ \ \isakeyword{where}\ 
-{\isachardoublequoteopen}dI\ $h_l$\ $h_h$\ k\ {\isasymequiv}\isanewline
-\ \ U{\isacharparenleft}h\ {\isacharequal}\ k\ {\isasymcdot}\ t\ {\isacharplus}\ $h_0$\ {\isasymand}\ {\isadigit{0}}\ {\isasymle}\ t\ {\isasymand}\ $h_l$\ {\isasymle}\ $h_0$\ {\isasymand}\ $h_0$\ {\isasymle}\ $h_h$\ {\isasymand}\ {\isacharparenleft}{\isasympi}\ {\isacharequal}\ {\isadigit{0}}\ {\isasymor}\ {\isasympi}\ {\isacharequal}\ {\isadigit{1}}{\isacharparenright}{\isacharparenright}{\isachardoublequoteclose}\isanewline
 \isanewline
 \isacommand{abbreviation}\ %\isamarkupfalse%
 %\ tank{\isacharunderscore}ctrl\ {\isacharcolon}{\isacharcolon}\ {\isachardoublequoteopen}real\ {\isasymRightarrow}\ real\ {\isasymRightarrow}\ {\isacharparenleft}real{\isacharcircum}{\isadigit{4}}{\isacharparenright}\ nd{\isacharunderscore}fun{\isachardoublequoteclose}\ {\isacharparenleft}{\isachardoublequoteopen}ctrl{\isachardoublequoteclose}{\isacharparenright}\isanewline
@@ -821,32 +829,16 @@ itself---and this tim a differential invariant \isa{dI} as well:
 \ {\isachardoublequoteopen}tank{\isacharunderscore}dinv\ c\isactrlsub i\ c\isactrlsub o\ $h_l$\ $h_h$\ {\isasymtau}\ {\isasymequiv}\isanewline 
 \ \ LOOP\ {\isacharparenleft}ctrl\ $h_l$\ $h_h${\isacharsemicolon}\ dyn\ c\isactrlsub i\ c\isactrlsub o\ $h_l$\ $h_h$\ {\isasymtau}{\isacharparenright}\ INV\ {\isacharparenleft}I\ $h_l$\ $h_h${\isacharparenright}{\isachardoublequoteclose}\isanewline
 \end{isabellebody}
-%\begin{align*}
-%	\mathsf{Cntrl} = &\ {t:=(\lambda\, s.\ 0)};{h_0:=(\lambda\, s.\ s_h)};\\
-%				&\ \IF {(\lambda\, s.\ s_\Pi=0 \land s_{h0}\leq h_{min} + 1)} {\Pi:=(\lambda\, s.\ 1)} {}\\
-%				&\ \IF {(\lambda\, s.\ s_\Pi=1 \land s_{h0}\geq h_{max} - 1)} {\Pi:=(\lambda\, s.\ 0)} {\mathit{skip}},\\
-%	\mathsf{Dyn} = &\ \IF {(\lambda\, s.\ s_\Pi=0)} {x' = f_{c_i-c_o}\, \&\, G_{c_i-c_o}} {x' = f_{-c_o}\, \&\, G_{-c_o}},\\
-%	\mathsf{Tank} = &\ (\mathsf{Cntrl}{;}\mathsf{Dyn})^\ast.
-%\end{align*}
-%Here, for $k\in\{-c_o,c_i-c_o\}$ we just need to assume that
-%\begin{equation*}
-%	f_k\, (s_h,s_t,s_{h0},s_\Pi)^\top = (k, 1, 0, 0)^\top\text{ and }
-%	G_k\, s = \left(s_t\leq \frac{\Delta_k-s_{h0}}{k}\right),
-%\end{equation*}
-%where $0 < c_o$, $c_o < c_i$, and $\Delta_k=h_{min}$ if $k=-c_o$ and
-%$\Delta_k = h_{max}$ if $k=c_i-c_o$. We need to prove the
-%specification $\{I\}\, \mathsf{Tank}\, \{I\}$ where
-%$I\, s=\left(h_{min}\leq s_h\leq h_{max}\land (s_\Pi = 1 \lor
-%  s_\Pi=0)\right)$. For this we use an invariant for $f_k$:
-%\begin{equation*}
-%dI_k\, s = \left(s_h=ks_t+s_{h0}\land 0\leq s_t\land h_{min}\leq s_{h0}\leq h_{max} \land (s_\Pi=0\lor s_\Pi=1)\right).
-%\end{equation*}
-%
-%As before, in Isabelle we use \isa{{\isadigit{1}}}, \isa{{\isadigit{2}}}, \isa{{\isadigit{3}}}, and \isa{{\isadigit{4}}} for $h$, $t$, $h_0$ and $\Pi$ respectively, but f
 
 \noindent The correctness specification and verification of the water
 tank is with $\dH$ then
+
 \begin{isabellebody}
+\isanewline
+\isacommand{lemma}\isamarkupfalse%
+\ tank{\isacharunderscore}diff{\isacharunderscore}inv{\isacharcolon}\isanewline
+\ \ {\isachardoublequoteopen}{\isadigit{0}}\ {\isasymle}\ {\isasymtau}\ {\isasymLongrightarrow}\ diff{\isacharunderscore}invariant\ \ {\isasymlbrakk}dI\ $h_l$\ $h_h$\ k{\isasymrbrakk}\isactrlsub e\ {\isacharparenleft}f\ k{\isacharparenright}\ {\isacharbraceleft}{\isadigit{0}}{\isachardot}{\isachardot}{\isasymtau}{\isacharbraceright}\ UNIV\ {\isadigit{0}}\ Guard{\isachardoublequoteclose}\isanewline
+\ \ $\langle \isa{proof}\rangle$\isanewline
 \isanewline
 \isacommand{lemma}\isamarkupfalse%
 \ tank{\isacharunderscore}inv{\isacharcolon}\isanewline
@@ -1010,11 +1002,6 @@ and
  
 \gin{redo proof. what is the first proof good for?}
 \begin{isabellebody}
-\isanewline
-\isacommand{lemma}\isamarkupfalse%
-\ tank{\isacharunderscore}diff{\isacharunderscore}inv{\isacharcolon}\isanewline
-\ \ {\isachardoublequoteopen}{\isadigit{0}}\ {\isasymle}\ {\isasymtau}\ {\isasymLongrightarrow}\ diff{\isacharunderscore}invariant\ \ {\isasymlbrakk}dI\ $h_l$\ $h_h$\ k{\isasymrbrakk}\isactrlsub e\ {\isacharparenleft}f\ k{\isacharparenright}\ {\isacharbraceleft}{\isadigit{0}}{\isachardot}{\isachardot}{\isasymtau}{\isacharbraceright}\ UNIV\ {\isadigit{0}}\ Guard{\isachardoublequoteclose}\isanewline
-\ \ $\langle \isa{proof}\rangle$\isanewline
 \isanewline
 \isacommand{lemma}\isamarkupfalse%
 \ R{\isacharunderscore}tank{\isacharunderscore}inv{\isacharcolon}\isanewline
