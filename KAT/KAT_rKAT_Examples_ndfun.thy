@@ -30,7 +30,7 @@ lemma vec_vwb_lens [simp]: "vwb_lens (vec_lens k)"
 lemma vec_lens_indep [simp]: "(i \<noteq> j) \<Longrightarrow> (vec_lens i \<bowtie> vec_lens j)"
   by (simp add: lens_indep_vwb_iff, auto simp add: lens_defs)
 
-\<comment> \<open>A tactic for hybrid programs \<close>
+\<comment> \<open>A tactic for verification of hybrid programs \<close>
 
 named_theorems hoare_intros
 
@@ -44,6 +44,22 @@ method body_hoare
 
 method hyb_hoare for P::"'a upred" 
   = (rule H_loopI, rule H_seq[where R=P]; body_hoare?)
+
+\<comment> \<open>A tactic for refinement of hybrid programs \<close>
+
+named_theorems ref_laws "list of refinement laws"
+
+declare R_loop_law [ref_laws]
+    and R_cond_law [ref_laws]
+    and R_while_law [ref_laws]
+    and R_seq_law [ref_laws]
+    and R_g_evol_law [ref_laws]
+    and R_skip [ref_laws]
+    and R_g_ode_inv [ref_laws]
+
+method refinement 
+  = (rule ref_laws; refinement?)
+
 
 subsubsection \<open>Pendulum\<close>
 
@@ -224,14 +240,30 @@ lemma bouncing_ball_flow:
 
 lemma R_bb_assign: "g < (0::real) \<Longrightarrow> 0 \<le> h \<Longrightarrow> 
   \<^bold>[v = 0 \<and> 0 \<le> x \<and> 2 \<cdot> g \<cdot> x = 2 \<cdot> g \<cdot> h + v \<cdot> v, 0 \<le> x \<and> 2 \<cdot> g \<cdot> x = 2 \<cdot> g \<cdot> h + v \<cdot> v\<^bold>] \<ge> (v ::= - v)"
-  by (rule R_assign_rule, pred_simp)
+  by (rule R_assign_law, pred_simp)
 
 lemma R_bouncing_ball_dyn:
   assumes "g < 0" and "h \<ge> 0"
   shows "\<^bold>[x = h \<and> v = 0, 0 \<le> x \<and> x \<le> h\<^bold>] \<ge> bb_evol g h T"
+  apply(refinement; (rule R_bb_assign[OF assms])?)
+  using assms by (rel_auto' simp: bb_real_arith)
+
+lemma
+  assumes "g < 0" and "h \<ge> 0"
+  shows "\<^bold>[x = h \<and> v = 0, 0 \<le> x \<and> x \<le> h\<^bold>] \<ge> bb_evol g h T"
+  apply(rule order_trans; (rule R_loop_mono)?, (rule R_loop_law)?; (rule R_seq)?, (rule R_seq_mono)?)
+     apply(rule R_g_evol_law) defer
+     apply(rule order_trans, rule R_cond_mono, rule R_bb_assign[OF assms], rule R_skip) defer
+      apply(rule R_cond) apply force+
+  using assms apply(simp, pred_simp)
+  using assms by (simp, pred_simp, rel_auto' simp: bb_real_arith)
+
+lemma
+  assumes "g < 0" and "h \<ge> 0"
+  shows "\<^bold>[x = h \<and> v = 0, 0 \<le> x \<and> x \<le> h\<^bold>] \<ge> bb_evol g h T"
   apply(rule order_trans)
    apply(rule R_loop_mono) defer
-   apply(rule R_loop)
+   apply(rule R_loop_law)
      apply(rule R_seq)
   using assms apply(simp, pred_simp)
   using assms apply(simp, pred_simp, force simp: bb_real_arith)
@@ -241,7 +273,7 @@ lemma R_bouncing_ball_dyn:
      apply(rule R_cond) defer defer defer
   apply(rule R_bb_assign, simp_all add: assms)
    apply(rule R_skip, pred_simp)
-  by (rule R_g_evol_rule, rel_auto' simp: bb_real_arith)
+  by (rule R_g_evol_law, rel_auto' simp: bb_real_arith)
 
 no_notation fball ("f")
         and ball_flow ("\<phi>")
@@ -286,15 +318,15 @@ abbreviation therm_ctrl :: "real \<Rightarrow> real \<Rightarrow> (real^4) nd_fu
    IF (\<theta> = 1 \<and> T\<^sub>0 \<ge> T\<^sub>h - 1) THEN (\<theta> ::= 0) ELSE skip)"
 
 abbreviation therm_dyn :: "real \<Rightarrow> real \<Rightarrow> real \<Rightarrow> real \<Rightarrow> real \<Rightarrow> (real^4) nd_fun" ("dyn")
-  where "dyn T\<^sub>l T\<^sub>h a L \<tau> \<equiv> 
+  where "dyn T\<^sub>l T\<^sub>h a T\<^sub>u \<tau> \<equiv> 
   IF (\<theta> = 0) THEN x\<acute>= f a 0 & G T\<^sub>l T\<^sub>h a 0 on {0..\<tau>} UNIV @ 0 
-   ELSE x\<acute>= f a L & G T\<^sub>l T\<^sub>h a L on {0..\<tau>} UNIV @ 0"
+   ELSE x\<acute>= f a T\<^sub>u & G T\<^sub>l T\<^sub>h a T\<^sub>u on {0..\<tau>} UNIV @ 0"
 
 abbreviation "therm T\<^sub>l T\<^sub>h a L \<tau> \<equiv> LOOP (ctrl T\<^sub>l T\<^sub>h ; dyn T\<^sub>l T\<^sub>h a L \<tau>) INV (I T\<^sub>l T\<^sub>h)"
 
 \<comment> \<open>Verified by providing solutions \<close>
 
-lemma norm_diff_therm_dyn: "0 < (a::real) \<Longrightarrow> (a \<cdot> (s\<^sub>2$1 - L) - a \<cdot> (s\<^sub>1$1 - L))\<^sup>2
+lemma norm_diff_therm_dyn: "0 < (a::real) \<Longrightarrow> (a \<cdot> (s\<^sub>2$1 - T\<^sub>u) - a \<cdot> (s\<^sub>1$1 - T\<^sub>u))\<^sup>2
        \<le> (a \<cdot> sqrt ((s\<^sub>1$1 - s\<^sub>2$1)\<^sup>2 + ((s\<^sub>1$2 - s\<^sub>2$2)\<^sup>2 + ((s\<^sub>1$3 - s\<^sub>2$3)\<^sup>2 + (s\<^sub>1$4 - s\<^sub>2$4)\<^sup>2))))\<^sup>2"
 proof(simp add: field_simps)
   assume a1: "0 < a"
@@ -310,14 +342,14 @@ qed
 
 lemma local_lipschitz_therm_dyn:
   assumes "0 < (a::real)"
-  shows "local_lipschitz UNIV UNIV (\<lambda>t::real. f a L)"
+  shows "local_lipschitz UNIV UNIV (\<lambda>t::real. f a T\<^sub>u)"
   apply(unfold local_lipschitz_def lipschitz_on_def dist_norm)
   apply(clarsimp, rule_tac x=1 in exI, clarsimp, rule_tac x=a in exI, pred_simp)
   using assms apply(simp add: norm_vec_def L2_set_def, unfold UNIV_4, pred_simp)
   unfolding real_sqrt_abs[symmetric] apply (rule real_le_lsqrt)
   by (simp_all add: norm_diff_therm_dyn)
 
-lemma local_flow_therm: "a > 0 \<Longrightarrow> local_flow (f a L) UNIV UNIV (\<lambda> t. \<lbrakk>\<phi> a L t\<rbrakk>\<^sub>e)"
+lemma local_flow_therm: "a > 0 \<Longrightarrow> local_flow (f a T\<^sub>u) UNIV UNIV (\<lambda> t. \<lbrakk>\<phi> a T\<^sub>u t\<rbrakk>\<^sub>e)"
   apply (unfold_locales, simp_all)
   using local_lipschitz_therm_dyn apply(pred_simp)
    apply(simp add: forall_4, pred_simp, force intro!: poly_derivatives)
@@ -346,29 +378,29 @@ qed
 
 lemma therm_dyn_up:
   fixes T::real
-  assumes "a > 0" and Thyps: "T\<^sub>l \<le> T" "T \<le> T\<^sub>h" "T\<^sub>h < (L::real)"
-    and thyps: "0 \<le> \<tau>" "\<forall>\<tau>\<in>{0..\<tau>}. \<tau> \<le> - (ln ((L - T\<^sub>h) / (L - T)) / a) "
-  shows "L - T\<^sub>h \<le> exp (-(a * \<tau>)) * (L - T)" 
-    and "L - exp (-(a * \<tau>)) * (L - T) \<le> T\<^sub>h" 
-    and "T\<^sub>l \<le> L - exp (-(a * \<tau>)) * (L - T)"
+  assumes "a > 0" and Thyps: "T\<^sub>l \<le> T" "T \<le> T\<^sub>h" "T\<^sub>h < (T\<^sub>u::real)"
+    and thyps: "0 \<le> \<tau>" "\<forall>\<tau>\<in>{0..\<tau>}. \<tau> \<le> - (ln ((T\<^sub>u - T\<^sub>h) / (T\<^sub>u - T)) / a) "
+  shows "T\<^sub>u - T\<^sub>h \<le> exp (-(a * \<tau>)) * (T\<^sub>u - T)" 
+    and "T\<^sub>u - exp (-(a * \<tau>)) * (T\<^sub>u - T) \<le> T\<^sub>h" 
+    and "T\<^sub>l \<le> T\<^sub>u - exp (-(a * \<tau>)) * (T\<^sub>u - T)"
 proof-
-  have "0 \<le> \<tau> \<and> \<tau> \<le> - (ln ((L - T\<^sub>h) / (L - T)) / a)"
+  have "0 \<le> \<tau> \<and> \<tau> \<le> - (ln ((T\<^sub>u - T\<^sub>h) / (T\<^sub>u - T)) / a)"
     using thyps by auto
-  hence "ln ((L - T\<^sub>h) / (L - T)) \<le> - a * \<tau> \<and> - a * \<tau> \<le> 0"
+  hence "ln ((T\<^sub>u - T\<^sub>h) / (T\<^sub>u - T)) \<le> - a * \<tau> \<and> - a * \<tau> \<le> 0"
     using assms(1) divide_le_cancel by fastforce
-  also have "(L - T\<^sub>h) / (L - T) > 0"
+  also have "(T\<^sub>u - T\<^sub>h) / (T\<^sub>u - T) > 0"
     using Thyps by auto
-  ultimately have "(L - T\<^sub>h) / (L - T) \<le> exp (-a * \<tau>) \<and> exp (-a * \<tau>) \<le> 1"
+  ultimately have "(T\<^sub>u - T\<^sub>h) / (T\<^sub>u - T) \<le> exp (-a * \<tau>) \<and> exp (-a * \<tau>) \<le> 1"
     using exp_ln exp_le_one_iff by (metis exp_less_cancel_iff not_less)
-  moreover have "L - T > 0"
+  moreover have "T\<^sub>u - T > 0"
     using Thyps by auto
-  ultimately have obs: "(L - T\<^sub>h) \<le> exp (-a * \<tau>) * (L - T) \<and> exp (-a * \<tau>) * (L - T) \<le> (L - T)"
+  ultimately have obs: "(T\<^sub>u - T\<^sub>h) \<le> exp (-a * \<tau>) * (T\<^sub>u - T) \<and> exp (-a * \<tau>) * (T\<^sub>u - T) \<le> (T\<^sub>u - T)"
     by (simp add: pos_divide_le_eq)
-  thus "(L - T\<^sub>h) \<le> exp (-(a * \<tau>)) * (L - T)"
+  thus "(T\<^sub>u - T\<^sub>h) \<le> exp (-(a * \<tau>)) * (T\<^sub>u - T)"
     by auto
-  thus "L - exp (-(a * \<tau>)) * (L - T) \<le> T\<^sub>h"
+  thus "T\<^sub>u - exp (-(a * \<tau>)) * (T\<^sub>u - T) \<le> T\<^sub>h"
     by auto
-  show "T\<^sub>l \<le> L - exp (-(a * \<tau>)) * (L - T)"
+  show "T\<^sub>l \<le> T\<^sub>u - exp (-(a * \<tau>)) * (T\<^sub>u - T)"
     using Thyps and obs by auto
 qed
 
@@ -393,48 +425,54 @@ lemma sH_condl: "\<^bold>{P\<^bold>} (Z; (IF B THEN X ELSE Y)) \<^bold>{Q\<^bold
       rule_tac x=x in exI, pred_simp, simp)+
 
 lemma thermostat_flow: 
-  assumes "0 < a" and "0 \<le> \<tau>" and "0 < T\<^sub>l" and "T\<^sub>h < L"
-  shows "\<^bold>{I T\<^sub>l T\<^sub>h\<^bold>} therm T\<^sub>l T\<^sub>h a L \<tau> \<^bold>{I T\<^sub>l T\<^sub>h\<^bold>}"
+  assumes "0 < a" and "0 \<le> \<tau>" and "0 < T\<^sub>l" and "T\<^sub>h < T\<^sub>u"
+  shows "\<^bold>{I T\<^sub>l T\<^sub>h\<^bold>} therm T\<^sub>l T\<^sub>h a T\<^sub>u \<tau> \<^bold>{I T\<^sub>l T\<^sub>h\<^bold>}"
   apply(hyb_hoare "U(I T\<^sub>l T\<^sub>h \<and> t=0 \<and> T\<^sub>0 = T)")
               prefer 4 prefer 8 using local_flow_therm assms apply force+
   using assms therm_dyn_up therm_dyn_down by rel_auto'
 
 \<comment> \<open>Refined by providing solutions \<close>
 
-lemma R_therm_dyn_down: 
-  assumes "a > 0" and "0 \<le> \<tau>" and "0 < T\<^sub>l" and "T\<^sub>h < L"
+lemma R_therm_down: 
+  assumes "a > 0" and "0 \<le> \<tau>" and "0 < T\<^sub>l" and "T\<^sub>h < T\<^sub>u"
   shows "\<^bold>[\<theta> = 0 \<and> I T\<^sub>l T\<^sub>h \<and> t = 0 \<and> T\<^sub>0 = T, I T\<^sub>l T\<^sub>h\<^bold>] \<ge> (x\<acute>= f a 0 & G T\<^sub>l T\<^sub>h a 0 on {0..\<tau>} UNIV @ 0)"
   apply(rule local_flow.R_g_ode_ivl[OF local_flow_therm])
-  using assms apply(simp_all, pred_simp)
-  using therm_dyn_down[OF assms(1,3), of _ T\<^sub>h] by auto
+  using therm_dyn_down[OF assms(1,3), of _ T\<^sub>h] assms by rel_auto'
 
-lemma R_therm_dyn_up: 
-  assumes "a > 0" and "0 \<le> \<tau>" and "0 < T\<^sub>l" and "T\<^sub>h < L"
-  shows "\<^bold>[\<not> \<theta> = 0 \<and> I T\<^sub>l T\<^sub>h \<and> t = 0 \<and> T\<^sub>0 = T, I T\<^sub>l T\<^sub>h\<^bold>] \<ge> (x\<acute>= f a L & G T\<^sub>l T\<^sub>h a L on {0..\<tau>} UNIV @ 0)"
+lemma R_therm_up: 
+  assumes "a > 0" and "0 \<le> \<tau>" and "0 < T\<^sub>l" and "T\<^sub>h < T\<^sub>u"
+  shows "\<^bold>[\<not> \<theta> = 0 \<and> I T\<^sub>l T\<^sub>h \<and> t = 0 \<and> T\<^sub>0 = T, I T\<^sub>l T\<^sub>h\<^bold>] \<ge> (x\<acute>= f a T\<^sub>u & G T\<^sub>l T\<^sub>h a T\<^sub>u on {0..\<tau>} UNIV @ 0)"
   apply(rule local_flow.R_g_ode_ivl[OF local_flow_therm])
-  using assms apply(simp_all, pred_simp)
-  using therm_dyn_up[OF assms(1) _ _ assms(4), of T\<^sub>l] by auto
+  using therm_dyn_up[OF assms(1) _ _ assms(4), of T\<^sub>l] assms by rel_auto'
 
 lemma R_therm_dyn:
-  assumes "a > 0" and "0 \<le> \<tau>" and "0 < T\<^sub>l" and "T\<^sub>h < L"
-  shows "\<^bold>[I T\<^sub>l T\<^sub>h \<and> t = 0 \<and> T\<^sub>0 = T, I T\<^sub>l T\<^sub>h\<^bold>] \<ge> dyn T\<^sub>l T\<^sub>h a L \<tau>"
+  assumes "a > 0" and "0 \<le> \<tau>" and "0 < T\<^sub>l" and "T\<^sub>h < T\<^sub>u"
+  shows "\<^bold>[I T\<^sub>l T\<^sub>h \<and> t = 0 \<and> T\<^sub>0 = T, I T\<^sub>l T\<^sub>h\<^bold>] \<ge> dyn T\<^sub>l T\<^sub>h a T\<^sub>u \<tau>"
+  apply(refinement) using R_therm_down[OF assms] R_therm_up[OF assms] by auto
+
+lemma
+  assumes "a > 0" and "0 \<le> \<tau>" and "0 < T\<^sub>l" and "T\<^sub>h < T\<^sub>u"
+  shows "\<^bold>[I T\<^sub>l T\<^sub>h \<and> t = 0 \<and> T\<^sub>0 = T, I T\<^sub>l T\<^sub>h\<^bold>] \<ge> dyn T\<^sub>l T\<^sub>h a T\<^sub>u \<tau>"
   apply(rule order_trans, rule R_cond_mono)
-  using R_therm_dyn_down[OF assms] R_therm_dyn_up[OF assms] by (auto intro!: R_cond)
+  using R_therm_down[OF assms] R_therm_up[OF assms] by (auto intro!: R_cond)
 
-lemma R_therm_assign1: "\<^bold>[I T\<^sub>l T\<^sub>h, I T\<^sub>l T\<^sub>h \<and> t = 0\<^bold>] \<ge> (t ::= 0)"
-  by (rule R_assign_rule, pred_simp)
+lemma R_therm_time: "\<^bold>[I T\<^sub>l T\<^sub>h, I T\<^sub>l T\<^sub>h \<and> t = 0\<^bold>] \<ge> (t ::= 0)"
+  by (rule R_assign_law, pred_simp)
 
-lemma R_therm_assign2: "\<^bold>[I T\<^sub>l T\<^sub>h \<and> t = 0, I T\<^sub>l T\<^sub>h \<and> t = 0 \<and> T\<^sub>0 = T\<^bold>] \<ge> (T\<^sub>0 ::= T)"
-  by (rule R_assign_rule, pred_simp)
+lemma R_therm_temp: "\<^bold>[I T\<^sub>l T\<^sub>h \<and> t = 0, I T\<^sub>l T\<^sub>h \<and> t = 0 \<and> T\<^sub>0 = T\<^bold>] \<ge> (T\<^sub>0 ::= T)"
+  by (rule R_assign_law, pred_simp)
 
 lemma R_therm_ctrl: "\<^bold>[I T\<^sub>l T\<^sub>h, I T\<^sub>l T\<^sub>h \<and> t = 0 \<and> T\<^sub>0 = T\<^bold>] \<ge> ctrl T\<^sub>l T\<^sub>h"
-  apply(rule R_seq_rule, rule R_therm_assign1)
-  apply(rule R_seq_rule, rule R_therm_assign2)
+  by (refinement; (rule R_therm_time)?, (rule R_therm_temp)?, (rule R_assign_law)?) rel_auto'
+
+lemma "\<^bold>[I T\<^sub>l T\<^sub>h, I T\<^sub>l T\<^sub>h \<and> t = 0 \<and> T\<^sub>0 = T\<^bold>] \<ge> ctrl T\<^sub>l T\<^sub>h"
+  apply(rule R_seq_law, rule R_therm_time)
+  apply(rule R_seq_law, rule R_therm_temp)
   apply(rule order_trans)
    apply(rule R_cond_mono)
-    apply(rule R_assign_rule) defer
+    apply(rule R_assign_law) defer
     apply(rule R_cond_mono)
-     apply(rule R_assign_rule) defer
+     apply(rule R_assign_law) defer
      apply(rule R_skip) defer
      apply(rule order_trans)
       apply(rule R_cond_mono)
@@ -443,16 +481,34 @@ lemma R_therm_ctrl: "\<^bold>[I T\<^sub>l T\<^sub>h, I T\<^sub>l T\<^sub>h \<and
        apply (rule R_cond)
   by (simp_all, rel_auto')
 
+lemma  
+  assumes "a > 0" and "0 \<le> \<tau>" and "0 < T\<^sub>l" and "T\<^sub>h < T\<^sub>u"
+  shows "\<^bold>[I T\<^sub>l T\<^sub>h, I T\<^sub>l T\<^sub>h\<^bold>] \<ge> therm T\<^sub>l T\<^sub>h a T\<^sub>u \<tau>"
+  apply(rule order_trans; (rule R_loop_mono)?, (rule R_loop_law)?; (rule R_seq)?, (rule R_seq_mono)?)
+  by (rule R_therm_ctrl, rule R_therm_dyn[OF assms]) rel_auto'
+
+lemma R_thermostat_flow:
+  assumes "a > 0" and "0 \<le> \<tau>" and "0 < T\<^sub>l" and "T\<^sub>h < T\<^sub>u"
+  shows "\<^bold>[I T\<^sub>l T\<^sub>h, I T\<^sub>l T\<^sub>h\<^bold>] \<ge> therm T\<^sub>l T\<^sub>h a T\<^sub>u \<tau>"
+  by (refinement; (rule R_therm_time)?, (rule R_therm_temp)?, (rule R_assign_law)?, 
+      (rule R_therm_up[OF assms])?, (rule R_therm_down[OF assms])?) rel_auto'
+
+lemma  
+  assumes "a > 0" and "0 \<le> \<tau>" and "0 < T\<^sub>l" and "T\<^sub>h < T\<^sub>u"
+  shows "\<^bold>[I T\<^sub>l T\<^sub>h, I T\<^sub>l T\<^sub>h\<^bold>] \<ge> therm T\<^sub>l T\<^sub>h a T\<^sub>u \<tau>"
+  apply(rule order_trans; (rule R_loop_mono)?, (rule R_loop_law)?; (rule R_seq)?, (rule R_seq_mono)?)
+  by (rule R_therm_ctrl, rule R_therm_dyn[OF assms]) rel_auto'
+
 lemma R_therm_loop: "\<^bold>[I T\<^sub>l T\<^sub>h, I T\<^sub>l T\<^sub>h\<^bold>] \<ge> 
   LOOP 
     \<^bold>[I T\<^sub>l T\<^sub>h, I T\<^sub>l T\<^sub>h \<and> t = 0 \<and> T\<^sub>0 = T\<^bold>];
     \<^bold>[I T\<^sub>l T\<^sub>h \<and> t = 0 \<and> T\<^sub>0 = T, I T\<^sub>l T\<^sub>h\<^bold>]
   INV I T\<^sub>l T\<^sub>h"
-  by (intro R_loop R_seq, simp_all)
+  by (intro R_loop_law R_seq, simp_all)
 
-lemma R_thermostat_flow: 
-  assumes "a > 0" and "0 \<le> \<tau>" and "0 < T\<^sub>l" and "T\<^sub>h < L"
-  shows "\<^bold>[I T\<^sub>l T\<^sub>h, I T\<^sub>l T\<^sub>h\<^bold>] \<ge> therm T\<^sub>l T\<^sub>h a L \<tau>"
+lemma 
+  assumes "a > 0" and "0 \<le> \<tau>" and "0 < T\<^sub>l" and "T\<^sub>h < T\<^sub>u"
+  shows "\<^bold>[I T\<^sub>l T\<^sub>h, I T\<^sub>l T\<^sub>h\<^bold>] \<ge> therm T\<^sub>l T\<^sub>h a T\<^sub>u \<tau>"
   by (intro order_trans[OF _ R_therm_loop] R_loop_mono 
       R_seq_mono R_therm_ctrl R_therm_dyn[OF assms])
 
@@ -482,7 +538,7 @@ abbreviation tank_guard :: "real \<Rightarrow> real \<Rightarrow> (real^4) upred
 no_utp_lift "tank_guard" (0 1)
 
 abbreviation tank_loop_inv :: "real \<Rightarrow> real \<Rightarrow> (real^4) upred" ("I")
-  where "I h\<^sub>l h\<^sub>h \<equiv> U(h\<^sub>l \<le> T \<and> T \<le> h\<^sub>h \<and> (\<pi> = 0 \<or> \<pi> = 1))"
+  where "I h\<^sub>l h\<^sub>h \<equiv> U(h\<^sub>l \<le> h \<and> h \<le> h\<^sub>h \<and> (\<pi> = 0 \<or> \<pi> = 1))"
 
 no_utp_lift "tank_loop_inv" (0 1)
 
@@ -589,15 +645,58 @@ lemma R_tank_inv:
   assumes "0 \<le> \<tau>" and "0 < c\<^sub>o" and "c\<^sub>o < c\<^sub>i"
   shows "\<^bold>[I h\<^sub>l h\<^sub>h, I h\<^sub>l h\<^sub>h\<^bold>] \<ge> tank_dinv c\<^sub>i c\<^sub>o h\<^sub>l h\<^sub>h \<tau>"
 proof-
+  have "\<^bold>[I h\<^sub>l h\<^sub>h, I h\<^sub>l h\<^sub>h\<^bold>] \<ge> LOOP ((t ::= 0);\<^bold>[I h\<^sub>l h\<^sub>h \<and> t = 0, I h\<^sub>l h\<^sub>h\<^bold>]) INV I h\<^sub>l h\<^sub>h" (is "_ \<ge> ?R")
+    by (rule R_loop_law, rule R_assignl, rel_auto')
+  moreover have 
+    "?R \<ge> LOOP ((t ::= 0);(h\<^sub>0 ::= h);\<^bold>[I h\<^sub>l h\<^sub>h \<and> t = 0 \<and> h\<^sub>0 = h, I h\<^sub>l h\<^sub>h\<^bold>]) INV I h\<^sub>l h\<^sub>h" (is "_ \<ge> ?R")
+    by (rule R_loop_mono, rule R_seq_mono, simp, rule R_assignl, pred_simp)
+  moreover have 
+    "?R \<ge> LOOP (ctrl h\<^sub>l h\<^sub>h;\<^bold>[I h\<^sub>l h\<^sub>h \<and> t = 0 \<and> h\<^sub>0 = h, I h\<^sub>l h\<^sub>h\<^bold>]) INV I h\<^sub>l h\<^sub>h" (is "_ \<ge> ?R")
+    apply(simp only: mult.assoc, rule R_loop_mono)
+    apply(rule R_seq_mono, simp)+
+    by (refinement; (rule R_assign_law)?) rel_auto'
+  moreover have 
+    "?R \<ge> LOOP (ctrl h\<^sub>l h\<^sub>h; dyn c\<^sub>i c\<^sub>o h\<^sub>l h\<^sub>h \<tau>) INV I h\<^sub>l h\<^sub>h"
+    apply(simp only: mult.assoc, rule R_loop_mono)
+    apply(rule R_seq_mono, simp)+
+    apply(refinement)
+    prefer 4 using tank_diff_inv assms apply force+
+    using assms tank_inv_arith1 tank_inv_arith2 by rel_auto'
+  ultimately show "\<^bold>[I h\<^sub>l h\<^sub>h, I h\<^sub>l h\<^sub>h\<^bold>] \<ge> tank_dinv c\<^sub>i c\<^sub>o h\<^sub>l h\<^sub>h \<tau>"
+    by auto
+qed
+
+lemma
+  assumes "0 \<le> \<tau>" and "0 < c\<^sub>o" and "c\<^sub>o < c\<^sub>i"
+  shows "\<^bold>[I h\<^sub>l h\<^sub>h, I h\<^sub>l h\<^sub>h\<^bold>] \<ge> tank_dinv c\<^sub>i c\<^sub>o h\<^sub>l h\<^sub>h \<tau>"
+proof -
+  have R1: "(t ::= 0) \<le> \<^bold>[I h\<^sub>l h\<^sub>h, I h\<^sub>l h\<^sub>h \<and> t = 0\<^bold>]"
+    by (rule R_assign_law, pred_simp)
+  have R2: "(h\<^sub>0 ::= h) \<le> \<^bold>[I h\<^sub>l h\<^sub>h \<and> t = 0, I h\<^sub>l h\<^sub>h \<and> t = 0 \<and> h\<^sub>0 = h\<^bold>]"
+    by (rule R_assign_law, pred_simp)
+  have R3: "(\<pi> ::= 1) \<le> \<^bold>[(\<pi> = 0 \<and> h\<^sub>0 \<le> h\<^sub>l + 1) \<and> I h\<^sub>l h\<^sub>h \<and> t = 0 \<and> h\<^sub>0 = h, I h\<^sub>l h\<^sub>h \<and> t = 0 \<and> h\<^sub>0 = h\<^bold>]"
+    by (rule R_assign_law, pred_simp)
+  show ?thesis
+    apply refinement
+    prefer 6 prefer 9 using R1 R2 R3 tank_diff_inv assms apply force+
+    apply(rule R_assign_law, pred_simp)
+    using assms tank_inv_arith1 tank_inv_arith2 by rel_auto'
+qed
+
+lemma
+  assumes "0 \<le> \<tau>" and "0 < c\<^sub>o" and "c\<^sub>o < c\<^sub>i"
+  shows "\<^bold>[I h\<^sub>l h\<^sub>h, I h\<^sub>l h\<^sub>h\<^bold>] \<ge> tank_dinv c\<^sub>i c\<^sub>o h\<^sub>l h\<^sub>h \<tau>"
+proof-
   \<comment> \<open>First we refine the control. \<close>
   have ifbranch1: 
     "\<pi> ::= 1 \<le> \<^bold>[\<pi> = 0 \<and> h\<^sub>0 \<le> h\<^sub>l + 1 \<and> I h\<^sub>l h\<^sub>h \<and> t = 0 \<and> h\<^sub>0 = h, I h\<^sub>l h\<^sub>h \<and> t = 0 \<and> h\<^sub>0 = h\<^bold>]" 
-    (is "_ \<le> ?branch1") by (rule R_assign_rule, pred_simp)
+    (is "_ \<le> ?branch1") by (rule R_assign_law, pred_simp)
   have ifbranch2: 
     "(IF (\<pi> = 1 \<and> h\<^sub>0 \<ge> h\<^sub>h - 1) THEN (\<pi> ::= 0) ELSE skip) \<le> 
     \<^bold>[\<not> (\<pi> = 0 \<and> h\<^sub>0 \<le> h\<^sub>l + 1) \<and> I h\<^sub>l h\<^sub>h \<and> t = 0 \<and> h\<^sub>0 = h, I h\<^sub>l h\<^sub>h \<and> t = 0 \<and> h\<^sub>0 = h\<^bold>]" 
-    (is "_ \<le> ?branch2") apply(rule order_trans, rule R_cond_mono) defer defer
-    by (rule R_cond, auto intro!: R_assign_rule R_skip, rel_auto')
+    (is "_ \<le> ?branch2") 
+    apply(rule order_trans, rule R_cond_mono) defer defer
+    by (rule R_cond, auto intro!: R_assign_law R_skip, rel_auto')
   have ifthenelse: 
     "(IF (\<pi> = 0 \<and> h\<^sub>0 \<le> h\<^sub>l + 1) THEN ?branch1 ELSE ?branch2) \<le> 
     \<^bold>[I h\<^sub>l h\<^sub>h \<and> t = 0 \<and> h\<^sub>0 = h, I h\<^sub>l h\<^sub>h \<and> t = 0 \<and> h\<^sub>0 = h\<^bold>]" 
@@ -609,10 +708,10 @@ proof-
     apply(rule_tac y="?ifthenelse" in order_trans, rule R_cond_mono)
     using ifbranch1 ifbranch2 ifthenelse by auto
   hence ctrl: "ctrl h\<^sub>l h\<^sub>h \<le> \<^bold>[I h\<^sub>l h\<^sub>h, I h\<^sub>l h\<^sub>h \<and> t = 0 \<and> h\<^sub>0 = h\<^bold>]" (is "_ \<le> ?ctrl_ref")
-     apply(rule_tac R="U(I h\<^sub>l h\<^sub>h \<and> t = 0)" in R_seq_rule)
-    apply(rule R_assign_rule, pred_simp)
-    apply(rule_tac R="U(I h\<^sub>l h\<^sub>h \<and> t = 0 \<and> h\<^sub>0 = h)" in R_seq_rule)
-    apply(rule R_assign_rule, pred_simp) .
+     apply(rule_tac R="U(I h\<^sub>l h\<^sub>h \<and> t = 0)" in R_seq_law)
+    apply(rule R_assign_law, pred_simp)
+    apply(rule_tac R="U(I h\<^sub>l h\<^sub>h \<and> t = 0 \<and> h\<^sub>0 = h)" in R_seq_law)
+    apply(rule R_assign_law, pred_simp) .
   \<comment> \<open>Then we refine the dynamics. \<close>
   have dynup: 
     "(x\<acute>= f (c\<^sub>i-c\<^sub>o) & G h\<^sub>h (c\<^sub>i-c\<^sub>o) on {0..\<tau>} UNIV @ 0 DINV (dI h\<^sub>l h\<^sub>h (c\<^sub>i-c\<^sub>o))) \<le> 
@@ -636,7 +735,7 @@ proof-
   have inv_inv: "?ctrl_ref; ?dyn_ref \<le> \<^bold>[I h\<^sub>l h\<^sub>h, I h\<^sub>l h\<^sub>h\<^bold>]"
     by (rule R_seq)
   have loopref: "LOOP ?ctrl_ref; ?dyn_ref INV I h\<^sub>l h\<^sub>h \<le> \<^bold>[I h\<^sub>l h\<^sub>h, I h\<^sub>l h\<^sub>h\<^bold>]"
-    apply(rule R_loop)
+    apply(rule R_loop_law)
     using pre_pos inv_inv by auto
   have obs: "(ctrl h\<^sub>l h\<^sub>h;dyn c\<^sub>i c\<^sub>o h\<^sub>l h\<^sub>h \<tau>) \<le> ?ctrl_ref; ?dyn_ref"
     apply(rule R_seq_mono)
