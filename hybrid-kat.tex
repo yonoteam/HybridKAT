@@ -1027,44 +1027,37 @@ equations shown above. \qed
 \ {\isachardoublequoteopen}\isactrlbold {\isacharbrackleft}I\ h\isactrlsub l\ h\isactrlsub h{\isacharcomma}\ I\ h\isactrlsub l\ h\isactrlsub h\isactrlbold {\isacharbrackright}\ {\isasymge}\isanewline
 \ \ \ LOOP\ {\isacharparenleft}{\isacharparenleft}t\ {\isacharcolon}{\isacharcolon}{\isacharequal}\ {\isadigit{0}}{\isacharparenright}{\isacharsemicolon}\isactrlbold {\isacharbrackleft}I\ h\isactrlsub l\ h\isactrlsub h\ {\isasymand}\ t\ {\isacharequal}\ {\isadigit{0}}{\isacharcomma}\ I\ h\isactrlsub l\ h\isactrlsub h\isactrlbold {\isacharbrackright}{\isacharparenright}\ INV\ I\ h\isactrlsub l\ h\isactrlsub h{\isachardoublequoteclose}\ {\isacharparenleft}\isakeyword{is}\ {\isachardoublequoteopen}{\isacharunderscore}\ {\isasymge}\ {\isacharquery}R{\isachardoublequoteclose}{\isacharparenright}\isanewline
 \ \ \ \ \isacommand{by}\isamarkupfalse%
-\ {\isacharparenleft}rule\ R{\isacharunderscore}loop{\isacharunderscore}law{\isacharcomma}\ rule\ R{\isacharunderscore}assignl{\isacharcomma}\ rel{\isacharunderscore}auto{\isacharprime}{\isacharparenright}\isanewline
+\ {\isacharparenleft}refinement{\isacharcomma}\ rel{\isacharunderscore}auto{\isacharprime}{\isacharparenright}\isanewline
 \ \ \isacommand{moreover}\isamarkupfalse%
-\ \isacommand{have}\ {\isachardoublequoteopen}{\isacharquery}R\ {\isasymge}\ LOOP\isanewline
+\ \isacommand{have}\isamarkupfalse%
+\ {\isachardoublequoteopen}{\isacharquery}R\ {\isasymge}\ LOOP\isanewline
 \ \ \ {\isacharparenleft}{\isacharparenleft}t\ {\isacharcolon}{\isacharcolon}{\isacharequal}\ {\isadigit{0}}{\isacharparenright}{\isacharsemicolon}{\isacharparenleft}h\isactrlsub {\isadigit{0}}\ {\isacharcolon}{\isacharcolon}{\isacharequal}\ h{\isacharparenright}{\isacharsemicolon}\isactrlbold {\isacharbrackleft}I\ h\isactrlsub l\ h\isactrlsub h\ {\isasymand}\ t\ {\isacharequal}\ {\isadigit{0}}\ {\isasymand}\ h\isactrlsub {\isadigit{0}}\ {\isacharequal}\ h{\isacharcomma}\ I\ h\isactrlsub l\ h\isactrlsub h\isactrlbold {\isacharbrackright}{\isacharparenright}\ INV\ I\ h\isactrlsub l\ h\isactrlsub h{\isachardoublequoteclose}\ {\isacharparenleft}\isakeyword{is}\ {\isachardoublequoteopen}{\isacharunderscore}\ {\isasymge}\ {\isacharquery}R{\isachardoublequoteclose}{\isacharparenright}\isanewline
 \ \ \ \ \isacommand{by}\isamarkupfalse%
-\ {\isacharparenleft}rule\ R{\isacharunderscore}loop{\isacharunderscore}mono{\isacharcomma}\ rule\ R{\isacharunderscore}seq{\isacharunderscore}mono{\isacharcomma}\ simp{\isacharcomma}\ rule\ R{\isacharunderscore}assignl{\isacharcomma}\ pred{\isacharunderscore}simp{\isacharparenright}\isanewline
+\ {\isacharparenleft}refinement{\isacharcomma}\ rel{\isacharunderscore}auto{\isacharprime}{\isacharparenright}\isanewline
 \ \ \isacommand{moreover}\isamarkupfalse%
 \ \isacommand{have}\isamarkupfalse%
 \ {\isachardoublequoteopen}{\isacharquery}R\ {\isasymge}\isanewline
 \ \ \ LOOP\ {\isacharparenleft}ctrl\ h\isactrlsub l\ h\isactrlsub h{\isacharsemicolon}\isactrlbold {\isacharbrackleft}I\ h\isactrlsub l\ h\isactrlsub h\ {\isasymand}\ t\ {\isacharequal}\ {\isadigit{0}}\ {\isasymand}\ h\isactrlsub {\isadigit{0}}\ {\isacharequal}\ h{\isacharcomma}\ I\ h\isactrlsub l\ h\isactrlsub h\isactrlbold {\isacharbrackright}{\isacharparenright}\ INV\ I\ h\isactrlsub l\ h\isactrlsub h{\isachardoublequoteclose}\ {\isacharparenleft}\isakeyword{is}\ {\isachardoublequoteopen}{\isacharunderscore}\ {\isasymge}\ {\isacharquery}R{\isachardoublequoteclose}{\isacharparenright}\isanewline
-\ \ \ \ \isacommand{apply}\isamarkupfalse%
-{\isacharparenleft}simp\ only{\isacharcolon}\ mult{\isachardot}assoc{\isacharcomma}\ rule\ R{\isacharunderscore}loop{\isacharunderscore}mono{\isacharparenright}\isanewline
-\ \ \ \ \isacommand{apply}\isamarkupfalse%
-{\isacharparenleft}rule\ R{\isacharunderscore}seq{\isacharunderscore}mono{\isacharcomma}\ simp{\isacharparenright}{\isacharplus}\isanewline
 \ \ \ \ \isacommand{by}\isamarkupfalse%
-\ {\isacharparenleft}refinement{\isacharsemicolon}\ {\isacharparenleft}rule\ R{\isacharunderscore}assign{\isacharunderscore}law{\isacharparenright}{\isacharquery}{\isacharparenright}\ rel{\isacharunderscore}auto{\isacharprime}\isanewline
+\ {\isacharparenleft}simp\ only{\isacharcolon}\ mult{\isachardot}assoc{\isacharcomma}\ refinement{\isacharsemicolon}\ {\isacharparenleft}force{\isacharparenright}{\isacharquery}{\isacharcomma}\ {\isacharparenleft}rule\ R{\isacharunderscore}assign{\isacharunderscore}law{\isacharparenright}{\isacharquery}{\isacharparenright}\ rel{\isacharunderscore}auto{\isacharprime}\isanewline
 \ \ \isacommand{moreover}\isamarkupfalse%
 \ \isacommand{have}\isamarkupfalse%
 \ {\isachardoublequoteopen}{\isacharquery}R\ {\isasymge}\ LOOP\ {\isacharparenleft}ctrl\ h\isactrlsub l\ h\isactrlsub h{\isacharsemicolon}\ dyn\ c\isactrlsub i\ c\isactrlsub o\ h\isactrlsub l\ h\isactrlsub h\ {\isasymtau}{\isacharparenright}\ INV\ I\ h\isactrlsub l\ h\isactrlsub h{\isachardoublequoteclose}\isanewline
 \ \ \ \ \isacommand{apply}\isamarkupfalse%
-{\isacharparenleft}simp\ only{\isacharcolon}\ mult{\isachardot}assoc{\isacharcomma}\ rule\ R{\isacharunderscore}loop{\isacharunderscore}mono{\isacharparenright}\isanewline
-\ \ \ \ \isacommand{apply}\isamarkupfalse%
-{\isacharparenleft}rule\ R{\isacharunderscore}seq{\isacharunderscore}mono{\isacharcomma}\ simp{\isacharparenright}{\isacharplus}\isanewline
-\ \ \ \ \isacommand{apply}\isamarkupfalse%
-{\isacharparenleft}refinement{\isacharparenright}\isanewline
-\ \ \ \ \isacommand{prefer}\isamarkupfalse%
+{\isacharparenleft}simp\ only{\isacharcolon}\ mult{\isachardot}assoc{\isacharcomma}\ refinement{\isacharsemicolon}\ {\isacharparenleft}simp{\isacharparenright}{\isacharquery}{\isacharparenright}\isanewline
+\ \ \ \ \ \ \ \ \ \isacommand{prefer}\isamarkupfalse%
 \ {\isadigit{4}}\ \isacommand{using}\isamarkupfalse%
 \ tank{\isacharunderscore}diff{\isacharunderscore}inv\ assms\ \isacommand{apply}\isamarkupfalse%
 \ force{\isacharplus}\isanewline
 \ \ \ \ \isacommand{using}\isamarkupfalse%
-\ assms\ tank{\isacharunderscore}inv{\isacharunderscore}arith{\isadigit{1}}\ tank{\isacharunderscore}inv{\isacharunderscore}arith{\isadigit{2}}\ \isacommand{by}\isamarkupfalse%
+\ tank{\isacharunderscore}inv{\isacharunderscore}arith{\isadigit{1}}\ tank{\isacharunderscore}inv{\isacharunderscore}arith{\isadigit{2}}\ assms\ \isacommand{by}\isamarkupfalse%
 \ rel{\isacharunderscore}auto{\isacharprime}\isanewline
 \ \ \isacommand{ultimately}\isamarkupfalse%
 \ \isacommand{show}\isamarkupfalse%
 \ {\isachardoublequoteopen}\isactrlbold {\isacharbrackleft}I\ h\isactrlsub l\ h\isactrlsub h{\isacharcomma}\ I\ h\isactrlsub l\ h\isactrlsub h\isactrlbold {\isacharbrackright}\ {\isasymge}\ tank{\isacharunderscore}dinv\ c\isactrlsub i\ c\isactrlsub o\ h\isactrlsub l\ h\isactrlsub h\ {\isasymtau}{\isachardoublequoteclose}\isanewline
 \ \ \ \ \isacommand{by}\isamarkupfalse%
 \ auto\isanewline
-\isacommand{qed}\isamarkupfalse
+\isacommand{qed}\isamarkupfalse%
 \isanewline
 \end{isabellebody}
 

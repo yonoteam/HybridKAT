@@ -47,19 +47,22 @@ method hyb_hoare for P::"'a upred"
 
 \<comment> \<open>A tactic for refinement of hybrid programs \<close>
 
-named_theorems ref_laws "list of refinement laws"
+named_theorems refine_intros "selected refinement lemmas"
 
-declare R_loop_law [ref_laws]
-    and R_cond_law [ref_laws]
-    and R_while_law [ref_laws]
-    and R_seq_law [ref_laws]
-    and R_g_evol_law [ref_laws]
-    and R_skip [ref_laws]
-    and R_g_ode_inv [ref_laws]
+declare R_loop_law [refine_intros]
+    and R_loop_mono [refine_intros]
+    and R_cond_law [refine_intros]
+    and R_cond_mono [refine_intros]
+    and R_while_law [refine_intros]
+    and R_assignl [refine_intros]
+    and R_seq_law [refine_intros]
+    and R_seq_mono [refine_intros]
+    and R_g_evol_law [refine_intros]
+    and R_skip [refine_intros]
+    and R_g_ode_inv [refine_intros]
 
-method refinement 
-  = (rule ref_laws; refinement?)
-
+method refinement
+  = (rule refine_intros; (refinement)?)
 
 subsubsection \<open>Pendulum\<close>
 
@@ -248,33 +251,6 @@ lemma R_bouncing_ball_dyn:
   apply(refinement; (rule R_bb_assign[OF assms])?)
   using assms by (rel_auto' simp: bb_real_arith)
 
-lemma
-  assumes "g < 0" and "h \<ge> 0"
-  shows "\<^bold>[x = h \<and> v = 0, 0 \<le> x \<and> x \<le> h\<^bold>] \<ge> bb_evol g h T"
-  apply(rule order_trans; (rule R_loop_mono)?, (rule R_loop_law)?; (rule R_seq)?, (rule R_seq_mono)?)
-     apply(rule R_g_evol_law) defer
-     apply(rule order_trans, rule R_cond_mono, rule R_bb_assign[OF assms], rule R_skip) defer
-      apply(rule R_cond) apply force+
-  using assms apply(simp, pred_simp)
-  using assms by (simp, pred_simp, rel_auto' simp: bb_real_arith)
-
-lemma
-  assumes "g < 0" and "h \<ge> 0"
-  shows "\<^bold>[x = h \<and> v = 0, 0 \<le> x \<and> x \<le> h\<^bold>] \<ge> bb_evol g h T"
-  apply(rule order_trans)
-   apply(rule R_loop_mono) defer
-   apply(rule R_loop_law)
-     apply(rule R_seq)
-  using assms apply(simp, pred_simp)
-  using assms apply(simp, pred_simp, force simp: bb_real_arith)
-  apply(rule R_seq_mono) defer
-  apply(rule order_trans)
-    apply(rule R_cond_mono) defer defer
-     apply(rule R_cond) defer defer defer
-  apply(rule R_bb_assign, simp_all add: assms)
-   apply(rule R_skip, pred_simp)
-  by (rule R_g_evol_law, rel_auto' simp: bb_real_arith)
-
 no_notation fball ("f")
         and ball_flow ("\<phi>")
 
@@ -406,24 +382,6 @@ qed
 
 lemmas H_g_ode_therm = local_flow.sH_g_ode_ivl[OF local_flow_therm _ UNIV_I]
 
-(* Following pair of theorems were intended for proof optimization but second is only valid 
-for booleans and not predicates. *)
-
-lemma upred_simps:
-  "\<lbrakk>P \<and> B\<rbrakk>\<^sub>e s = (\<lbrakk>P\<rbrakk>\<^sub>e s \<and> \<lbrakk>B\<rbrakk>\<^sub>e s)"
-  "\<lbrakk>P \<or> B\<rbrakk>\<^sub>e s = (\<lbrakk>P\<rbrakk>\<^sub>e s \<or> \<lbrakk>B\<rbrakk>\<^sub>e s)"
-  by (simp_all add: conj_upred_def disj_upred_def inf_uexpr.rep_eq sup_uexpr.rep_eq)
-
-lemma sH_condl: "\<^bold>{P\<^bold>} (Z; (IF B THEN X ELSE Y)) \<^bold>{Q\<^bold>} = (\<^bold>{P \<and> B\<^bold>} Z; X \<^bold>{Q\<^bold>} \<and> \<^bold>{P \<and> \<not> B\<^bold>} Z; Y \<^bold>{Q\<^bold>})"
-  apply(simp add: sH_seq, simp add: ndfun_kat_H upred_simps, pred_simp)
-  apply(simp add: ifthenelse_def plus_nd_fun_def times_nd_fun_def kcomp_def, simp add: p2ndf_def)
-  apply(intro iffI conjI impI)
-    apply(clarify, erule_tac x=s in allE, erule_tac x=s' in allE, simp, erule impE, 
-      rule_tac x=x in exI, pred_simp, simp)+
-  apply(clarsimp, cases B)
-  by (simp, erule_tac x=s in allE, erule_tac x=s' in allE, simp, erule impE, 
-      rule_tac x=x in exI, pred_simp, simp)+
-
 lemma thermostat_flow: 
   assumes "0 < a" and "0 \<le> \<tau>" and "0 < T\<^sub>l" and "T\<^sub>h < T\<^sub>u"
   shows "\<^bold>{I T\<^sub>l T\<^sub>h\<^bold>} therm T\<^sub>l T\<^sub>h a T\<^sub>u \<tau> \<^bold>{I T\<^sub>l T\<^sub>h\<^bold>}"
@@ -435,26 +393,17 @@ lemma thermostat_flow:
 
 lemma R_therm_down: 
   assumes "a > 0" and "0 \<le> \<tau>" and "0 < T\<^sub>l" and "T\<^sub>h < T\<^sub>u"
-  shows "\<^bold>[\<theta> = 0 \<and> I T\<^sub>l T\<^sub>h \<and> t = 0 \<and> T\<^sub>0 = T, I T\<^sub>l T\<^sub>h\<^bold>] \<ge> (x\<acute>= f a 0 & G T\<^sub>l T\<^sub>h a 0 on {0..\<tau>} UNIV @ 0)"
+  shows "\<^bold>[\<theta> = 0 \<and> I T\<^sub>l T\<^sub>h \<and> t = 0 \<and> T\<^sub>0 = T, I T\<^sub>l T\<^sub>h\<^bold>] \<ge> 
+  (x\<acute>= f a 0 & G T\<^sub>l T\<^sub>h a 0 on {0..\<tau>} UNIV @ 0)"
   apply(rule local_flow.R_g_ode_ivl[OF local_flow_therm])
   using therm_dyn_down[OF assms(1,3), of _ T\<^sub>h] assms by rel_auto'
 
 lemma R_therm_up: 
   assumes "a > 0" and "0 \<le> \<tau>" and "0 < T\<^sub>l" and "T\<^sub>h < T\<^sub>u"
-  shows "\<^bold>[\<not> \<theta> = 0 \<and> I T\<^sub>l T\<^sub>h \<and> t = 0 \<and> T\<^sub>0 = T, I T\<^sub>l T\<^sub>h\<^bold>] \<ge> (x\<acute>= f a T\<^sub>u & G T\<^sub>l T\<^sub>h a T\<^sub>u on {0..\<tau>} UNIV @ 0)"
+  shows "\<^bold>[\<not> \<theta> = 0 \<and> I T\<^sub>l T\<^sub>h \<and> t = 0 \<and> T\<^sub>0 = T, I T\<^sub>l T\<^sub>h\<^bold>] \<ge> 
+  (x\<acute>= f a T\<^sub>u & G T\<^sub>l T\<^sub>h a T\<^sub>u on {0..\<tau>} UNIV @ 0)"
   apply(rule local_flow.R_g_ode_ivl[OF local_flow_therm])
   using therm_dyn_up[OF assms(1) _ _ assms(4), of T\<^sub>l] assms by rel_auto'
-
-lemma R_therm_dyn:
-  assumes "a > 0" and "0 \<le> \<tau>" and "0 < T\<^sub>l" and "T\<^sub>h < T\<^sub>u"
-  shows "\<^bold>[I T\<^sub>l T\<^sub>h \<and> t = 0 \<and> T\<^sub>0 = T, I T\<^sub>l T\<^sub>h\<^bold>] \<ge> dyn T\<^sub>l T\<^sub>h a T\<^sub>u \<tau>"
-  apply(refinement) using R_therm_down[OF assms] R_therm_up[OF assms] by auto
-
-lemma
-  assumes "a > 0" and "0 \<le> \<tau>" and "0 < T\<^sub>l" and "T\<^sub>h < T\<^sub>u"
-  shows "\<^bold>[I T\<^sub>l T\<^sub>h \<and> t = 0 \<and> T\<^sub>0 = T, I T\<^sub>l T\<^sub>h\<^bold>] \<ge> dyn T\<^sub>l T\<^sub>h a T\<^sub>u \<tau>"
-  apply(rule order_trans, rule R_cond_mono)
-  using R_therm_down[OF assms] R_therm_up[OF assms] by (auto intro!: R_cond)
 
 lemma R_therm_time: "\<^bold>[I T\<^sub>l T\<^sub>h, I T\<^sub>l T\<^sub>h \<and> t = 0\<^bold>] \<ge> (t ::= 0)"
   by (rule R_assign_law, pred_simp)
@@ -462,55 +411,11 @@ lemma R_therm_time: "\<^bold>[I T\<^sub>l T\<^sub>h, I T\<^sub>l T\<^sub>h \<and
 lemma R_therm_temp: "\<^bold>[I T\<^sub>l T\<^sub>h \<and> t = 0, I T\<^sub>l T\<^sub>h \<and> t = 0 \<and> T\<^sub>0 = T\<^bold>] \<ge> (T\<^sub>0 ::= T)"
   by (rule R_assign_law, pred_simp)
 
-lemma R_therm_ctrl: "\<^bold>[I T\<^sub>l T\<^sub>h, I T\<^sub>l T\<^sub>h \<and> t = 0 \<and> T\<^sub>0 = T\<^bold>] \<ge> ctrl T\<^sub>l T\<^sub>h"
-  by (refinement; (rule R_therm_time)?, (rule R_therm_temp)?, (rule R_assign_law)?) rel_auto'
-
-lemma "\<^bold>[I T\<^sub>l T\<^sub>h, I T\<^sub>l T\<^sub>h \<and> t = 0 \<and> T\<^sub>0 = T\<^bold>] \<ge> ctrl T\<^sub>l T\<^sub>h"
-  apply(rule R_seq_law, rule R_therm_time)
-  apply(rule R_seq_law, rule R_therm_temp)
-  apply(rule order_trans)
-   apply(rule R_cond_mono)
-    apply(rule R_assign_law) defer
-    apply(rule R_cond_mono)
-     apply(rule R_assign_law) defer
-     apply(rule R_skip) defer
-     apply(rule order_trans)
-      apply(rule R_cond_mono)
-       apply force
-      apply (rule R_cond) defer defer
-       apply (rule R_cond)
-  by (simp_all, rel_auto')
-
-lemma  
-  assumes "a > 0" and "0 \<le> \<tau>" and "0 < T\<^sub>l" and "T\<^sub>h < T\<^sub>u"
-  shows "\<^bold>[I T\<^sub>l T\<^sub>h, I T\<^sub>l T\<^sub>h\<^bold>] \<ge> therm T\<^sub>l T\<^sub>h a T\<^sub>u \<tau>"
-  apply(rule order_trans; (rule R_loop_mono)?, (rule R_loop_law)?; (rule R_seq)?, (rule R_seq_mono)?)
-  by (rule R_therm_ctrl, rule R_therm_dyn[OF assms]) rel_auto'
-
 lemma R_thermostat_flow:
   assumes "a > 0" and "0 \<le> \<tau>" and "0 < T\<^sub>l" and "T\<^sub>h < T\<^sub>u"
   shows "\<^bold>[I T\<^sub>l T\<^sub>h, I T\<^sub>l T\<^sub>h\<^bold>] \<ge> therm T\<^sub>l T\<^sub>h a T\<^sub>u \<tau>"
   by (refinement; (rule R_therm_time)?, (rule R_therm_temp)?, (rule R_assign_law)?, 
       (rule R_therm_up[OF assms])?, (rule R_therm_down[OF assms])?) rel_auto'
-
-lemma  
-  assumes "a > 0" and "0 \<le> \<tau>" and "0 < T\<^sub>l" and "T\<^sub>h < T\<^sub>u"
-  shows "\<^bold>[I T\<^sub>l T\<^sub>h, I T\<^sub>l T\<^sub>h\<^bold>] \<ge> therm T\<^sub>l T\<^sub>h a T\<^sub>u \<tau>"
-  apply(rule order_trans; (rule R_loop_mono)?, (rule R_loop_law)?; (rule R_seq)?, (rule R_seq_mono)?)
-  by (rule R_therm_ctrl, rule R_therm_dyn[OF assms]) rel_auto'
-
-lemma R_therm_loop: "\<^bold>[I T\<^sub>l T\<^sub>h, I T\<^sub>l T\<^sub>h\<^bold>] \<ge> 
-  LOOP 
-    \<^bold>[I T\<^sub>l T\<^sub>h, I T\<^sub>l T\<^sub>h \<and> t = 0 \<and> T\<^sub>0 = T\<^bold>];
-    \<^bold>[I T\<^sub>l T\<^sub>h \<and> t = 0 \<and> T\<^sub>0 = T, I T\<^sub>l T\<^sub>h\<^bold>]
-  INV I T\<^sub>l T\<^sub>h"
-  by (intro R_loop_law R_seq, simp_all)
-
-lemma 
-  assumes "a > 0" and "0 \<le> \<tau>" and "0 < T\<^sub>l" and "T\<^sub>h < T\<^sub>u"
-  shows "\<^bold>[I T\<^sub>l T\<^sub>h, I T\<^sub>l T\<^sub>h\<^bold>] \<ge> therm T\<^sub>l T\<^sub>h a T\<^sub>u \<tau>"
-  by (intro order_trans[OF _ R_therm_loop] R_loop_mono 
-      R_seq_mono R_therm_ctrl R_therm_dyn[OF assms])
 
 no_notation ftherm ("f")
         and therm_flow ("\<phi>")
@@ -646,102 +551,20 @@ lemma R_tank_inv:
   shows "\<^bold>[I h\<^sub>l h\<^sub>h, I h\<^sub>l h\<^sub>h\<^bold>] \<ge> tank_dinv c\<^sub>i c\<^sub>o h\<^sub>l h\<^sub>h \<tau>"
 proof-
   have "\<^bold>[I h\<^sub>l h\<^sub>h, I h\<^sub>l h\<^sub>h\<^bold>] \<ge> LOOP ((t ::= 0);\<^bold>[I h\<^sub>l h\<^sub>h \<and> t = 0, I h\<^sub>l h\<^sub>h\<^bold>]) INV I h\<^sub>l h\<^sub>h" (is "_ \<ge> ?R")
-    by (rule R_loop_law, rule R_assignl, rel_auto')
+    by (refinement, rel_auto')
   moreover have 
     "?R \<ge> LOOP ((t ::= 0);(h\<^sub>0 ::= h);\<^bold>[I h\<^sub>l h\<^sub>h \<and> t = 0 \<and> h\<^sub>0 = h, I h\<^sub>l h\<^sub>h\<^bold>]) INV I h\<^sub>l h\<^sub>h" (is "_ \<ge> ?R")
-    by (rule R_loop_mono, rule R_seq_mono, simp, rule R_assignl, pred_simp)
+    by (refinement, rel_auto')
   moreover have 
     "?R \<ge> LOOP (ctrl h\<^sub>l h\<^sub>h;\<^bold>[I h\<^sub>l h\<^sub>h \<and> t = 0 \<and> h\<^sub>0 = h, I h\<^sub>l h\<^sub>h\<^bold>]) INV I h\<^sub>l h\<^sub>h" (is "_ \<ge> ?R")
-    apply(simp only: mult.assoc, rule R_loop_mono)
-    apply(rule R_seq_mono, simp)+
-    by (refinement; (rule R_assign_law)?) rel_auto'
+    by (simp only: mult.assoc, refinement; (force)?, (rule R_assign_law)?) rel_auto'
   moreover have 
     "?R \<ge> LOOP (ctrl h\<^sub>l h\<^sub>h; dyn c\<^sub>i c\<^sub>o h\<^sub>l h\<^sub>h \<tau>) INV I h\<^sub>l h\<^sub>h"
-    apply(simp only: mult.assoc, rule R_loop_mono)
-    apply(rule R_seq_mono, simp)+
-    apply(refinement)
-    prefer 4 using tank_diff_inv assms apply force+
-    using assms tank_inv_arith1 tank_inv_arith2 by rel_auto'
+    apply(simp only: mult.assoc, refinement; (simp)?)
+         prefer 4 using tank_diff_inv assms apply force+
+    using tank_inv_arith1 tank_inv_arith2 assms by rel_auto'
   ultimately show "\<^bold>[I h\<^sub>l h\<^sub>h, I h\<^sub>l h\<^sub>h\<^bold>] \<ge> tank_dinv c\<^sub>i c\<^sub>o h\<^sub>l h\<^sub>h \<tau>"
     by auto
-qed
-
-lemma
-  assumes "0 \<le> \<tau>" and "0 < c\<^sub>o" and "c\<^sub>o < c\<^sub>i"
-  shows "\<^bold>[I h\<^sub>l h\<^sub>h, I h\<^sub>l h\<^sub>h\<^bold>] \<ge> tank_dinv c\<^sub>i c\<^sub>o h\<^sub>l h\<^sub>h \<tau>"
-proof -
-  have R1: "(t ::= 0) \<le> \<^bold>[I h\<^sub>l h\<^sub>h, I h\<^sub>l h\<^sub>h \<and> t = 0\<^bold>]"
-    by (rule R_assign_law, pred_simp)
-  have R2: "(h\<^sub>0 ::= h) \<le> \<^bold>[I h\<^sub>l h\<^sub>h \<and> t = 0, I h\<^sub>l h\<^sub>h \<and> t = 0 \<and> h\<^sub>0 = h\<^bold>]"
-    by (rule R_assign_law, pred_simp)
-  have R3: "(\<pi> ::= 1) \<le> \<^bold>[(\<pi> = 0 \<and> h\<^sub>0 \<le> h\<^sub>l + 1) \<and> I h\<^sub>l h\<^sub>h \<and> t = 0 \<and> h\<^sub>0 = h, I h\<^sub>l h\<^sub>h \<and> t = 0 \<and> h\<^sub>0 = h\<^bold>]"
-    by (rule R_assign_law, pred_simp)
-  show ?thesis
-    apply refinement
-    prefer 6 prefer 9 using R1 R2 R3 tank_diff_inv assms apply force+
-    apply(rule R_assign_law, pred_simp)
-    using assms tank_inv_arith1 tank_inv_arith2 by rel_auto'
-qed
-
-lemma
-  assumes "0 \<le> \<tau>" and "0 < c\<^sub>o" and "c\<^sub>o < c\<^sub>i"
-  shows "\<^bold>[I h\<^sub>l h\<^sub>h, I h\<^sub>l h\<^sub>h\<^bold>] \<ge> tank_dinv c\<^sub>i c\<^sub>o h\<^sub>l h\<^sub>h \<tau>"
-proof-
-  \<comment> \<open>First we refine the control. \<close>
-  have ifbranch1: 
-    "\<pi> ::= 1 \<le> \<^bold>[\<pi> = 0 \<and> h\<^sub>0 \<le> h\<^sub>l + 1 \<and> I h\<^sub>l h\<^sub>h \<and> t = 0 \<and> h\<^sub>0 = h, I h\<^sub>l h\<^sub>h \<and> t = 0 \<and> h\<^sub>0 = h\<^bold>]" 
-    (is "_ \<le> ?branch1") by (rule R_assign_law, pred_simp)
-  have ifbranch2: 
-    "(IF (\<pi> = 1 \<and> h\<^sub>0 \<ge> h\<^sub>h - 1) THEN (\<pi> ::= 0) ELSE skip) \<le> 
-    \<^bold>[\<not> (\<pi> = 0 \<and> h\<^sub>0 \<le> h\<^sub>l + 1) \<and> I h\<^sub>l h\<^sub>h \<and> t = 0 \<and> h\<^sub>0 = h, I h\<^sub>l h\<^sub>h \<and> t = 0 \<and> h\<^sub>0 = h\<^bold>]" 
-    (is "_ \<le> ?branch2") 
-    apply(rule order_trans, rule R_cond_mono) defer defer
-    by (rule R_cond, auto intro!: R_assign_law R_skip, rel_auto')
-  have ifthenelse: 
-    "(IF (\<pi> = 0 \<and> h\<^sub>0 \<le> h\<^sub>l + 1) THEN ?branch1 ELSE ?branch2) \<le> 
-    \<^bold>[I h\<^sub>l h\<^sub>h \<and> t = 0 \<and> h\<^sub>0 = h, I h\<^sub>l h\<^sub>h \<and> t = 0 \<and> h\<^sub>0 = h\<^bold>]" 
-    (is "?ifthenelse \<le> _") by (rule R_cond, rel_auto')
-  have 
-    "(IF (\<pi> = 0 \<and> h\<^sub>0 \<le> h\<^sub>l + 1) THEN (\<pi> ::= 1) ELSE 
-     (IF (\<pi> = 1 \<and> h\<^sub>0 \<ge> h\<^sub>h - 1) THEN (\<pi> ::= 0) ELSE skip)) \<le>
-     \<^bold>[I h\<^sub>l h\<^sub>h \<and> t = 0 \<and> h\<^sub>0 = h, I h\<^sub>l h\<^sub>h \<and> t = 0 \<and> h\<^sub>0 = h\<^bold>]"
-    apply(rule_tac y="?ifthenelse" in order_trans, rule R_cond_mono)
-    using ifbranch1 ifbranch2 ifthenelse by auto
-  hence ctrl: "ctrl h\<^sub>l h\<^sub>h \<le> \<^bold>[I h\<^sub>l h\<^sub>h, I h\<^sub>l h\<^sub>h \<and> t = 0 \<and> h\<^sub>0 = h\<^bold>]" (is "_ \<le> ?ctrl_ref")
-     apply(rule_tac R="U(I h\<^sub>l h\<^sub>h \<and> t = 0)" in R_seq_law)
-    apply(rule R_assign_law, pred_simp)
-    apply(rule_tac R="U(I h\<^sub>l h\<^sub>h \<and> t = 0 \<and> h\<^sub>0 = h)" in R_seq_law)
-    apply(rule R_assign_law, pred_simp) .
-  \<comment> \<open>Then we refine the dynamics. \<close>
-  have dynup: 
-    "(x\<acute>= f (c\<^sub>i-c\<^sub>o) & G h\<^sub>h (c\<^sub>i-c\<^sub>o) on {0..\<tau>} UNIV @ 0 DINV (dI h\<^sub>l h\<^sub>h (c\<^sub>i-c\<^sub>o))) \<le> 
-    \<^bold>[\<pi> = 0 \<and> I h\<^sub>l h\<^sub>h \<and> t = 0 \<and> h\<^sub>0 = h, I h\<^sub>l h\<^sub>h\<^bold>]"
-    apply(rule R_g_ode_inv[OF tank_diff_inv[OF assms(1)]])
-    using assms apply(simp_all, pred_simp, pred_simp)
-    by (auto simp: tank_inv_arith1)
-  have dyndown: 
-    "(x\<acute>= f (-c\<^sub>o) & G h\<^sub>l (-c\<^sub>o) on {0..\<tau>} UNIV @ 0 DINV (dI h\<^sub>l h\<^sub>h (-c\<^sub>o))) \<le> 
-    \<^bold>[\<not> \<pi> = 0 \<and> I h\<^sub>l h\<^sub>h \<and> t = 0 \<and> h\<^sub>0 = h, I h\<^sub>l h\<^sub>h\<^bold>]"
-    apply(rule R_g_ode_inv)
-    using tank_diff_inv[OF assms(1), of "-c\<^sub>o"] apply(pred_simp)
-    using assms by (simp_all, rel_auto' simp: tank_inv_arith2)
-  have dyn: "dyn c\<^sub>i c\<^sub>o h\<^sub>l h\<^sub>h \<tau> \<le> \<^bold>[I h\<^sub>l h\<^sub>h \<and> t = 0 \<and> h\<^sub>0 = h, I h\<^sub>l h\<^sub>h\<^bold>]" (is "_ \<le> ?dyn_ref")
-    apply(rule order_trans, rule R_cond_mono)
-    using dynup dyndown apply(force, force)
-    by (rule R_cond, rel_auto')
-  \<comment> \<open>Finally we put everything together. \<close>
-  have pre_pos: "\<lceil>I h\<^sub>l h\<^sub>h\<rceil> \<le> \<lceil>I h\<^sub>l h\<^sub>h\<rceil>"
-    by simp
-  have inv_inv: "?ctrl_ref; ?dyn_ref \<le> \<^bold>[I h\<^sub>l h\<^sub>h, I h\<^sub>l h\<^sub>h\<^bold>]"
-    by (rule R_seq)
-  have loopref: "LOOP ?ctrl_ref; ?dyn_ref INV I h\<^sub>l h\<^sub>h \<le> \<^bold>[I h\<^sub>l h\<^sub>h, I h\<^sub>l h\<^sub>h\<^bold>]"
-    apply(rule R_loop_law)
-    using pre_pos inv_inv by auto
-  have obs: "(ctrl h\<^sub>l h\<^sub>h;dyn c\<^sub>i c\<^sub>o h\<^sub>l h\<^sub>h \<tau>) \<le> ?ctrl_ref; ?dyn_ref"
-    apply(rule R_seq_mono)
-    using ctrl dyn by auto
-  show "tank_dinv c\<^sub>i c\<^sub>o h\<^sub>l h\<^sub>h \<tau> \<le> \<^bold>[I h\<^sub>l h\<^sub>h, I h\<^sub>l h\<^sub>h\<^bold>]"
-    by (rule order_trans[OF _ loopref], rule R_loop_mono[OF obs])
 qed
 
 no_notation ftank ("f")
