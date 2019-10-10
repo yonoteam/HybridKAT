@@ -610,7 +610,7 @@ $U={\isacharbraceleft}{\isadigit{0}}{\isachardot}{\isachardot}{\isasymtau}{\isac
 \isacommand{abbreviation}\ %\isamarkupfalse%
 %\ ftherm\ {\isacharcolon}{\isacharcolon}\ {\isachardoublequoteopen}real\ {\isasymRightarrow}\ real\ {\isasymRightarrow}\ {\isacharparenleft}real{\isacharcomma}\ {\isadigit{4}}{\isacharparenright}\ vec\ {\isasymRightarrow}\ {\isacharparenleft}real{\isacharcomma}\ {\isadigit{4}}{\isacharparenright}\ vec{\isachardoublequoteclose}\ {\isacharparenleft}{\isachardoublequoteopen}f{\isachardoublequoteclose}{\isacharparenright}\isanewline
 %\ \ \isakeyword{where}\ 
-{\isachardoublequoteopen}f\ a\ c\ {\isasymequiv}\ {\isasymlbrakk}{\isacharbrackleft}T\ {\isasymmapsto}\isactrlsub s\ {\isacharminus}\ a\ {\isacharasterisk}\ {\isacharparenleft}T\ {\isacharminus}\ c{\isacharparenright}{\isacharcomma}\ t\ {\isasymmapsto}\isactrlsub s\ {\isadigit{1}}{\isacharcomma}\ $T_0$\ {\isasymmapsto}\isactrlsub s\ {\isadigit{0}}{\isacharcomma}\ {\isasymtheta}\ {\isasymmapsto}\isactrlsub s\ {\isadigit{0}}{\isacharbrackright}{\isasymrbrakk}\isactrlsub e{\isachardoublequoteclose}\isanewline
+{\isachardoublequoteopen}f\ a\ c\ {\isasymequiv}\ {\isasymlbrakk}{\isacharbrackleft}T\ {\isasymmapsto}\ {\isacharminus}\ a\ {\isacharasterisk}\ {\isacharparenleft}T\ {\isacharminus}\ c{\isacharparenright}{\isacharcomma}\ t\ {\isasymmapsto}\ {\isadigit{1}}{\isacharcomma}\ $T_0$\ {\isasymmapsto}\ {\isadigit{0}}{\isacharcomma}\ {\isasymtheta}\ {\isasymmapsto}\ {\isadigit{0}}{\isacharbrackright}{\isasymrbrakk}\isactrlsub e{\isachardoublequoteclose}\isanewline
 \end{isabellebody} 
 \noindent The brackets around the right-hand expression are rudiments of
 Isabelle/UTP syntax without conceptual relevance. We write $;$ instead
@@ -681,7 +681,7 @@ for $f\, a\, c$:
 %\isanewline
 %\isacommand{abbreviation}\isamarkupfalse%
 %\ therm{\isacharunderscore}flow\ {\isacharcolon}{\isacharcolon}\ {\isachardoublequoteopen}real\ {\isasymRightarrow}\ real\ {\isasymRightarrow}\ real\ {\isasymRightarrow}\ {\isacharparenleft}real{\isacharcircum}{\isadigit{4}}{\isacharparenright}\ usubst{\isachardoublequoteclose}\ {\isacharparenleft}{\isachardoublequoteopen}{\isasymphi}{\isachardoublequoteclose}{\isacharparenright}\ \isanewline
-%\ \ \isakeyword{where}\ {\isachardoublequoteopen}{\isasymphi}\ a\ $T_u$\ {\isasymtau}\ {\isasymequiv}\ {\isacharbrackleft}T\ {\isasymmapsto}\isactrlsub s\ {\isacharminus}\ exp{\isacharparenleft}{\isacharminus}a\ {\isacharasterisk}\ {\isasymtau}{\isacharparenright}\ {\isacharasterisk}\ {\isacharparenleft}L\ {\isacharminus}\ T{\isacharparenright}\ {\isacharplus}\ $T_u${\isacharcomma}\ t\ {\isasymmapsto}\isactrlsub s\ {\isasymtau}\ {\isacharplus}\ t{\isacharcomma}\ $T_0$\ {\isasymmapsto}\isactrlsub s\ $T_0${\isacharcomma}\ {\isasymtheta}\ {\isasymmapsto}\isactrlsub s\ {\isasymtheta}{\isacharbrackright}{\isachardoublequoteclose}\isanewline
+%\ \ \isakeyword{where}\ {\isachardoublequoteopen}{\isasymphi}\ a\ $T_u$\ {\isasymtau}\ {\isasymequiv}\ {\isacharbrackleft}T\ {\isasymmapsto}\ {\isacharminus}\ exp{\isacharparenleft}{\isacharminus}a\ {\isacharasterisk}\ {\isasymtau}{\isacharparenright}\ {\isacharasterisk}\ {\isacharparenleft}L\ {\isacharminus}\ T{\isacharparenright}\ {\isacharplus}\ $T_u${\isacharcomma}\ t\ {\isasymmapsto}\ {\isasymtau}\ {\isacharplus}\ t{\isacharcomma}\ $T_0$\ {\isasymmapsto}\ $T_0${\isacharcomma}\ {\isasymtheta}\ {\isasymmapsto}\ {\isasymtheta}{\isacharbrackright}{\isachardoublequoteclose}\isanewline
 %\isanewline
 %\end{isabellebody}
 for all $\tau\in\reals$. The remaining proof obligations are
@@ -773,7 +773,7 @@ using an invariant.
 \isacommand{abbreviation}\ %\isamarkupfalse%
 %\ ftank\ {\isacharcolon}{\isacharcolon}\ {\isachardoublequoteopen}real\ {\isasymRightarrow}\ {\isacharparenleft}real{\isacharcomma}\ {\isadigit{4}}{\isacharparenright}\ vec\ {\isasymRightarrow}\ {\isacharparenleft}real{\isacharcomma}\ {\isadigit{4}}{\isacharparenright}\ vec{\isachardoublequoteclose}\ {\isacharparenleft}{\isachardoublequoteopen}f{\isachardoublequoteclose}{\isacharparenright}\isanewline
 %\ \ \isakeyword{where}\ 
-{\isachardoublequoteopen}f\ k\ {\isasymequiv}\ {\isasymlbrakk}{\isacharbrackleft}h\ {\isasymmapsto}\isactrlsub s\ k{\isacharcomma}\ t\ {\isasymmapsto}\isactrlsub s\ {\isadigit{1}}{\isacharcomma}\ $h_0$\ {\isasymmapsto}\isactrlsub s\ {\isadigit{0}}{\isacharcomma}\ {\isasympi}\ {\isasymmapsto}\isactrlsub s\ {\isadigit{0}}{\isacharbrackright}{\isasymrbrakk}\isactrlsub e{\isachardoublequoteclose}\isanewline
+{\isachardoublequoteopen}f\ k\ {\isasymequiv}\ {\isasymlbrakk}{\isacharbrackleft}h\ {\isasymmapsto}\ k{\isacharcomma}\ t\ {\isasymmapsto}\ {\isadigit{1}}{\isacharcomma}\ $h_0$\ {\isasymmapsto}\ {\isadigit{0}}{\isacharcomma}\ {\isasympi}\ {\isasymmapsto}\ {\isadigit{0}}{\isacharbrackright}{\isasymrbrakk}\isactrlsub e{\isachardoublequoteclose}\isanewline
 \isanewline
 \isacommand{abbreviation}\ %\isamarkupfalse%
 %\ tank{\isacharunderscore}diff{\isacharunderscore}inv\ {\isacharcolon}{\isacharcolon}\ {\isachardoublequoteopen}real\ {\isasymRightarrow}\ real\ {\isasymRightarrow}\ real\ {\isasymRightarrow}\ {\isacharparenleft}real{\isacharcircum}{\isadigit{4}}{\isacharparenright}\ upred{\isachardoublequoteclose}\ {\isacharparenleft}{\isachardoublequoteopen}dI{\isachardoublequoteclose}{\isacharparenright}\isanewline
@@ -903,9 +903,9 @@ For invariants and loops, we obtain the additional refinement laws
 In $\sta\, S$, moreover, the following assignments laws are
 derivable~\cite{ArmstrongGS16}.
 \begin{align}
- (x := e)  &\le  \left[\lambda s.\ Q\, s[x\mapsto e\, s],Q\right],\label{eq:r-assgn}\tag{r-assgn}\\
-(x:= e) \cdot \left[Q,Q\right] &\le [\lambda s.\ Q\, s[x\mapsto e\, s],Q],\label{eq:r-assgn}\tag{r-assgnl}\\
-\left[Q,\lambda s.\ Q\, s[x\mapsto e\, s]\right]\cdot (x:=e) &\le [Q,Q]. \label{eq:r-assgn}\tag{r-assgnf}
+ (x := e)  &\le  \left[Q[e/x],Q\right],\label{eq:r-assgn}\tag{r-assgn}\\
+(x:= e) \cdot \left[Q,Q\right] &\le [Q[e/x],Q],\label{eq:r-assgn}\tag{r-assgnl}\\
+\left[Q,Q[e/x]\right]\cdot (x:=e) &\le [Q,Q]. \label{eq:r-assgn}\tag{r-assgnf}
 \end{align}
 The second and third law are known as \emph{leading} and \emph{following}
 law. They introduce an assignment before and after a block of code. 
@@ -1114,7 +1114,7 @@ for such evolution commands.
 \isacommand{abbreviation}\ %\isamarkupfalse%
 %\ ball{\isacharunderscore}flow\ {\isacharcolon}{\isacharcolon}\ {\isachardoublequoteopen}real\ {\isasymRightarrow}\ real\ {\isasymRightarrow}\ {\isacharparenleft}real{\isacharcircum}{\isadigit{2}}{\isacharparenright}\ usubst{\isachardoublequoteclose}\ {\isacharparenleft}{\isachardoublequoteopen}{\isasymphi}{\isachardoublequoteclose}{\isacharparenright}\ \isanewline
 %\ \ \isakeyword{where}\ 
-{\isachardoublequoteopen}{\isasymphi}\ g\ {\isasymtau}\ {\isasymequiv}\ {\isacharbrackleft}x\ {\isasymmapsto}\isactrlsub s\ g\ {\isasymcdot}\ {\isasymtau}\ {\isacharcircum}\ {\isadigit{2}}{\isacharslash}{\isadigit{2}}\ {\isacharplus}\ v\ {\isasymcdot}\ {\isasymtau}\ {\isacharplus}\ x{\isacharcomma}\ \ v\ {\isasymmapsto}\isactrlsub s\ g\ {\isasymcdot}\ {\isasymtau}\ {\isacharplus}\ v{\isacharbrackright}{\isachardoublequoteclose}\isanewline
+{\isachardoublequoteopen}{\isasymphi}\ g\ {\isasymtau}\ {\isasymequiv}\ {\isacharbrackleft}x\ {\isasymmapsto}\ g\ {\isasymcdot}\ {\isasymtau}\ {\isacharcircum}\ {\isadigit{2}}{\isacharslash}{\isadigit{2}}\ {\isacharplus}\ v\ {\isasymcdot}\ {\isasymtau}\ {\isacharplus}\ x{\isacharcomma}\ \ v\ {\isasymmapsto}\ g\ {\isasymcdot}\ {\isasymtau}\ {\isacharplus}\ v{\isacharbrackright}{\isachardoublequoteclose}\isanewline
 \end{isabellebody}
 
 % function
