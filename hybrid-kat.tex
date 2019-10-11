@@ -159,10 +159,10 @@ is also not obvious what exactly it would take to extend a standard
 Hoare logic or refinement calculus to hybrid programs.
 
 Our main contribution consists in evidence that $\dH$ and $\dR$ are as
-feasible and applicable for verifying hybrid programs as $\dL$, and
-that developing these novel methods requires simply adding a single
-Hoare-style axiom and a single refinement rule for evolution commands
-to the standard formalisms.
+feasible and applicable for verifying simple hybrid programs as $\dL$,
+and that developing these novel methods requires simply adding a
+single Hoare-style axiom and a single refinement rule for evolution
+commands to the standard formalisms.
 
 This conceptual simplicity is reflected in the Isabelle verification
 components for $\dH$ and $\dR$. These reuse components for
@@ -171,8 +171,8 @@ tests~\cite{Kozen97,ArmstrongGS16,afp:vericomp} $(\mathsf{(r)KAT}$)
 for the propositional Hoare logic and refinement calculi---ignoring
 assignment and evolution commands. The axioms and laws for these two
 basic commands are derived in a concrete state transformer semantics
-for hybrid programs~\cite{MuniveS19} over a generic hybrid store model
-based on lenses~\cite{FosterZW16}, reusing other Isabelle
+for hybrid programs~\cite{afp:hybrid} over a generic hybrid
+store model based on lenses~\cite{FosterZW16}, reusing other Isabelle
 components~\cite{afp:hybrid,Foster18c-Optics,Foster19a-IsabelleUTP}.
 Data-level verification conditions are discharged using Isabelle's
 impressive components for ordinary differential
@@ -181,7 +181,7 @@ equations~\cite{ImmlerH12a}.
 This simple modular development evidences the benefits of algebraic
 reasoning and shallow embeddings with proof assistants. Our
 verification components merely require formalising a state transformer
-semantics for $\KAT$ and $\rKAT$ along the lines of~\cite{afp:hybrid}
+semantics for $\KAT$ and $\rKAT$ along the lines of~\cite{MuniveS19}
 and concrete store semantics for hybrid
 programs. Lenses~\cite{FosterZW16} give us the flexibility to switch
 seamlessly between stores based on real vector spaces or executable
@@ -199,16 +199,17 @@ equations and implicitly with invariant sets. We have formalised a third
 method in which solutions, that is flows, are declared ab initio in
 correctness specifications and need not be certified.
 
-Our verification components have been evaluated on a small set
-of program construction and verification examples. We discuss some of
-them in detail to explain the different work flows supported by our
+Our verification components have so far been evaluated on a small set of
+simple program construction and verification examples. We discuss some
+of them in detail to explain the different work flows supported by our
 approach. With Isabelle tactics for automated verification condition
 generation in place, we notice little difference relative to our
 predicate transformer components~\cite{MuniveS19}.  The entire
-Isabelle formalisation, is available online\footnote{\url{https://github.com/yonoteam/HybridKATpaper}};
-our repository contains instructions for using it and a postscript
-proof document that allows reading the Isabelle code without
-installing the proof assistant.
+Isabelle formalisation, is available
+online\footnote{\url{https://github.com/yonoteam/HybridKATpaper}}; our
+repository contains instructions for using it and a postscript proof
+document that allows reading the Isabelle code without installing the
+proof assistant.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -470,11 +471,12 @@ operator:
   \langle \sigma \rangle = \lambda s.\ \{ \sigma(s) \}.\tag{st-assgn}
 \end{equation}
 %
-This applies the function $\sigma : S \to S$ as an assignment. With
-our state update function, singleton assignment is simply a special
-case: $(x := e) =\langle x \mapsto e \rangle$, and we can also assign
-several variables simultaneously. Thes foundations allow us to derive
-the standard laws of assignment algebraically:
+This applies $\sigma : S \to S$ as an assignment. With our state
+update function, singleton assignment is a special case:
+$(x := e) =\langle x \mapsto e \rangle$, and we can also assign
+several variables simultaneously. These foundations allow us to derive
+standard laws for assignments algebraically, as for instance in
+schematic $\KAT$~\cite{AngusK01}:
 %
 \begin{align*}
   x := x &~=~ \sskip, \\
@@ -828,7 +830,7 @@ itself---and this time a differential invariant \isa{dI} as well:
 \end{isabellebody}
 
 \noindent The correctness specification and verification of the water
-tank is with $\dH$ then
+tank with is $\dH$ then
 
 \begin{isabellebody}
 \isanewline
@@ -1002,10 +1004,9 @@ approach presented.
 The \isa{refinement} tactic pushes the refinement specification
 through the program structure until the only remaining proof
 obligations are atomic refinements. We only refine those atomic
-programs that supply crucial information to complete the proof
-automatically. In the case of \isa{therm}, these crucial refinements
-were those for the first two assignments and the differential
-equations shown above. \qed
+programs that supply crucial information to complete proofs
+automatically. For \isa{therm}, these were those for the first two
+assignments and the differential equations shown above. \qed
 \end{example}
 
 \begin{example}[Water tank refinement via invariants]\label{ex:tank-rinv}
@@ -1204,7 +1205,7 @@ facts. \qed
 
 We have contributed new methods and Isabelle components to an open
 modular semantic framework for verifying hybrid systems that so far
-focussed on predicate transformer methods~\cite{MuniveS19}; more
+focussed on predicate transformer semantics~\cite{MuniveS19}; more
 specifically the first standalone Hoare logic $\dH$ for hybrid
 programs, the first Morgan-style refinement calculus $\dR$ for such
 programs, more generic state spaces modelled by lenses, improved
@@ -1227,9 +1228,10 @@ ones. Our framework is not only open to use any proof method and
 mathematical approach supported by Isabelle, it should also allow
 developers to add new methods, for instance based on discrete
 dynamical systems, hybrid automata or duration
-calculi~\cite{LiuLQZZZZ10} with minimal effort. It should be equally
+calculi~\cite{LiuLQZZZZ10}, or integrate CAS's like Mathematica for
+finding solutions with minimal effort. It should be equally
 straightforward to formalise $\dH$ and $\dR$ based on other Hoare
-logics supported by Isabelle by plugging in our hybrid store models.
+logics in Isabelle by plugging in our hybrid store models.
 
 The relevance of Hoare logic and refinement calculi for hybrid systems
 verification is further evidenced by the fact that such approaches are
@@ -1252,8 +1254,8 @@ transformer semantics is particularly apparent within algebra. The
 weakest liberal precondition operator---a standard predicate
 transformer---cannot be expressed in $\KAT$~\cite{Struth18}.  The
 equational theory of $\KAT$, which captures propositional Hoare logic,
-is PSPACE complete, that of modal Kleene algebra, which yields
-predicate transformers, is in EXPTIME~\cite{MollerS06}.  
+is PSPACE complete~\cite{KozenCS96}, that of modal Kleene algebra,
+which yields predicate transformers, is in EXPTIME~\cite{MollerS06}.
 
 Finally, while $\KAT$ and $\rKAT$ are convenient starting points for
 building program construction and verification components for hybrid
