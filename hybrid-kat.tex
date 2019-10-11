@@ -511,6 +511,22 @@ condition.
 %   (x:= e) = \lambda s.\ \{f_a\, x\, e\, s\}.\label{eq:st-assgn}\tag{st-assgn}
 % \end{equation}
 
+Lenses admit several models, including records and total functions~\cite{FosterZW16}. Here, we provide model for vector
+spaces, executable, and infinite Euclidean spaces:
+%
+\begin{align*}
+  \textit{vec-lens}^n_k &~\defs~ (\reals, \reals^n, \lambda s.\, \textit{vec-nth}~s~k, \lambda s~v.\, \textit{vec-upd}~k~v~s) & \text{if~} k < n \\
+  \textit{eucl-lens}^{(m,n)}_k &~\defs~ (\reals, M^{(m,n)}, \lambda s.\, \textit{eucl-nth}~s~k, \lambda s~v.\, \textit{eucl-upd}~k~v~s) & \text{if~} k < m\!\cdot\!n \\
+  \textit{fun-lens}^{(A,B)}_i &~\defs~ (B, A \to B, (\lambda f. f i), (\lambda f~v. \, f(i := v)))
+\end{align*}
+
+\noindent The vector lens selects the $k$th element of an $n$ dimension vector, using $\textit{vec-nth}$ and
+$\textit{vec-upd}$, which are developed from the HOL Analysis library~\cite{HolzlIH13}. The Euclidean lens views
+executable Euclidean spaces, developed by Immler~\cite{ImmlerT19}, that permit both vectors and matrices. Finally, the
+function lens selects range elements of a function associated with a domain element $i \in A$. In particular, it can be
+used to describe countably infinite Euclidean spaces, $\mathbb{N} \to \reals$. All of these lenses satisfy the three
+lens axioms~\cite{FosterZW16}.
+
 The development in this section has been formalised with
 Isabelle~\cite{afp:hybrid}, both for a state transformer and a
 relational semantics. An instance of the latter for particular vector
