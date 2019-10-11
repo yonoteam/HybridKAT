@@ -241,14 +241,15 @@ those states where test $p$ holds. The ordering $\le$ is the opposite
 of the refinement ordering on programs (see Section~\ref{sec:refine}).
 
 Binary relations of type $\Pow\, (S\times S)$ form
-$\KAT$s~\cite{Kozen97} when $\cdot$ is interpreted as relational
-composition, $+$ as relational union, $(-)^\ast$ as
-reflexive-transitive closure and the elements of $B$ as
-subidentities---relations below the relational unit. This grounds
-$\KAT$ within standard relational imperative program semantics. Yet we
-prefer the isomorphic representation as \emph{state transformers} of
-type $S\to \Pow\, S$.  Composition $\cdot$ is then interpreted as
-Kleisli composition
+$\KAT$s~\cite{Kozen97} when $\cdot$ is interpreted as
+relational composition, $+$ as relational union, $(-)^\ast$
+as reflexive-transitive closure and the elements of $B$ as
+subidentities---relations below the relational unit. This
+grounds $\KAT$ within standard relational imperative program
+semantics. However, we prefer the isomorphic representation known
+as \emph{state transformers} of type $S\to \Pow\, S$.
+Composition $\cdot$ is then interpreted as Kleisli
+composition
 \begin{equation*} 
 (f\circ_K g)\, x = \bigcup\{g\, y\mid y \in f\ x \}, 
 \end{equation*} 
@@ -373,28 +374,30 @@ modelling boundary conditions or similar restrictions on temporal
 evolutions. % Guards are also known as \emph{evolution domain
   % restrictions}~\cite{DoyenFPP18}.
 
-Formally, we fix a state space $S$ of the hybrid program, for example
-$S\subseteq \reals^n$ and $n\in\mathbb{N}$. We model continuous
-variables are algebraically using lenses~\cite{FosterZW16} to support
-different state space models generically. A lens, $x : A \lto S$, is a
-tuple $x = (A, S, \lget, \lput)$ with variable type $A$ and state
+Formally, we fix a state space $S$ of the hybrid program,
+for example $S\subseteq \reals^n$ and $n\in\mathbb{N}$. We
+model continuous variables algebraically using
+lenses~\cite{FosterZW16} to support different state space
+models generically. A lens, $x : A \lto S$, is a tuple
+$x = (A, S, \lget, \lput)$ with variable type $A$ and state
 space $S$. The functions $\lget_x : S \to A$ and
-$\lput_x : S \to A \to S$ query and update the value of $x$ in a
-particular state. They are linked by three intuitive algebraic
-laws~\cite{FosterZW16}:
+$\lput_x : S \to A \to S$ query and update the value of $x$
+in a particular state. They are linked by three intuitive
+algebraic laws~\cite{FosterZW16}:
 \begin{equation*}
 \lget~(\lput~s~v) = v, \qquad \lput~(\lput~s~v')~v = \lput~s~v, \qquad
 \lput~s~(\lget~s) = s,
 \end{equation*}
 where $s \in S$ and $v, v' \in A$.
 
-Lenses $x$ and $y$ can also be checked for independence using the
-predicate $x \lindep y$ to distinguish variables. Each program
-variable is a lens $x : \reals \lto S$. State spaces of the form
+Lenses $x$ and $y$ can also be checked for independence
+using the predicate $x \lindep y$, which we use to
+distinguish variables. Each program variable is a lens
+$x : \reals \lto S$. State spaces of the form
 $S \subseteq \reals^n$ thus have $n$ independent lenses
-$x_1 \cdots x_n$ corresponding to projections from $\reals^n$. Yet
-more complex state spaces using matrices or infinite Euclidean spaces
-can be supported as well.
+$x_1 \cdots x_n$ corresponding to projections from
+$\reals^n$. Yet more complex state spaces using matrices or
+infinite Euclidean spaces can be supported as well.
 
 Systems of equations are modelled using vector fields: functions of
 type $S\to S$ on some open set $S$. Geometrically, vector field $f$
@@ -405,8 +408,8 @@ $\reals$ containing $0$, is then a function $X:T\to S$ that satisfies
 $X'\, t = f\, (X\, t)$---an autonomous system of ODEs in vector
 form---and $X\, 0 = s$. Solution $X$ is thus a curve in $S$ through
 $s$, parametrised in $T$ and tangential to $f$ at any point in $S$; it
-is called \emph{trajectory} or \emph{integral curve} of $f$ at $s$
-whenever it is uniquely defined ~\cite{Teschl12}.
+is called a \emph{trajectory} or \emph{integral curve} of $f$ at $s$
+whenever it is uniquely defined~\cite{Teschl12}.
 
 For IVP $(f,s)$ with continuous vector field $f:S\to S$ and initial
 state $s\in S$ we define the set of solutions on
@@ -456,16 +459,19 @@ update $\sigma : S \to S$ to have the value given by $e$. Here, the
 function $e$ models an ``expression'' that is evaluated in
 state $s$. For example, if $x$ and $y$ are
 variables, then the expression $x / (2 + y)$ is modelled by
-$\lambda s. \ \lget_x~s / (2 + \lget_y~s)$. We can also update $n$
+$\lambda s. \ \lget_x~s ~/~ (2 + \lget_y~s)$. We can also update $n$
 variables simultaneously:
-$$[x_1 \mapsto e_1, x_2 \mapsto e_2, \cdots, x_n \mapsto e_n] = id(x_1 \mapsto e_1)(x_2 \mapsto e_2)\cdots(x_n \mapsto e_n),$$ 
-where $id$ is the identity function. We also define a substitution
-operator for state updates, $\sigma \dagger e = e \circ \sigma$, that
-simply composes expression $e$ with $\sigma$. We can then define a
+$$[x_1 \mapsto e_1, x_2 \mapsto e_2, \cdots, x_n \mapsto e_n] = \textit{id}(x_1 \mapsto e_1)(x_2 \mapsto e_2)\cdots(x_n \mapsto e_n),$$ 
+where $\textit{id}$ is the identity function. State updates
+commute, when assigning to independent lenses, and cancel
+one another out, when made to the same lens, in a natural
+way. We also define a substitution operator for state
+updates, $\sigma \dagger e = e \circ \sigma$, that simply
+composes expression $e$ with $\sigma$. We can then define a
 semantic analog of the substitution operator,
-$e[f/x] = [x \mapsto f] \subapp e$ with the usual
-laws~\cite{FosterZW16}. Finally, we define a generalised assignment
-operator:
+$e[f/x] = [x \mapsto f] \subapp e$ that satisfies the
+expected laws~\cite{FosterZW16}. Finally, we define a
+generalised assignment operator:
 
 \begin{equation}
   \langle \sigma \rangle = \lambda s.\ \{ \sigma(s) \}.\tag{st-assgn}
@@ -488,14 +494,17 @@ schematic $\KAT$~\cite{AngusK01}:
                           &~=~ \textbf{if}~ t[e/x]  ~\textbf{then}~ x := e \seq \alpha  ~\textbf{else}~ x := e \seq \beta.
 \end{align*}
 
-Here, $x \unrest e$ means that the semantic expression $e$ does not
-depend in its valuation on lens $x$~\cite{FosterZW16}. An assignment
-of $x$ to itself is simply $\sskip$. Two assignments to $x$ result in
-a single assignment, with a semantic substitution applied. Assignments
-to independent variables $x$ and $y$ commute provided that neither
-assigned expression depend on the corresponding variable.  Assignment
-can be distributed through conditionals by a substitution to the
-condition.
+Here, $x \unrest e$ means that the semantic expression $e$
+does not depend in its valuation on lens
+$x$~\cite{FosterZW16}. An assignment of $x$ to itself is
+simply $\sskip$. Two assignments to $x$ result in a single
+assignment, with a semantic substitution
+applied. Assignments to independent variables $x$ and $y$
+commute provided that neither assigned expression depend on
+the corresponding variable.  Assignment can be distributed
+through conditionals by a substitution to the
+condition. Such laws can be recursively applied for symbolic
+evaluation of deterministic programs.
 
 % First we define a state update function
 % $f_a:V\to (S \to E) \to S\to S$ as
@@ -511,8 +520,9 @@ condition.
 %   (x:= e) = \lambda s.\ \{f_a\, x\, e\, s\}.\label{eq:st-assgn}\tag{st-assgn}
 % \end{equation}
 
-Lenses admit several models, including records and total functions~\cite{FosterZW16}. Here, we provide model for vector
-spaces, executable, and infinite Euclidean spaces:
+Lenses admit several models, including records and
+functions~\cite{FosterZW16}. Here, we provide models for
+vector spaces, and executable and infinite Euclidean spaces:
 %
 \begin{align*}
   \textit{vec-lens}^n_k &~\defs~ (\reals, \reals^n, \lambda s.\, \textit{vec-nth}~s~k, \lambda s~v.\, \textit{vec-upd}~k~v~s) & \text{if~} k < n \\
@@ -520,12 +530,18 @@ spaces, executable, and infinite Euclidean spaces:
   \textit{fun-lens}^{(A,B)}_i &~\defs~ (B, A \to B, (\lambda f. f i), (\lambda f~v. \, f(i := v)))
 \end{align*}
 
-\noindent The vector lens selects the $k$th element of an $n$ dimension vector, using $\textit{vec-nth}$ and
-$\textit{vec-upd}$, which are developed from the HOL Analysis library~\cite{HolzlIH13}. The Euclidean lens views
-executable Euclidean spaces, developed by Immler~\cite{ImmlerT19}, that permit both vectors and matrices. Finally, the
-function lens selects range elements of a function associated with a domain element $i \in A$. In particular, it can be
-used to describe countably infinite Euclidean spaces, $\mathbb{N} \to \reals$. All of these lenses satisfy the three
-lens axioms~\cite{FosterZW16}.
+\noindent The vector lens selects the $k$th element of an
+$n$ dimension vector, using $\textit{vec-nth}$ and
+$\textit{vec-upd}$, which are developed from the HOL
+Analysis library~\cite{HolzlIH13}, which provides a indexed
+type for $\reals^n$. The Euclidean lens views executable
+Euclidean spaces, developed by Immler~\cite{ImmlerT19}, that
+permit both vectors and matrices. Finally, the function lens
+selects range elements of a function associated with a
+domain element $i \in A$. In particular, it can be used to
+describe countably infinite Euclidean spaces,
+$\mathbb{N} \to \reals$. All of these lenses satisfy the
+three lens axioms~\cite{FosterZW16}.
 
 The development in this section has been formalised with
 Isabelle~\cite{afp:hybrid}, both for a state transformer and a
@@ -559,7 +575,7 @@ semantics yields the expected theorem:
 % \left\{x = e[x_0/x] \wedge p[x_0/x]\right\}, S \, \left\{q\right\} \Longrightarrow \left\{p \right\}\, x := e \seq S \,\left\{ q \right\}
 % \end{equation}
 
-Hence all we need to add to Hoare logic is a rule for evolution
+Hence, all we need to add to Hoare logic is a rule for evolution
 commands.  We restrict our attention to Lipschitz-continuous vector
 fields for which unique solutions to IVPs are guaranteed by
 Picard-Lindel\"of's theorem~\cite{Teschl12}.  These are \emph{(local)\
@@ -615,7 +631,7 @@ in $\dH$:
 \begin{example}[Thermostat verification via solutions]\label{ex:therm-sol}
   A thermostat regulates the temperature $T$ of a room between bounds
   $T_l\le T\le T_h$. Variable $T_0$ stores an initial temperature;
-  $\vartheta$ indicates wether the heater is switched on or off.
+  $\vartheta$ indicates whether the heater is switched on or off.
   Within time intervals of at most $\tau$ minutes, the thermostat
   resets time to $0$, measures the temperature, and turns the heater
   on or off dependent on the value obtained.
