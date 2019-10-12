@@ -188,7 +188,7 @@ seamlessly between stores based on real vector spaces or executable
 Euclidean spaces. Beyond that it suffices to derive a few algebraic
 laws for invariants and the Hoare-axioms and refinement laws for
 evolution commands in the concrete semantics. Program verification is
-then performed at this concrete level, but this remains hidden, as
+then performed at the concrete level, but this remains hidden, as
 tactics generate data-level verification conditions automatically and
 we have programmed boiler-plate syntax for programs and correctness
 specifications.
@@ -199,17 +199,16 @@ equations and implicitly with invariant sets. We have formalised a third
 method in which solutions, that is flows, are declared ab initio in
 correctness specifications and need not be certified.
 
-Our verification components have so far been evaluated on a small set of
-simple program construction and verification examples. We discuss some
-of them in detail to explain the different work flows supported by our
-approach. With Isabelle tactics for automated verification condition
-generation in place, we notice little difference relative to our
-predicate transformer components~\cite{MuniveS19}.  The entire
-Isabelle formalisation, is available
+Our program construction and verification components have so far been
+evaluated on a small set of simple examples. We present some of them
+to explain the work flows supported by $\dH$ and $\dR$. With Isabelle
+tactics for automated verification condition generation in place, we
+notice little difference relative to our predicate transformer
+components~\cite{MuniveS19}.  The entire Isabelle formalisation, is
+available
 online\footnote{\url{https://github.com/yonoteam/HybridKATpaper}}; our
 repository contains instructions for using it and a postscript proof
-document that allows reading the Isabelle code without installing the
-proof assistant.
+document for reading the Isabelle code without installing the tool.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -281,14 +280,14 @@ A \emph{state transformer $\KAT$} over $S$ is any subalgebra of
 $\sta\, S$. 
 
 We have already formalised $\KAT$ via type classes in
-Isabelle~\cite{afp:kat}.  These allow only one type parameter. Hence
-we use an alternative approach that expands a Kleene algebra $K$ by an
+Isabelle~\cite{afp:kat}.  As these allow only one type parameter, we
+use an alternative approach that expands a Kleene algebra $K$ by an
 \emph{antitest} function $n:K\to K$ from which a \emph{test} function
 $t:K\to K$ is defined as $t=n^2$. Then
 $K_t = \{\alpha \mid t\, \alpha = \alpha\}$ forms a boolean algebra in
-which $n$ acts as test complementation. It can be used in place of the
-boolean algebra $B$.  A formalisation of the state transformer model
-of $\KAT$ is a contribution to this article.
+which $n$ acts as test complementation. It can be used in place of
+$B$.  The formalised state transformer model of $\KAT$ is a
+contribution to this article.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -503,7 +502,7 @@ applied. Assignments to independent variables $x$ and $y$
 commute provided that neither assigned expression depend on
 the corresponding variable.  Assignment can be distributed
 through conditionals by a substitution to the
-condition. Such laws can be recursively applied for symbolic
+condition. Such laws can be applied recursively for symbolic
 evaluation of deterministic programs.
 
 % First we define a state update function
@@ -520,34 +519,31 @@ evaluation of deterministic programs.
 %   (x:= e) = \lambda s.\ \{f_a\, x\, e\, s\}.\label{eq:st-assgn}\tag{st-assgn}
 % \end{equation}
 
-Lenses admit several models, including records and
-functions~\cite{FosterZW16}. Here, we provide models for
+Lenses support various store models, including records and
+functions~\cite{FosterZW16}. We provide models for
 vector spaces, and executable and infinite Euclidean spaces:
 %
 \begin{align*}
-  \textit{vec-lens}^n_k &~\defs~ (\reals, \reals^n, \lambda s.\, \textit{vec-nth}~s~k, \lambda s~v.\, \textit{vec-upd}~k~v~s) & \text{if~} k < n \\
-  \textit{eucl-lens}^{(m,n)}_k &~\defs~ (\reals, M^{(m,n)}, \lambda s.\, \textit{eucl-nth}~s~k, \lambda s~v.\, \textit{eucl-upd}~k~v~s) & \text{if~} k < m\!\cdot\!n \\
-  \textit{fun-lens}^{(A,B)}_i &~\defs~ (B, A \to B, (\lambda f. f i), (\lambda f~v. \, f(i := v)))
+  \textit{vec-lens}^n_k &=  (\reals, \reals^n, \lambda s.\, \textit{vec-nth}~s~k, \lambda s~v.\, \textit{vec-upd}~k~v~s), & \text{if~} k < n, \\
+  \textit{eucl-lens}^{(m,n)}_k & = (\reals, M^{(m,n)}, \lambda s.\, \textit{eucl-nth}~s~k, \lambda s~v.\, \textit{eucl-upd}~k~v~s), & \text{if~} k < mn, \\
+  \textit{fun-lens}^{(A,B)}_i &= (B, A \to B, (\lambda f. f i), (\lambda f~v. \, f(i := v))).
 \end{align*}
 
-\noindent The vector lens selects the $k$th element of an
-$n$ dimension vector, using $\textit{vec-nth}$ and
-$\textit{vec-upd}$, which are developed from the HOL
-Analysis library~\cite{HolzlIH13}, which provides a indexed
-type for $\reals^n$. The Euclidean lens views executable
-Euclidean spaces, developed by Immler~\cite{ImmlerT19}, that
-permit both vectors and matrices. Finally, the function lens
-selects range elements of a function associated with a
-domain element $i \in A$. In particular, it can be used to
-describe countably infinite Euclidean spaces,
-$\mathbb{N} \to \reals$. All of these lenses satisfy the
-three lens axioms~\cite{FosterZW16}.
+\noindent The vector lens selects the $k$th element of an $n$
+dimension vector using $\textit{vec-nth}$ and $\textit{vec-upd}$ from
+the HOL Analysis library~\cite{HolzlIH13}, which provides a indexed
+type for $\reals^n$. The Euclidean lens uses executable Euclidean
+spaces~\cite{ImmlerT19} that permit both vectors and matrices. The
+function lens selects range elements of a function associated with a
+domain element $i \in A$. It can be used in particular with infinite
+Euclidean spaces, $\mathbb{N} \to \reals$. All three satisfy the lens
+axioms above.
 
 The development in this section has been formalised with
 Isabelle~\cite{afp:hybrid}, both for a state transformer and a
 relational semantics. An instance of the latter for particular vector
 fields with unique solutions forms the standard semantics of
-$\dL$. Due to the connection to orbits or orbitals, the state
+$\dL$. By the direct connection to orbits or orbitals, the state
 transformer semantics is arguably conceptually simpler and more
 elegant.
 
@@ -556,15 +552,15 @@ elegant.
 
 \section{Differential Hoare Logic for Flows}\label{sec:hoare-flow}
 
-In the semantics of Hoare triples, the Kleisli composition in the left
-hand side of an inequality $p\alpha\le \alpha q$ ensures that the
-precondition holds at the beginning of the program. The left hand side
-guarantees that the postcondition holds at the end. With evolution
-commands, and consistently with $\dL$, the postcondition holds at
-every point in the orbit of a solution.
+In the standard semantics of Hoare triples, the Kleisli composition in
+the left hand side of $p\alpha\le \alpha q$ ensures that $p$ holds
+before executing $x$. The left hand side guarantees that $q$ holds
+after its execution. With evolution commands, and consistently with
+$\dL$, the $q$ holds at every point in the orbit of a
+solution to $x$.
 
-The assignment axiom of Hoare logic need not be explained. Our concrete
-semantics yields the expected theorem:
+The assignment axiom of Hoare logic needs no explanation. Our concrete
+semantics allows us to derive it:
 
 \begin{equation}
 \left\{P[e/x]\right\}\,  x:=e\, \{P\}. \label{eq:h-assgn}\tag{h-assgn}
@@ -617,14 +613,14 @@ The rule~(\ref{eq:h-evl}) supports the following procedure
 for reasoning with an evolution command $x' = f\, \&\, G$ and set $U$
 in $\dH$:
 \begin{enumerate}
-\item Check that vector field $f$ satisfies the conditions for
-  Picard-Lindel\"of's theorem ($f$ is Lipschitz continuous and
-  $S\subseteq\reals^n$ is open).
+\item Check that $f$ satisfies the conditions for Picard-Lindel\"of's
+  theorem ($f$ is Lipschitz continuous and $S\subseteq\reals^n$ is
+  open).
 \item Supply a (local) flow $\flow$ for $f$ with open interval of
   existence $T$ around $0$.
 \item Check that $\flow_s$ solves the IVP $(f,s)$ for each $s\in S$;
-  that is, $\flow_s'\, t = f\, (\flow_s\, t)$, $\flow_s\, 0 = s$, and
-  $U\subseteq T$.
+  ($\flow_s'\, t = f\, (\flow_s\, t)$, $\flow_s\, 0 = s$, and
+  $U\subseteq T$).
 \item If successful, apply rule~(\ref{eq:h-evl}).
 \end{enumerate}
 
@@ -634,10 +630,10 @@ in $\dH$:
   $\vartheta$ indicates whether the heater is switched on or off.
   Within time intervals of at most $\tau$ minutes, the thermostat
   resets time to $0$, measures the temperature, and turns the heater
-  on or off dependent on the value obtained.
-
-We assume that $0<T_l$, $T_h<T_u$, $0 < a$,
-$U={\isacharbraceleft}{\isadigit{0}}{\isachardot}{\isachardot}{\isasymtau}{\isacharbraceright}=[0,\tau]$, and define the vector field, for $c\in\{0,T_u\}$, as
+  on or off dependent on the value obtained.  With $0<T_l$, $T_h<T_u$,
+  $0 < a$,
+  $U={\isacharbraceleft}{\isadigit{0}}{\isachardot}{\isachardot}{\isasymtau}{\isacharbraceright}=[0,\tau]$
+  we define $f$, for $c\in\{0,T_u\}$, as
 
 \begin{isabellebody}
 \isanewline
@@ -705,12 +701,15 @@ thermostat with $\dH$  is then
 \ rel{\isacharunderscore}auto{\isacharprime}\isanewline
 \end{isabellebody}
 
-\noindent The first line uses tactic \isa{hyb-hoare} to blast away the structure of \isa{therm} using $\dH$. To apply \isa{hyb-hoare}, the program must be an iteration of the composition of two programs --usually control and dynamics. The tactic requires a description of the store between those programs via an Isabelle UTP-predicate, indicated by the function $U(-)$. Lemma \isa{local-flow-therm},
-whose proof captures the procedure described above, supplies the flow
-for $f\, a\, c$:
-\begin{equation*}
-\flow\, a\, c\, \tau = (-e^{-a\cdot\tau}(c-T)+c, \tau+t, T_0, \vartheta)^\top,
-\end{equation*}
+\noindent The first line uses tactic \isa{hyb-hoare} to blast away the
+structure of \isa{therm} using $\dH$. To apply \isa{hyb-hoare}, the
+program must be an iteration of the composition of two
+programs---usually control and dynamics. The tactic requires a
+description of the store between those programs as an Isabelle
+UTP-predicate $U(-)$. Lemma
+\isa{local-flow-therm}, whose proof captures the procedure described
+above, supplies the flow for $f\, a\, c$: $\flow\, a\, c\, \tau =
+(-e^{-a\cdot\tau}(c-T)+c, \tau+t, T_0, \vartheta)^\top$, 
 %\begin{isabellebody}
 %\isanewline
 %\isacommand{abbreviation}\isamarkupfalse%
@@ -749,9 +748,9 @@ unfolds to
   \forall s.\ I\, s \to (\forall X\in\Sols f\, T\, s.\forall t\in T.\ (\forall \tau\in {\downarrow}t.\ G\, (X\, \tau)) \to I\, (X\, t)).
 \end{equation*}
 For $G=\top$ we call $I$ an \emph{invariant} of $f$ along $T$.
-Intuitively, invariants can be seen as sets of orbits.
-
-Invariants for evolution commands are coherent with those in Section~\ref{sec:hl-invariants}.
+Intuitively, invariants can be seen as sets of orbits. They are
+coherent with the invariants from
+Section~\ref{sec:hl-invariants}.
 \begin{proposition}\label{P:inv-prop}
   Let $f:S\to S$ be continuous, $G:S\to\bools$ and
   $T\subseteq \reals$. Then $I$ is an invariant for $f$ and $G$ \emph{along} $T$ if and only if
@@ -779,10 +778,11 @@ following lemma leads to a procedure.
 \end{lemma}
 
 Condition $(1)$ follows from the well known fact that two continuously
-differentiable functions are equal if they intersect at some point and their
-derivatives are equal. Therefore, rules (\ref{eq:h-invg}), (\ref{eq:h-inv-mult}), (\ref{eq:h-inv-plus}),
-Proposition~\ref{P:inv-prop} and Lemma~\ref{P:invrules} yield the following procedure for verifying a triple $\{P\}\, x' = f\, \&\, G\, \{Q\}$
-using an invariant.
+differentiable functions are equal if they intersect at some point and
+their derivatives are equal. Therefore, rules (\ref{eq:h-invg}),
+(\ref{eq:h-inv-mult}), (\ref{eq:h-inv-plus}),
+Proposition~\ref{P:inv-prop} and Lemma~\ref{P:invrules} yield the
+following procedure for verifying $\{P\}\, x' = f\, \&\, G\, \{Q\}$:
 \begin{enumerate}
 \item Check whether a candidate predicate $I$ is an invariant for $f$
   along $T$:
@@ -822,11 +822,10 @@ using an invariant.
 {\isadigit{1}}{\isacharparenright}{\isacharparenright}{\isachardoublequoteclose}
 \isanewline
 \end{isabellebody}
-\noindent The vector field differs from that of the thermostat in
-Example~\ref{ex:therm-sol}. A hybrid program for the controller of the
-water tank is given as follows. Once again we introduce the guard $G\
-h_x\ k$ with $h_x\in\{h_l,h_h\}$, which restricts the evolution to 
-go beyond $h_x$,
+\noindent This vector field differs from that of the thermostat
+(Example~\ref{ex:therm-sol}). A hybrid program for the controller is
+given once again by guard $G\ h_x\ k$ with
+$h_x\in\{h_l,h_h\}$ that restricts evolutions beyond $h_x$,
 loop invariant $I$, control and dynamic part before the program
 itself---and this time a differential invariant \isa{dI} as well:
 \begin{isabellebody}
@@ -887,13 +886,12 @@ tank with is $\dH$ then
 \ rel{\isacharunderscore}auto{\isacharprime}\isanewline
 \end{isabellebody}
 
-\noindent As in Example~\ref{ex:therm-sol}, tactic \isa{hyb-hoare} blasts away
-the control structure of this program. The second line of the proof
-uses lemma \isa{tank-diff-inv} to check that \isa{dI} is an invariant,
-following the procedure outlined (technical details can be found in
-our repository). The final line discharges the remaining arithmetic
-proof obligations using auxiliary lemmas. 
-\qed
+\noindent As in Example~\ref{ex:therm-sol}, tactic \isa{hyb-hoare}
+blasts away the control structure of this program. The second proof
+line uses Lemma \isa{tank-diff-inv} to check that \isa{dI} is an
+invariant, using the procedure outlined (see our repository for
+technical details). Auxiliary lemmas then discharge the remaining
+arithmetic proof obligations.  \qed
 \end{example}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -926,7 +924,8 @@ $\rKAT$~\cite{ArmstrongGS16}.
 \IF{t}{[tp,q]}{[\neg tp,q]} &\le [p,q],\label{eq:r-cond}\tag{r-cond}\\
  \WHILE{t}{[tp,p]} &\le [p,\neg tp]. \label{eq:r-while}\tag{r-while}
 \end{align}
-For the sake of completeness, one can also derive $\alpha \le [0,1]$ and $[1,0] \le \alpha$, but do not use them in proofs.
+We have also derived $\alpha \le [0,1]$ and $[1,0] \le \alpha$, but do
+not use them in proofs.
 
 For invariants and loops, we obtain the additional refinement laws
 \begin{align}
@@ -1035,17 +1034,17 @@ approach presented.
 \end{isabellebody}
 The \isa{refinement} tactic pushes the refinement specification
 through the program structure until the only remaining proof
-obligations are atomic refinements. We only refine those atomic
-programs that supply crucial information to complete proofs
-automatically. For \isa{therm}, these were those for the first two
-assignments and the differential equations shown above. \qed
+obligations are atomic refinements. We only refine the atomic programs
+needed to complete proofs automatically; 
+those for the first two assignment and the evolution commands. \qed
 \end{example}
 
 \begin{example}[Water tank refinement via invariants]\label{ex:tank-rinv}
-  Alternatively we can use the differential invariant to refine
-  \isa{tank{\isacharunderscore}dinv} from Example~\ref{ex:tank-inv}
-  using $\dR$. This time we supply a single structured proof to show
-  another style of refinement. We %omit some parts of the proof and
+  Alternatively we may use differential invariants with $\dR$ to
+  refine \isa{tank{\isacharunderscore}dinv} from
+  Example~\ref{ex:tank-inv}. This time we supply a single structured
+  proof to show another style of refinement.
+  We %omit some parts of the proof and
   abbreviate long expressions with schematic variables.
 
 \begin{isabellebody}
@@ -1094,16 +1093,15 @@ assignments and the differential equations shown above. \qed
 \isanewline
 \end{isabellebody}
 
-The proof incrementally refines the program structure of
-\isa{tank{\isacharunderscore}dinv} by applying the laws of $\dR$. As
-in Example~\ref{ex:therm-rsol}, after refining the first two
-assignments, the \isa{refinement} tactic completes the refinement of
-\isa{ctrl}. Then, the invariant is provided via lemma
+\noindent The proof incrementally refines the specification of
+\isa{tank{\isacharunderscore}dinv} using the laws of $\dR$. As in
+Example~\ref{ex:therm-rsol}, after refining the first two assignments,
+tactic \isa{refinement} completes the construction of
+\isa{ctrl}. Then, the invariant is supplied via lemma
 \isa{tank{\isacharunderscore}diff{\isacharunderscore}inv} from
-Example~\ref{ex:tank-inv} to refine \isa{dyn}. The main result is
-obtained by transitivity of $\leq$. With a proof assistant, the user
-owns the means of production. A more fine-grained program construction
-is equally possible. \qed
+Example~\ref{ex:tank-inv} to construct \isa{dyn}. The final program is then
+obtained by transitivity of $\leq$. A more detailed derivation
+is also possible. \qed
 \end{example}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1139,7 +1137,7 @@ for such evolution commands.
 \end{lemma}
 
 \begin{example}[Bouncing ball via Hoare logic]\label{ex:ball-hoare}
-  Suppose a ball of mass $m$ falls down from height $h\geq 0$, with
+  A ball of mass $m$ falls down from height $h\geq 0$, with
   $x$ denoting its position, $v$ its velocity and $g$ its
   acceleration. Its kinematics is modelled by the flow
 \begin{isabellebody}
@@ -1166,9 +1164,9 @@ for such evolution commands.
 %\end{equation*}
 %where we abbreviate
 %$s_x = s\, x$ and $s_v = s\, v$.  
-The ball bounces back
-from the ground in an elastic collision, which is modelled using a
-discrete control that checks whether $x=0$ and then flips the
+\noindent The ball bounces back elastically
+from the ground. This is modelled by a
+discrete control that checks for $x=0$ and then flips the
 velocity.  Guard $G=(x\geq 0)$ excludes any motion
 below the ground. This is modelled by the hybrid
 program~\cite{Platzer18}
@@ -1183,8 +1181,8 @@ program~\cite{Platzer18}
 T{\isacharsemicolon} {\isacharparenleft}IF\ {\isacharparenleft}v\ {\isacharequal}\ {\isadigit{0}}{\isacharparenright}\ THEN\ {\isacharparenleft}v\ {\isacharcolon}{\isacharcolon}{\isacharequal}\ {\isacharminus}v{\isacharparenright}\ ELSE\ skip{\isacharparenright}{\isacharparenright}\ \isanewline
 \ \   INV\ {\isacharparenleft}{\isadigit{0}}\ {\isasymle}\ x\ {\isasymand}\ {\isadigit{2}}\ {\isasymcdot}\ g\ {\isasymcdot}\ x\ {\isacharequal}\ {\isadigit{2}}\ {\isasymcdot}\ g\ {\isasymcdot}\ h\ {\isacharplus}\ v\ {\isasymcdot}\ v{\isacharparenright}{\isachardoublequoteclose}\isanewline
 \end{isabellebody}
-\noindent Its loop invariant is a conjunction of the guard $G$ with a
-variation of the law of energy conservation. The correctness
+\noindent Its loop invariant conjoins the guard $G$ with a
+variant of energy conservation. The correctness
 specification and proof with $\dH$ and $\dR$ are then straightforward.
 %\begin{align*}
 %	\mathsf{Cntrl} &= \IF {(\lambda\, s.\ s_x=0)} {v:=(\lambda\, s.\ - s_v)} \mathit{skip},\\
@@ -1216,11 +1214,11 @@ specification and proof with $\dH$ and $\dR$ are then straightforward.
 \ assms\ \isacommand{by}\isamarkupfalse%
 \ {\isacharparenleft}rel{\isacharunderscore}auto{\isacharprime}\ simp{\isacharcolon}\ bb{\isacharunderscore}real{\isacharunderscore}arith{\isacharparenright}\isanewline
 \end{isabellebody}
-
-After applying tactic \isa{hyb{\isacharunderscore}hoare}, the
-remaining proof obligations in the Hoare triple specification can be
-discharged automatically with the arithmetical facts
-(\isa{bb{\isacharunderscore}real{\isacharunderscore}arith}). In the
+\noindent % After applying tactic \isa{hyb{\isacharunderscore}hoare}, the
+% remaining proof obligations in the Hoare triple specification can be
+% discharged automatically with the arithmetical facts
+% (\isa{bb{\isacharunderscore}real{\isacharunderscore}arith}). 
+In the
 refinement proof, the tactic leaves only the refinement for the
 assignment \isa{v\ {\isacharcolon}{\isacharcolon}{\isacharequal}\
   {\isacharminus}v}. This is supplied via lemma
@@ -1242,44 +1240,41 @@ specifically the first standalone Hoare logic $\dH$ for hybrid
 programs, the first Morgan-style refinement calculus $\dR$ for such
 programs, more generic state spaces modelled by lenses, improved
 Isabelle syntax for correctness specifications and hybrid programs,
-and increased proof automation via Isabelle tactics.  As
-previously~\cite{MuniveS19}, these components support three workflows
-based on certifying solutions to Lipschitz-continuous vector fields,
-reasoning with invariant sets for continuous vector fields, and
-working directly with flows without certification.
+and increased proof automation via tactics.  These components support
+three workflows based on certifying solutions to Lipschitz-continuous
+vector fields, reasoning with invariant sets for continuous vector
+fields, and working directly with flows without certification.
 
 Compared to the standard $\dL$ toolchain, $\dH$ and $\dR$ are
 simple. They emphasise the natural mathematical style of reasoning
 about dynamical systems, with minimal conceptual overhead relative to
-standard Hoare logics and refinement calculi. The inference system of
-$\dH$, in particular, remains invisible and is only used for automated
-verification condition generation. The modular approach with algebras
-and a shallow embedding has simplified the construction of these
-verification components and made it incremental relative to extant
-ones. Our framework is not only open to use any proof method and
-mathematical approach supported by Isabelle, it should also allow
-developers to add new methods, for instance based on discrete
-dynamical systems, hybrid automata or duration
-calculi~\cite{LiuLQZZZZ10}, or integrate CAS's like Mathematica for
-finding solutions with minimal effort. It should be equally
-straightforward to formalise $\dH$ and $\dR$ based on other Hoare
-logics in Isabelle by plugging in our hybrid store models.
+standard Hoare logics and refinement calculi. $\dH$, in particular,
+remains invisible and is only used for automated verification
+condition generation. The modular approach with algebras and a shallow
+embedding has simplified the construction of these verification
+components and made it incremental relative to extant ones. Our
+framework is not only open to use any proof method and mathematical
+approach supported by Isabelle, it should also allow adding new
+methods, for instance based on discrete dynamical systems, hybrid
+automata or duration calculi~\cite{LiuLQZZZZ10}, or integrate CAS's
+for finding solutions. It should be equally straightforward to
+formalise $\dH$ and $\dR$ based on other Hoare logics in Isabelle with
+our hybrid store models.
 
-The relevance of Hoare logic and refinement calculi for hybrid systems
-verification is further evidenced by the fact that such approaches are
-not new: A hybrid Hoare logic has been proposed by Liu et
-al.~\cite{LiuLQZZZZ10} for a duration calculus based on hybrid CSP and
-been widely used since. Yet it is conceptually very different from
-$\dH$ and $\dL$. A differential refinement logic based on $\dL$ has
-been developed as part of Loos' PhD work~\cite{LoosP16}.  It is based
-on a proof system with inference rules for reasoning about
-inequalities between $\KAT$ expressions, which are interpreted in a
-rather non-standard way as refinements between hybrid programs. It
-differs substantially from the algebraic calculi developed by Back and
-von Wright~\cite{BackW98}, Morgan~\cite{Morgan94} and others, and thus
-from the predicate transformer algebras in~\cite{MuniveS19} and from
-$\dR$.  The relative advantages and disadvantages of these approaches
-remain to be explored.
+The relevance of $\dH$ and $\dR$ to hybrid systems verification is
+further evidenced by the fact that such approaches are not new: A
+hybrid Hoare logic has been proposed by Liu et al.~\cite{LiuLQZZZZ10}
+for a duration calculus based on hybrid CSP and been widely used
+since. It is conceptually very different from $\dH$ and $\dL$. A
+differential refinement logic based on $\dL$ has been developed as
+part of Loos' PhD work~\cite{LoosP16}.  It uses a proof system with
+inference rules for reasoning about inequalities between $\KAT$
+expressions, which are interpreted in a rather non-standard way as
+refinements between hybrid programs. It differs substantially from the
+calculi developed by Back and von Wright~\cite{BackW98},
+Morgan~\cite{Morgan94} and others, and thus from the predicate
+transformer algebras in~\cite{MuniveS19} and from $\dR$.  The relative
+merits of these approaches remain to be explored.
 
 The expressivity and complexity gap between Hoare logic and predicate
 transformer semantics is particularly apparent within algebra. The
