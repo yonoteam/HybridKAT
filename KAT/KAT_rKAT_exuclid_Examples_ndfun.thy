@@ -136,35 +136,16 @@ lemma enum_2[simp]: "(enum_class.enum::2 list) = [0::2, 1]"
 lemma basis_list2[simp]: "Basis_list = [axis (0::2) (1::real), axis 1 1]"
   by (auto simp: Basis_list_vec_def Basis_list_real_def)
 
-lemma [simp]: 
-  fixes g::real and s::"real^2"
-  shows "vec_nth (eucl_of_list ((list_of_eucl s)[0 := g])) (0::2) = g"
-  unfolding eucl_of_list_def list_of_eucl_def by (simp add: axis_def)
+lemma list_of_eucl2[simp]:
+  fixes s::"real^2"
+  shows "list_of_eucl s = map ((\<bullet>) s) [axis (0::2) (1::real), axis 1 1]"
+  unfolding list_of_eucl_def by simp
 
-lemma [simp]: 
-  fixes g::real and s::"real^2"
-  shows "vec_nth (eucl_of_list ((list_of_eucl s)[0 := g])) (1::2) = vec_nth s 1"
-  unfolding eucl_of_list_def list_of_eucl_def by (simp, simp add: axis_def)
+lemma inner_axis2[simp]: "A \<bullet> (\<chi> j::2. if j = i then (k::real) else 0) = (vec_nth A i) \<cdot> k"
+  unfolding inner_vec_def UNIV_2 inner_real_def using exhaust_2 by force
 
-lemma [simp]: 
-  fixes g::real and s::"real^2"
-  shows "vec_nth (eucl_of_list ((list_of_eucl s)[Suc 0 := g])) (0::2) = vec_nth s 0"
-  unfolding eucl_of_list_def list_of_eucl_def by (simp, simp add: axis_def)
-
-lemma [simp]: 
-  fixes g::real and s::"real^2"
-  shows "vec_nth (eucl_of_list ((list_of_eucl s)[Suc 0 := g])) (1::2) = g"
-  unfolding eucl_of_list_def list_of_eucl_def by (simp add: axis_def)
-
-lemma [simp]: 
-  fixes g::real and s::"real^2"
-  shows "eucl_of_list ((list_of_eucl s)[0 := g, Suc 0 := h]) = g *\<^sub>R axis (0::2) (1::real) + h *\<^sub>R axis 1 1"
-  unfolding eucl_of_list_def list_of_eucl_def by simp
-
-lemma [simp]: 
-  fixes g::real and s::"real^2"
-  shows "eucl_of_list ((list_of_eucl s)[Suc 0 := h, 0 := g]) = g *\<^sub>R axis (0::2) (1::real) + h *\<^sub>R axis 1 1"
-  unfolding eucl_of_list_def list_of_eucl_def by simp
+declare eucl_of_list_def [simp]
+    and axis_def [simp]
 
 subsubsection \<open>Pendulum\<close>
 
@@ -183,24 +164,23 @@ abbreviation pend_flow :: "real \<Rightarrow> (real^2) usubst" ("\<phi>")
 \<comment> \<open>Verified with annotated dynamics \<close>
 
 lemma pendulum_dyn: "\<^bold>{r\<^sup>2 = x\<^sup>2 + y\<^sup>2\<^bold>}(EVOL \<phi> G T)\<^bold>{r\<^sup>2 = x\<^sup>2 + y\<^sup>2\<^bold>}"
-  by (simp, rel_auto, simp add: axis_def)
+  by (simp, pred_simp)
 
 \<comment> \<open>Verified with invariants \<close>
 
 lemma pendulum_inv: "\<^bold>{r\<^sup>2 = x\<^sup>2 + y\<^sup>2\<^bold>} (x\<acute>= \<lbrakk>f\<rbrakk>\<^sub>e & G) \<^bold>{r\<^sup>2 = x\<^sup>2 + y\<^sup>2\<^bold>}"
-  by (simp, pred_simp, auto simp: axis_def intro!: diff_invariant_rules poly_derivatives)
+  by (simp, pred_simp, auto intro!: diff_invariant_rules poly_derivatives)
 
 \<comment> \<open>Verified by providing solutions \<close>
 
 lemma local_flow_pend: "local_flow \<lbrakk>f\<rbrakk>\<^sub>e UNIV UNIV (\<lambda> t. \<lbrakk>\<phi> t\<rbrakk>\<^sub>e)"
   apply(unfold_locales, simp_all add: local_lipschitz_def lipschitz_on_def vec_eq_iff, clarsimp)
     apply(rule_tac x="1" in exI, clarsimp, rule_tac x=1 in exI, pred_simp)
-    apply(simp add: axis_def dist_norm norm_vec_def L2_set_def power2_commute UNIV_2, pred_simp)
-   apply(force simp: axis_def intro!: poly_derivatives)
-  by (pred_simp, simp add: axis_def)
+    apply(simp add: dist_norm norm_vec_def L2_set_def power2_commute UNIV_2, pred_simp)
+  by (force intro!: poly_derivatives, pred_simp)
 
 lemma pendulum_flow: "\<^bold>{r\<^sup>2 = x\<^sup>2 + y\<^sup>2\<^bold>} (x\<acute>= \<lbrakk>f\<rbrakk>\<^sub>e & G) \<^bold>{r\<^sup>2 = x\<^sup>2 + y\<^sup>2\<^bold>}"
-  by (simp only: local_flow.sH_g_ode[OF local_flow_pend], pred_simp, simp add: axis_def)
+  by (simp only: local_flow.sH_g_ode[OF local_flow_pend], pred_simp)
 
 no_notation fpend ("f")
         and pend_flow ("\<phi>")
@@ -250,7 +230,7 @@ lemma fball_invariant:
   defines dinv: "I \<equiv> U(2 \<cdot> \<guillemotleft>g\<guillemotright> \<cdot> x - 2 \<cdot> \<guillemotleft>g\<guillemotright> \<cdot> \<guillemotleft>h\<guillemotright> - (v \<cdot> v) = 0)"
   shows "diff_invariant \<lbrakk>I\<rbrakk>\<^sub>e (f g) UNIV UNIV 0 \<lbrakk>G\<rbrakk>\<^sub>e"
   unfolding dinv apply(pred_simp, rule diff_invariant_rules, simp, simp, clarify)
-  by (auto simp: axis_def intro!: poly_derivatives)
+  by (auto intro!: poly_derivatives)
 
 abbreviation "bb_dinv g h \<equiv> 
   (LOOP
@@ -321,8 +301,7 @@ lemma bouncing_ball_dyn:
   assumes "g < 0" and "h \<ge> 0"
   shows "\<^bold>{x = h \<and> v = 0\<^bold>} bb_evol g h T \<^bold>{0 \<le> x \<and> x \<le> h\<^bold>}"
   apply(hyb_hoare "U(0 \<le> x \<and> 2 \<cdot> g \<cdot> x = 2 \<cdot> g \<cdot> h + v \<cdot> v)")
-  using assms apply (rel_auto' simp: bb_real_arith)
-  by (simp_all add: axis_def, force simp: bb_real_arith )
+  using assms by (rel_auto' simp: bb_real_arith)
 
 \<comment> \<open>Verified by providing solutions \<close>
 
@@ -330,8 +309,7 @@ lemma local_flow_ball: "local_flow (f g) UNIV UNIV (\<lambda> t. \<lbrakk>\<phi>
   apply(unfold_locales, simp_all add: local_lipschitz_def lipschitz_on_def vec_eq_iff, clarsimp)
   apply(rule_tac x="1/2" in exI, clarsimp, rule_tac x=1 in exI, pred_simp)
     apply(simp add: dist_norm norm_vec_def L2_set_def UNIV_2)
-   apply (pred_simp, force intro!: poly_derivatives)
-  by (pred_simp, simp add: axis_def)
+  by (pred_simp, force intro!: poly_derivatives, pred_simp)
 
 abbreviation "bb_sol g h \<equiv>
   (LOOP (
@@ -344,8 +322,7 @@ lemma bouncing_ball_flow:
   shows "\<^bold>{x = h \<and> v = 0\<^bold>} bb_sol g h \<^bold>{0 \<le> x \<and> x \<le> h\<^bold>}"
   apply(hyb_hoare "U(0 \<le> x \<and> 2 \<cdot> g \<cdot> x = 2 \<cdot> g \<cdot> h + v \<cdot> v)")
       apply(subst local_flow.sH_g_ode[OF local_flow_ball])
-  using assms apply (rel_auto' simp: bb_real_arith)
-  by (simp_all add: axis_def, force simp: bb_real_arith )
+  using assms by (rel_auto' simp: bb_real_arith)
 
 \<comment> \<open>Refined with annotated dynamics \<close>
 
@@ -357,8 +334,7 @@ lemma R_bouncing_ball_dyn:
   assumes "g < 0" and "h \<ge> 0"
   shows "\<^bold>[x = h \<and> v = 0, 0 \<le> x \<and> x \<le> h\<^bold>] \<ge> bb_evol g h T"
   apply(refinement; (rule R_bb_assign[OF assms])?)
-  using assms apply (rel_auto' simp: bb_real_arith)
-  by (simp_all add: axis_def, force simp: bb_real_arith)
+  using assms by (rel_auto' simp: bb_real_arith)
 
 no_notation fball ("f")
         and ball_flow ("\<phi>")
