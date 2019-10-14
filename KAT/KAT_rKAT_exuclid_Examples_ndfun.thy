@@ -117,7 +117,7 @@ declare R_loop_law [refine_intros]
 method refinement
   = (rule refine_intros; (refinement)?)
 
-subsubsection \<open>Pendulum\<close>
+\<comment> \<open>Preliminary lemmas \<close>
 
 lemma inner_axis_eq_nth[simp]: "inner a (axis i 1) = vec_nth a i"
   unfolding inner_axis by simp
@@ -165,6 +165,8 @@ lemma [simp]:
   fixes g::real and s::"real^2"
   shows "eucl_of_list ((list_of_eucl s)[Suc 0 := h, 0 := g]) = g *\<^sub>R axis (0::2) (1::real) + h *\<^sub>R axis 1 1"
   unfolding eucl_of_list_def list_of_eucl_def by simp
+
+subsubsection \<open>Pendulum\<close>
 
 abbreviation x :: "real \<Longrightarrow> real^2" where "x \<equiv> \<Pi>[0]"
 abbreviation y :: "real \<Longrightarrow> real^2" where "y \<equiv> \<Pi>[Suc 0]"
