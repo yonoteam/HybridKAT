@@ -64,6 +64,10 @@ declare R_loop_law [refine_intros]
 method refinement
   = (rule refine_intros; (refinement)?)
 
+declare forall_2 [simp]
+    and forall_3 [simp]
+    and forall_4 [simp]
+
 subsubsection \<open>Pendulum\<close>
 
 abbreviation x :: "real \<Longrightarrow> real^2" where "x \<equiv> vec_lens 1"
@@ -94,7 +98,7 @@ lemma local_flow_pend: "local_flow \<lbrakk>f\<rbrakk>\<^sub>e UNIV UNIV (\<lamb
   apply(unfold_locales, simp_all add: local_lipschitz_def lipschitz_on_def vec_eq_iff, clarsimp)
   apply(rule_tac x="1" in exI, clarsimp, rule_tac x=1 in exI, pred_simp)
     apply(simp add: dist_norm norm_vec_def L2_set_def power2_commute UNIV_2)
-  by (simp add: forall_2, pred_simp, force intro!: poly_derivatives, pred_simp)
+  by (pred_simp, force intro!: poly_derivatives, pred_simp)
 
 lemma pendulum_flow: "\<^bold>{r\<^sup>2 = x\<^sup>2 + y\<^sup>2\<^bold>} (x\<acute>= \<lbrakk>f\<rbrakk>\<^sub>e & G) \<^bold>{r\<^sup>2 = x\<^sup>2 + y\<^sup>2\<^bold>}"
   by (simp only: local_flow.sH_g_ode[OF local_flow_pend], pred_simp)
@@ -223,7 +227,7 @@ lemma bouncing_ball_dyn:
 lemma local_flow_ball: "local_flow (f g) UNIV UNIV (\<lambda> t. \<lbrakk>\<phi> g t\<rbrakk>\<^sub>e)"
   apply(unfold_locales, simp_all add: local_lipschitz_def lipschitz_on_def vec_eq_iff, clarsimp)
   apply(rule_tac x="1/2" in exI, clarsimp, rule_tac x=1 in exI)
-    apply(rel_auto' simp: forall_2 dist_norm norm_vec_def L2_set_def UNIV_2)
+    apply(rel_auto' simp: dist_norm norm_vec_def L2_set_def UNIV_2)
   by (auto intro!: poly_derivatives)
 
 abbreviation "bb_sol g h \<equiv>
@@ -328,8 +332,7 @@ lemma local_lipschitz_therm_dyn:
 lemma local_flow_therm: "a > 0 \<Longrightarrow> local_flow (f a T\<^sub>u) UNIV UNIV (\<lambda> t. \<lbrakk>\<phi> a T\<^sub>u t\<rbrakk>\<^sub>e)"
   apply (unfold_locales, simp_all)
   using local_lipschitz_therm_dyn apply(pred_simp)
-   apply(simp add: forall_4, pred_simp, force intro!: poly_derivatives)
-  by (pred_simp, force simp: vec_eq_iff)
+  by (pred_simp, force intro!: poly_derivatives simp: vec_eq_iff)+
 
 lemma therm_dyn_down:
   fixes T::real
@@ -458,8 +461,7 @@ lemma local_flow_tank: "local_flow (f k) UNIV UNIV (\<lambda> t. \<lbrakk>\<phi>
   apply(unfold_locales, unfold local_lipschitz_def lipschitz_on_def, simp_all, clarsimp)
   apply(rule_tac x="1/2" in exI, clarsimp, rule_tac x=1 in exI)
     apply(simp add: dist_norm norm_vec_def L2_set_def, unfold UNIV_4, pred_simp)
-   apply(simp add: forall_4, pred_simp, force intro!: poly_derivatives)
-  by (pred_simp, simp add: vec_eq_iff)
+  by (pred_simp, force intro!: poly_derivatives simp: vec_eq_iff)+
 
 lemma tank_arith:
   fixes y::real
@@ -501,7 +503,7 @@ lemma tank_diff_inv:
   "0 \<le> \<tau> \<Longrightarrow> diff_invariant  \<lbrakk>dI h\<^sub>l h\<^sub>h k\<rbrakk>\<^sub>e (f k) {0..\<tau>} UNIV 0 Guard"
   apply(pred_simp, intro diff_invariant_conj_rule)
       apply(force intro!: poly_derivatives diff_invariant_rules)
-     apply(rule_tac \<nu>'="\<lambda>t. 0" and \<mu>'="\<lambda>t. 1" in diff_invariant_leq_rule, simp_all add: forall_4)
+     apply(rule_tac \<nu>'="\<lambda>t. 0" and \<mu>'="\<lambda>t. 1" in diff_invariant_leq_rule, simp_all)
     apply(rule_tac \<nu>'="\<lambda>t. 0" and \<mu>'="\<lambda>t. 0" in diff_invariant_leq_rule, simp_all)
   by (auto intro!: poly_derivatives diff_invariant_rules)
 

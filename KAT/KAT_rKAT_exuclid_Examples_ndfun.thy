@@ -17,6 +17,11 @@ begin
 
 no_notation dual ("\<partial>")
         and n_op ("n _" [90] 91)
+        and vec_nth (infixl "$" 90)
+
+notation vec_nth (infixl "\<exclamdown>" 90)
+
+abbreviation "\<e> k \<equiv> axis k (1::real)"
 
 lemma frechet_derivative_id:
   fixes t::"'a :: {inverse,banach,real_normed_algebra_1}"
@@ -117,10 +122,30 @@ declare R_loop_law [refine_intros]
 method refinement
   = (rule refine_intros; (refinement)?)
 
-\<comment> \<open>Preliminary lemmas \<close>
+declare eucl_of_list_def [simp]
+    and axis_def [simp]
 
-lemma inner_axis_eq_nth[simp]: "inner a (axis i 1) = vec_nth a i"
-  unfolding inner_axis by simp
+abbreviation kronecker_delta :: "'a \<Rightarrow> 'a \<Rightarrow> 'b \<Rightarrow> ('b::zero)" ("\<delta>\<^sub>K _ _ _" [55, 55, 55] 55)
+  where "\<delta>\<^sub>K i j q \<equiv> (if i = j then q else 0)"
+
+lemma finite_sum_univ_singleton: "(sum g UNIV) = sum g {i} + sum g (UNIV - {i})" for i::"'a::finite"
+  by (metis Groups.add_ac(2) finite_class.finite_UNIV order_top_class.top.extremum sum.subset_diff)
+
+lemma kronecker_delta_simps[simp]:
+  fixes q::"('a::semiring_0)" and i::"'n::finite"
+  shows "(\<Sum>j\<in>UNIV. f j * (\<delta>\<^sub>K j i q)) = f i * q"
+    and "(\<Sum>j\<in>UNIV. f j * (\<delta>\<^sub>K i j q)) = f i * q"
+    and "(\<Sum>j\<in>UNIV. (\<delta>\<^sub>K i j q) * f j) = q * f i"
+    and "(\<Sum>j\<in>UNIV. (\<delta>\<^sub>K j i q) * f j) = q * f i"
+  by (auto simp: finite_sum_univ_singleton[of _ i])
+
+lemma sum_axis[simp]:
+  fixes q::"('a::semiring_0)"
+  shows "(\<Sum>j\<in>UNIV. f j * axis i q \<exclamdown> j) = f i * q"
+    and "(\<Sum>j\<in>UNIV. axis i q \<exclamdown> j * f j) = q * f i"
+  unfolding axis_def by(auto simp: vec_eq_iff)
+
+\<comment> \<open>Preliminary lemmas for type 2 \<close>
 
 lemma two_eq_zero[simp]: "(2::2) = 0" 
   by simp
@@ -133,19 +158,33 @@ instance integer :: order_lean
 lemma enum_2[simp]: "(enum_class.enum::2 list) = [0::2, 1]"
   by code_simp+
 
-lemma basis_list2[simp]: "Basis_list = [axis (0::2) (1::real), axis 1 1]"
+lemma basis_list2[simp]: "Basis_list = [\<e> (0::2), \<e> 1]"
   by (auto simp: Basis_list_vec_def Basis_list_real_def)
 
-lemma list_of_eucl2[simp]:
-  fixes s::"real^2"
-  shows "list_of_eucl s = map ((\<bullet>) s) [axis (0::2) (1::real), axis 1 1]"
+lemma list_of_eucl2[simp]: "list_of_eucl (s::real^2) = map ((\<bullet>) s) [\<e> (0::2), \<e> 1]"
   unfolding list_of_eucl_def by simp
 
-lemma inner_axis2[simp]: "A \<bullet> (\<chi> j::2. if j = i then (k::real) else 0) = (vec_nth A i) \<cdot> k"
+lemma inner_axis2[simp]: "x \<bullet> (\<chi> j::2. if j = i then (k::real) else 0) = (x\<exclamdown>i) \<cdot> k"
   unfolding inner_vec_def UNIV_2 inner_real_def using exhaust_2 by force
 
-declare eucl_of_list_def [simp]
-    and axis_def [simp]
+\<comment> \<open>Preliminary lemmas for type 2 \<close>
+
+declare forall_4 [simp]
+
+lemma four_eq_zero[simp]: "(4::4) = 0" 
+  by simp
+
+lemma enum_4[simp]: "(enum_class.enum::4 list) = [0::4, 1, 2, 3]"
+  by code_simp+
+
+lemma basis_list4[simp]: "Basis_list = [\<e> (0::4), \<e> 1, \<e> 2, \<e> 3]"
+  by (auto simp: Basis_list_vec_def Basis_list_real_def)
+
+lemma list_of_eucl4[simp]: "list_of_eucl (s::real^4) = map ((\<bullet>) s) [\<e> (0::4), \<e> 1, \<e> 2, \<e> 3]"
+  unfolding list_of_eucl_def by simp
+
+lemma inner_axis4[simp]: "x \<bullet> (\<chi> j::4. if j = i then (k::real) else 0) = (x\<exclamdown>i) \<cdot> k"
+  unfolding inner_vec_def UNIV_4 inner_real_def using exhaust_4 by force
 
 subsubsection \<open>Pendulum\<close>
 
@@ -169,7 +208,7 @@ lemma pendulum_dyn: "\<^bold>{r\<^sup>2 = x\<^sup>2 + y\<^sup>2\<^bold>}(EVOL \<
 \<comment> \<open>Verified with invariants \<close>
 
 lemma pendulum_inv: "\<^bold>{r\<^sup>2 = x\<^sup>2 + y\<^sup>2\<^bold>} (x\<acute>= \<lbrakk>f\<rbrakk>\<^sub>e & G) \<^bold>{r\<^sup>2 = x\<^sup>2 + y\<^sup>2\<^bold>}"
-  by (simp, pred_simp, auto intro!: diff_invariant_rules poly_derivatives)
+  by (pred_simp, auto intro!: diff_invariant_rules poly_derivatives)
 
 \<comment> \<open>Verified by providing solutions \<close>
 
@@ -351,10 +390,10 @@ temperature between @{text "T\<^sub>l"} and @{text "T\<^sub>h"}. \<close>
 
 hide_const t
 
-abbreviation T :: "real \<Longrightarrow> real^4" where "T \<equiv> vec_lens 1"
-abbreviation t :: "real \<Longrightarrow> real^4" where "t \<equiv> vec_lens 2"
-abbreviation T\<^sub>0 :: "real \<Longrightarrow> real^4" where "T\<^sub>0 \<equiv> vec_lens 3"
-abbreviation \<theta> :: "real \<Longrightarrow> real^4" where "\<theta> \<equiv> vec_lens 4"
+abbreviation T :: "real \<Longrightarrow> real^4" where "T \<equiv> \<Pi>[0]"
+abbreviation t :: "real \<Longrightarrow> real^4" where "t \<equiv> \<Pi>[1]"
+abbreviation T\<^sub>0 :: "real \<Longrightarrow> real^4" where "T\<^sub>0 \<equiv> \<Pi>[2]"
+abbreviation \<theta> :: "real \<Longrightarrow> real^4" where "\<theta> \<equiv> \<Pi>[3]"
 
 abbreviation ftherm :: "real \<Rightarrow> real \<Rightarrow> (real, 4) vec \<Rightarrow> (real, 4) vec" ("f")
   where "f a c \<equiv> \<lbrakk>[T \<mapsto>\<^sub>s - (a * (T - c)), T\<^sub>0 \<mapsto>\<^sub>s 0, \<theta> \<mapsto>\<^sub>s 0, t \<mapsto>\<^sub>s 1]\<rbrakk>\<^sub>e"
@@ -387,17 +426,17 @@ abbreviation "therm T\<^sub>l T\<^sub>h a L \<tau> \<equiv> LOOP (ctrl T\<^sub>l
 
 \<comment> \<open>Verified by providing solutions \<close>
 
-lemma norm_diff_therm_dyn: "0 < (a::real) \<Longrightarrow> (a \<cdot> (s\<^sub>2$1 - T\<^sub>u) - a \<cdot> (s\<^sub>1$1 - T\<^sub>u))\<^sup>2
-       \<le> (a \<cdot> sqrt ((s\<^sub>1$1 - s\<^sub>2$1)\<^sup>2 + ((s\<^sub>1$2 - s\<^sub>2$2)\<^sup>2 + ((s\<^sub>1$3 - s\<^sub>2$3)\<^sup>2 + (s\<^sub>1$4 - s\<^sub>2$4)\<^sup>2))))\<^sup>2"
+lemma norm_diff_therm_dyn: "0 < (a::real) \<Longrightarrow> (a \<cdot> (s\<^sub>2\<exclamdown>0 - T\<^sub>u) - a \<cdot> (s\<^sub>1\<exclamdown>0 - T\<^sub>u))\<^sup>2
+       \<le> (a \<cdot> sqrt ((s\<^sub>1\<exclamdown>1 - s\<^sub>2\<exclamdown>1)\<^sup>2 + ((s\<^sub>1\<exclamdown>2 - s\<^sub>2\<exclamdown>2)\<^sup>2 + ((s\<^sub>1\<exclamdown>3 - s\<^sub>2\<exclamdown>3)\<^sup>2 + (s\<^sub>1\<exclamdown>0 - s\<^sub>2\<exclamdown>0)\<^sup>2))))\<^sup>2"
 proof(simp add: field_simps)
   assume a1: "0 < a"
-  have "(a \<cdot> s\<^sub>2$1 - a \<cdot> s\<^sub>1$1)\<^sup>2 = a\<^sup>2 \<cdot> (s\<^sub>2$1 - s\<^sub>1$1)\<^sup>2"
+  have "(a \<cdot> s\<^sub>2\<exclamdown>0 - a \<cdot> s\<^sub>1\<exclamdown>0)\<^sup>2 = a\<^sup>2 \<cdot> (s\<^sub>2\<exclamdown>0 - s\<^sub>1\<exclamdown>0)\<^sup>2"
     by (metis (mono_tags, hide_lams) Rings.ring_distribs(4) mult.left_commute 
         semiring_normalization_rules(18) semiring_normalization_rules(29))
-  moreover have "(s\<^sub>2$1 - s\<^sub>1$1)\<^sup>2 \<le> (s\<^sub>1$1 - s\<^sub>2$1)\<^sup>2 + ((s\<^sub>1$2 - s\<^sub>2$2)\<^sup>2 + ((s\<^sub>1$3 - s\<^sub>2$3)\<^sup>2 + (s\<^sub>1$4 - s\<^sub>2$4)\<^sup>2))"
+  moreover have "(s\<^sub>2\<exclamdown>0 - s\<^sub>1\<exclamdown>0)\<^sup>2 \<le> (s\<^sub>1\<exclamdown>0 - s\<^sub>2\<exclamdown>0)\<^sup>2 + ((s\<^sub>1\<exclamdown>1 - s\<^sub>2\<exclamdown>1)\<^sup>2 + ((s\<^sub>1\<exclamdown>2 - s\<^sub>2\<exclamdown>2)\<^sup>2 + (s\<^sub>1\<exclamdown>3 - s\<^sub>2\<exclamdown>3)\<^sup>2))"
     using zero_le_power2 by (simp add: power2_commute) 
-  thus "(a \<cdot> s\<^sub>2 $ 1 - a \<cdot> s\<^sub>1 $ 1)\<^sup>2 \<le> a\<^sup>2 \<cdot> (s\<^sub>1 $ 1 - s\<^sub>2 $ 1)\<^sup>2 + 
-  (a\<^sup>2 \<cdot> (s\<^sub>1 $ 2 - s\<^sub>2 $ 2)\<^sup>2 + (a\<^sup>2 \<cdot> (s\<^sub>1 $ 3 - s\<^sub>2 $ 3)\<^sup>2 + a\<^sup>2 \<cdot> (s\<^sub>1 $ 4 - s\<^sub>2 $ 4)\<^sup>2))"
+  thus "(a \<cdot> s\<^sub>2\<exclamdown>0 - a \<cdot> s\<^sub>1\<exclamdown>0)\<^sup>2 \<le> a\<^sup>2 \<cdot> (s\<^sub>1\<exclamdown>1 - s\<^sub>2\<exclamdown>1)\<^sup>2 + 
+  (a\<^sup>2 \<cdot> (s\<^sub>1\<exclamdown>0 - s\<^sub>2\<exclamdown>0)\<^sup>2 + (a\<^sup>2 \<cdot> (s\<^sub>1\<exclamdown>2 - s\<^sub>2\<exclamdown>2)\<^sup>2 + a\<^sup>2 \<cdot> (s\<^sub>1\<exclamdown>3 - s\<^sub>2\<exclamdown>3)\<^sup>2))"
     using a1 by (simp add: Groups.algebra_simps(18)[symmetric] calculation)
 qed
 
@@ -405,16 +444,16 @@ lemma local_lipschitz_therm_dyn:
   assumes "0 < (a::real)"
   shows "local_lipschitz UNIV UNIV (\<lambda>t::real. f a T\<^sub>u)"
   apply(unfold local_lipschitz_def lipschitz_on_def dist_norm)
-  apply(clarsimp, rule_tac x=1 in exI, clarsimp, rule_tac x=a in exI, pred_simp)
+  apply(clarsimp, rule_tac x=1 in exI, clarsimp, rule_tac x=a in exI)
   using assms apply(simp add: norm_vec_def L2_set_def, unfold UNIV_4, pred_simp)
   unfolding real_sqrt_abs[symmetric] apply (rule real_le_lsqrt)
   by (simp_all add: norm_diff_therm_dyn)
 
 lemma local_flow_therm: "a > 0 \<Longrightarrow> local_flow (f a T\<^sub>u) UNIV UNIV (\<lambda> t. \<lbrakk>\<phi> a T\<^sub>u t\<rbrakk>\<^sub>e)"
   apply (unfold_locales, simp_all)
-  using local_lipschitz_therm_dyn apply(pred_simp)
-   apply(simp add: forall_4, pred_simp, force intro!: poly_derivatives)
-  by (pred_simp, force simp: vec_eq_iff)
+  using local_lipschitz_therm_dyn apply pred_simp
+   apply(pred_simp, force intro!: poly_derivatives)
+  using exhaust_4 by (rel_auto' simp: vec_eq_iff)
 
 lemma therm_dyn_down:
   fixes T::real
@@ -512,9 +551,9 @@ no_notation ftherm ("f")
 
 subsubsection \<open> Water tank \<close>  \<comment> \<open>Variation of Hespanha and \cite{AlurCHHHNOSY95}\<close>
 
-abbreviation h :: "real \<Longrightarrow> real^4" where "h \<equiv> vec_lens 1"
-abbreviation h\<^sub>0 :: "real \<Longrightarrow> real^4" where "h\<^sub>0 \<equiv> vec_lens 3"
-abbreviation \<pi> :: "real \<Longrightarrow> real^4" where "\<pi> \<equiv> vec_lens 4"
+abbreviation h :: "real \<Longrightarrow> real^4" where "h \<equiv> \<Pi>[0]"
+abbreviation h\<^sub>0 :: "real \<Longrightarrow> real^4" where "h\<^sub>0 \<equiv> \<Pi>[2]"
+abbreviation \<pi> :: "real \<Longrightarrow> real^4" where "\<pi> \<equiv> \<Pi>[3]"
 
 abbreviation ftank :: "real \<Rightarrow> (real, 4) vec \<Rightarrow> (real, 4) vec" ("f")
   where "f k \<equiv> \<lbrakk>[\<pi> \<mapsto>\<^sub>s 0, h \<mapsto>\<^sub>s k, h\<^sub>0 \<mapsto>\<^sub>s 0, t \<mapsto>\<^sub>s 1]\<rbrakk>\<^sub>e"
@@ -543,8 +582,8 @@ lemma local_flow_tank: "local_flow (f k) UNIV UNIV (\<lambda> t. \<lbrakk>\<phi>
   apply(unfold_locales, unfold local_lipschitz_def lipschitz_on_def, simp_all, clarsimp)
   apply(rule_tac x="1/2" in exI, clarsimp, rule_tac x=1 in exI)
     apply(simp add: dist_norm norm_vec_def L2_set_def, unfold UNIV_4, pred_simp)
-   apply(simp add: forall_4, pred_simp, force intro!: poly_derivatives)
-  by (pred_simp, simp add: vec_eq_iff)
+   apply(pred_simp, force intro!: poly_derivatives)
+  using exhaust_4 by (rel_auto' simp: vec_eq_iff)
 
 lemma tank_arith:
   fixes y::real
@@ -586,7 +625,7 @@ lemma tank_diff_inv:
   "0 \<le> \<tau> \<Longrightarrow> diff_invariant  \<lbrakk>dI h\<^sub>l h\<^sub>h k\<rbrakk>\<^sub>e (f k) {0..\<tau>} UNIV 0 Guard"
   apply(pred_simp, intro diff_invariant_conj_rule)
       apply(force intro!: poly_derivatives diff_invariant_rules)
-     apply(rule_tac \<nu>'="\<lambda>t. 0" and \<mu>'="\<lambda>t. 1" in diff_invariant_leq_rule, simp_all add: forall_4)
+     apply(rule_tac \<nu>'="\<lambda>t. 0" and \<mu>'="\<lambda>t. 1" in diff_invariant_leq_rule, simp_all)
     apply(rule_tac \<nu>'="\<lambda>t. 0" and \<mu>'="\<lambda>t. 0" in diff_invariant_leq_rule, simp_all)
   by (auto intro!: poly_derivatives diff_invariant_rules)
 
