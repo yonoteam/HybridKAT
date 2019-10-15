@@ -125,26 +125,6 @@ method refinement
 declare eucl_of_list_def [simp]
     and axis_def [simp]
 
-abbreviation kronecker_delta :: "'a \<Rightarrow> 'a \<Rightarrow> 'b \<Rightarrow> ('b::zero)" ("\<delta>\<^sub>K _ _ _" [55, 55, 55] 55)
-  where "\<delta>\<^sub>K i j q \<equiv> (if i = j then q else 0)"
-
-lemma finite_sum_univ_singleton: "(sum g UNIV) = sum g {i} + sum g (UNIV - {i})" for i::"'a::finite"
-  by (metis Groups.add_ac(2) finite_class.finite_UNIV order_top_class.top.extremum sum.subset_diff)
-
-lemma kronecker_delta_simps[simp]:
-  fixes q::"('a::semiring_0)" and i::"'n::finite"
-  shows "(\<Sum>j\<in>UNIV. f j * (\<delta>\<^sub>K j i q)) = f i * q"
-    and "(\<Sum>j\<in>UNIV. f j * (\<delta>\<^sub>K i j q)) = f i * q"
-    and "(\<Sum>j\<in>UNIV. (\<delta>\<^sub>K i j q) * f j) = q * f i"
-    and "(\<Sum>j\<in>UNIV. (\<delta>\<^sub>K j i q) * f j) = q * f i"
-  by (auto simp: finite_sum_univ_singleton[of _ i])
-
-lemma sum_axis[simp]:
-  fixes q::"('a::semiring_0)"
-  shows "(\<Sum>j\<in>UNIV. f j * axis i q \<exclamdown> j) = f i * q"
-    and "(\<Sum>j\<in>UNIV. axis i q \<exclamdown> j * f j) = q * f i"
-  unfolding axis_def by(auto simp: vec_eq_iff)
-
 \<comment> \<open>Preliminary lemmas for type 2 \<close>
 
 lemma two_eq_zero[simp]: "(2::2) = 0" 
