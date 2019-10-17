@@ -13,6 +13,8 @@ theory KAT_rKAT_exuclid_Examples_ndfun
 
 begin
 
+declare [[coercion Rep_uexpr]]
+
 \<comment> \<open>Frechet derivatives \<close>
 
 no_notation dual ("\<partial>")
@@ -187,18 +189,18 @@ lemma pendulum_dyn: "\<^bold>{r\<^sup>2 = x\<^sup>2 + y\<^sup>2\<^bold>}(EVOL \<
 
 \<comment> \<open>Verified with invariants \<close>
 
-lemma pendulum_inv: "\<^bold>{r\<^sup>2 = x\<^sup>2 + y\<^sup>2\<^bold>} (x\<acute>= \<lbrakk>f\<rbrakk>\<^sub>e & G) \<^bold>{r\<^sup>2 = x\<^sup>2 + y\<^sup>2\<^bold>}"
+lemma pendulum_inv: "\<^bold>{r\<^sup>2 = x\<^sup>2 + y\<^sup>2\<^bold>} (x\<acute>= f & G) \<^bold>{r\<^sup>2 = x\<^sup>2 + y\<^sup>2\<^bold>}"
   by (pred_simp, auto intro!: diff_invariant_rules poly_derivatives)
 
 \<comment> \<open>Verified by providing solutions \<close>
 
-lemma local_flow_pend: "local_flow \<lbrakk>f\<rbrakk>\<^sub>e UNIV UNIV (\<lambda> t. \<lbrakk>\<phi> t\<rbrakk>\<^sub>e)"
+lemma local_flow_pend: "local_flow f UNIV UNIV \<phi>"
   apply(unfold_locales, simp_all add: local_lipschitz_def lipschitz_on_def vec_eq_iff, clarsimp)
     apply(rule_tac x="1" in exI, clarsimp, rule_tac x=1 in exI, pred_simp)
     apply(simp add: dist_norm norm_vec_def L2_set_def power2_commute UNIV_2, pred_simp)
   by (force intro!: poly_derivatives, pred_simp)
 
-lemma pendulum_flow: "\<^bold>{r\<^sup>2 = x\<^sup>2 + y\<^sup>2\<^bold>} (x\<acute>= \<lbrakk>f\<rbrakk>\<^sub>e & G) \<^bold>{r\<^sup>2 = x\<^sup>2 + y\<^sup>2\<^bold>}"
+lemma pendulum_flow: "\<^bold>{r\<^sup>2 = x\<^sup>2 + y\<^sup>2\<^bold>} (x\<acute>= f & G) \<^bold>{r\<^sup>2 = x\<^sup>2 + y\<^sup>2\<^bold>}"
   by (simp only: local_flow.sH_g_ode[OF local_flow_pend], pred_simp)
 
 no_notation fpend ("f")
@@ -217,7 +219,7 @@ abbreviation v :: "real \<Longrightarrow> real^2"
   where "v \<equiv> \<Pi>[Suc 0]"
 
 abbreviation fball :: "real \<Rightarrow> (real, 2) vec \<Rightarrow> (real, 2) vec" ("f") 
-  where "f g \<equiv> \<lbrakk>[x \<mapsto>\<^sub>s v, v \<mapsto>\<^sub>s g]\<rbrakk>\<^sub>e"
+  where "f g \<equiv> [x \<mapsto>\<^sub>s v, v \<mapsto>\<^sub>s g]"
 
 abbreviation ball_flow :: "real \<Rightarrow> real \<Rightarrow> (real^2) usubst" ("\<phi>") 
   where "\<phi> g \<tau> \<equiv> [x \<mapsto>\<^sub>s g \<cdot> \<tau> ^ 2/2 + v \<cdot> \<tau> + x,  v \<mapsto>\<^sub>s g \<cdot> \<tau> + v]"
@@ -246,8 +248,8 @@ qed
 
 lemma fball_invariant: 
   fixes g h :: real   
-  defines dinv: "I \<equiv> U(2 \<cdot> \<guillemotleft>g\<guillemotright> \<cdot> x - 2 \<cdot> \<guillemotleft>g\<guillemotright> \<cdot> \<guillemotleft>h\<guillemotright> - (v \<cdot> v) = 0)"
-  shows "diff_invariant \<lbrakk>I\<rbrakk>\<^sub>e (f g) UNIV UNIV 0 \<lbrakk>G\<rbrakk>\<^sub>e"
+  defines dinv: "I \<equiv> \<^U>(2 \<cdot> \<guillemotleft>g\<guillemotright> \<cdot> x - 2 \<cdot> \<guillemotleft>g\<guillemotright> \<cdot> \<guillemotleft>h\<guillemotright> - (v \<cdot> v) = 0)"
+  shows "diff_invariant I (f g) UNIV UNIV 0 G"
   unfolding dinv apply(pred_simp, rule diff_invariant_rules, simp, simp, clarify)
   by (auto intro!: poly_derivatives)
 
@@ -258,7 +260,7 @@ abbreviation "bb_dinv g h \<equiv>
   INV (0 \<le> x \<and> 2 \<cdot> g \<cdot> x = 2 \<cdot> g \<cdot> h + v \<cdot> v))"
 
 lemma bouncing_ball_inv: "g < 0 \<Longrightarrow> h \<ge> 0 \<Longrightarrow> \<^bold>{x = h \<and> v = 0\<^bold>} bb_dinv g h \<^bold>{0 \<le> x \<and> x \<le> h\<^bold>}"
-  apply(hyb_hoare "U(0 \<le> x \<and> 2 \<cdot> g \<cdot> x = 2 \<cdot> g \<cdot> h + v \<cdot> v)")
+  apply(hyb_hoare "\<^U>(0 \<le> x \<and> 2 \<cdot> g \<cdot> x = 2 \<cdot> g \<cdot> h + v \<cdot> v)")
   using fball_invariant apply (simp_all)
   by (rel_auto' simp: bb_real_arith)
 
@@ -319,12 +321,12 @@ abbreviation "bb_evol g h T \<equiv>
 lemma bouncing_ball_dyn: 
   assumes "g < 0" and "h \<ge> 0"
   shows "\<^bold>{x = h \<and> v = 0\<^bold>} bb_evol g h T \<^bold>{0 \<le> x \<and> x \<le> h\<^bold>}"
-  apply(hyb_hoare "U(0 \<le> x \<and> 2 \<cdot> g \<cdot> x = 2 \<cdot> g \<cdot> h + v \<cdot> v)")
+  apply(hyb_hoare "\<^U>(0 \<le> x \<and> 2 \<cdot> g \<cdot> x = 2 \<cdot> g \<cdot> h + v \<cdot> v)")
   using assms by (rel_auto' simp: bb_real_arith)
 
 \<comment> \<open>Verified by providing solutions \<close>
 
-lemma local_flow_ball: "local_flow (f g) UNIV UNIV (\<lambda> t. \<lbrakk>\<phi> g t\<rbrakk>\<^sub>e)"
+lemma local_flow_ball: "local_flow (f g) UNIV UNIV (\<phi> g)"
   apply(unfold_locales, simp_all add: local_lipschitz_def lipschitz_on_def vec_eq_iff, clarsimp)
   apply(rule_tac x="1/2" in exI, clarsimp, rule_tac x=1 in exI, pred_simp)
     apply(simp add: dist_norm norm_vec_def L2_set_def UNIV_2)
@@ -339,7 +341,7 @@ abbreviation "bb_sol g h \<equiv>
 lemma bouncing_ball_flow: 
   assumes "g < 0" and "h \<ge> 0"
   shows "\<^bold>{x = h \<and> v = 0\<^bold>} bb_sol g h \<^bold>{0 \<le> x \<and> x \<le> h\<^bold>}"
-  apply(hyb_hoare "U(0 \<le> x \<and> 2 \<cdot> g \<cdot> x = 2 \<cdot> g \<cdot> h + v \<cdot> v)")
+  apply(hyb_hoare "\<^U>(0 \<le> x \<and> 2 \<cdot> g \<cdot> x = 2 \<cdot> g \<cdot> h + v \<cdot> v)")
       apply(subst local_flow.sH_g_ode[OF local_flow_ball])
   using assms by (rel_auto' simp: bb_real_arith)
 
@@ -376,15 +378,15 @@ abbreviation T\<^sub>0 :: "real \<Longrightarrow> real^4" where "T\<^sub>0 \<equ
 abbreviation \<theta> :: "real \<Longrightarrow> real^4" where "\<theta> \<equiv> \<Pi>[3]"
 
 abbreviation ftherm :: "real \<Rightarrow> real \<Rightarrow> (real, 4) vec \<Rightarrow> (real, 4) vec" ("f")
-  where "f a c \<equiv> \<lbrakk>[T \<mapsto>\<^sub>s - (a * (T - c)), T\<^sub>0 \<mapsto>\<^sub>s 0, \<theta> \<mapsto>\<^sub>s 0, t \<mapsto>\<^sub>s 1]\<rbrakk>\<^sub>e"
+  where "f a c \<equiv> [T \<mapsto>\<^sub>s - (a * (T - c)), T\<^sub>0 \<mapsto>\<^sub>s 0, \<theta> \<mapsto>\<^sub>s 0, t \<mapsto>\<^sub>s 1]"
 
 abbreviation therm_guard :: "real \<Rightarrow> real \<Rightarrow> real \<Rightarrow> real \<Rightarrow> (real^4) upred" ("G")
-  where "G T\<^sub>l T\<^sub>h a L \<equiv> U(t \<le> - (ln ((L-(if L=0 then T\<^sub>l else T\<^sub>h))/(L-T\<^sub>0)))/a)"
+  where "G T\<^sub>l T\<^sub>h a L \<equiv> \<^U>(t \<le> - (ln ((L-(if L=0 then T\<^sub>l else T\<^sub>h))/(L-T\<^sub>0)))/a)"
 
 no_utp_lift "therm_guard" (0 1 2 3)
 
 abbreviation therm_loop_inv :: "real \<Rightarrow> real \<Rightarrow> (real^4) upred" ("I")
-  where "I T\<^sub>l T\<^sub>h \<equiv> U(T\<^sub>l \<le> T \<and> T \<le> T\<^sub>h \<and> (\<theta> = 0 \<or> \<theta> = 1))"
+  where "I T\<^sub>l T\<^sub>h \<equiv> \<^U>(T\<^sub>l \<le> T \<and> T \<le> T\<^sub>h \<and> (\<theta> = 0 \<or> \<theta> = 1))"
 
 no_utp_lift "therm_loop_inv" (0 1)
 
@@ -429,7 +431,7 @@ lemma local_lipschitz_therm_dyn:
   unfolding real_sqrt_abs[symmetric] apply (rule real_le_lsqrt)
   by (simp_all add: norm_diff_therm_dyn)
 
-lemma local_flow_therm: "a > 0 \<Longrightarrow> local_flow (f a T\<^sub>u) UNIV UNIV (\<lambda> t. \<lbrakk>\<phi> a T\<^sub>u t\<rbrakk>\<^sub>e)"
+lemma local_flow_therm: "a > 0 \<Longrightarrow> local_flow (f a T\<^sub>u) UNIV UNIV (\<phi> a T\<^sub>u)"
   apply (unfold_locales, simp_all)
   using local_lipschitz_therm_dyn apply pred_simp
    apply(pred_simp, force intro!: poly_derivatives)
@@ -489,7 +491,7 @@ lemmas H_g_ode_therm = local_flow.sH_g_ode_ivl[OF local_flow_therm _ UNIV_I]
 lemma thermostat_flow: 
   assumes "0 < a" and "0 \<le> \<tau>" and "0 < T\<^sub>l" and "T\<^sub>h < T\<^sub>u"
   shows "\<^bold>{I T\<^sub>l T\<^sub>h\<^bold>} therm T\<^sub>l T\<^sub>h a T\<^sub>u \<tau> \<^bold>{I T\<^sub>l T\<^sub>h\<^bold>}"
-  apply(hyb_hoare "U(I T\<^sub>l T\<^sub>h \<and> t=0 \<and> T\<^sub>0 = T)")
+  apply(hyb_hoare "\<^U>(I T\<^sub>l T\<^sub>h \<and> t=0 \<and> T\<^sub>0 = T)")
               prefer 4 prefer 8 using local_flow_therm assms apply force+
   using assms therm_dyn_up therm_dyn_down by rel_auto'
 
@@ -536,29 +538,29 @@ abbreviation h\<^sub>0 :: "real \<Longrightarrow> real^4" where "h\<^sub>0 \<equ
 abbreviation \<pi> :: "real \<Longrightarrow> real^4" where "\<pi> \<equiv> \<Pi>[3]"
 
 abbreviation ftank :: "real \<Rightarrow> (real, 4) vec \<Rightarrow> (real, 4) vec" ("f")
-  where "f k \<equiv> \<lbrakk>[\<pi> \<mapsto>\<^sub>s 0, h \<mapsto>\<^sub>s k, h\<^sub>0 \<mapsto>\<^sub>s 0, t \<mapsto>\<^sub>s 1]\<rbrakk>\<^sub>e"
+  where "f k \<equiv> [\<pi> \<mapsto>\<^sub>s 0, h \<mapsto>\<^sub>s k, h\<^sub>0 \<mapsto>\<^sub>s 0, t \<mapsto>\<^sub>s 1]"
 
 abbreviation tank_flow :: "real \<Rightarrow> real \<Rightarrow> (real^4) usubst" ("\<phi>") 
   where "\<phi> k \<tau> \<equiv> [h \<mapsto>\<^sub>s k * \<tau> + h, t \<mapsto>\<^sub>s \<tau> + t, h\<^sub>0 \<mapsto>\<^sub>s h\<^sub>0, \<pi> \<mapsto>\<^sub>s \<pi>]"
 
 abbreviation tank_guard :: "real \<Rightarrow> real \<Rightarrow> (real^4) upred" ("G")
-  where "G h\<^sub>x k \<equiv> U(t \<le> (h\<^sub>x - h\<^sub>0)/k)"
+  where "G h\<^sub>x k \<equiv> \<^U>(t \<le> (h\<^sub>x - h\<^sub>0)/k)"
 
 no_utp_lift "tank_guard" (0 1)
 
 abbreviation tank_loop_inv :: "real \<Rightarrow> real \<Rightarrow> (real^4) upred" ("I")
-  where "I h\<^sub>l h\<^sub>h \<equiv> U(h\<^sub>l \<le> h \<and> h \<le> h\<^sub>h \<and> (\<pi> = 0 \<or> \<pi> = 1))"
+  where "I h\<^sub>l h\<^sub>h \<equiv> \<^U>(h\<^sub>l \<le> h \<and> h \<le> h\<^sub>h \<and> (\<pi> = 0 \<or> \<pi> = 1))"
 
 no_utp_lift "tank_loop_inv" (0 1)
 
 abbreviation tank_diff_inv :: "real \<Rightarrow> real \<Rightarrow> real \<Rightarrow> (real^4) upred" ("dI")
-  where "dI h\<^sub>l h\<^sub>h k \<equiv> U(h = k \<cdot> t + h\<^sub>0 \<and> 0 \<le> t \<and> h\<^sub>l \<le> h\<^sub>0 \<and> h\<^sub>0 \<le> h\<^sub>h \<and> (\<pi> = 0 \<or> \<pi> = 1))"
+  where "dI h\<^sub>l h\<^sub>h k \<equiv> \<^U>(h = k \<cdot> t + h\<^sub>0 \<and> 0 \<le> t \<and> h\<^sub>l \<le> h\<^sub>0 \<and> h\<^sub>0 \<le> h\<^sub>h \<and> (\<pi> = 0 \<or> \<pi> = 1))"
 
 no_utp_lift "tank_diff_inv" (0 1 2)
 
 \<comment> \<open>Verified by providing solutions \<close>
 
-lemma local_flow_tank: "local_flow (f k) UNIV UNIV (\<lambda> t. \<lbrakk>\<phi> k t\<rbrakk>\<^sub>e)"
+lemma local_flow_tank: "local_flow (f k) UNIV UNIV (\<phi> k)"
   apply(unfold_locales, unfold local_lipschitz_def lipschitz_on_def, simp_all, clarsimp)
   apply(rule_tac x="1/2" in exI, clarsimp, rule_tac x=1 in exI)
     apply(simp add: dist_norm norm_vec_def L2_set_def, unfold UNIV_4, pred_simp)
@@ -593,7 +595,7 @@ lemmas H_g_ode_tank = local_flow.sH_g_ode_ivl[OF local_flow_tank _ UNIV_I]
 lemma tank_flow:
   assumes "0 \<le> \<tau>" and "0 < c\<^sub>o" and "c\<^sub>o < c\<^sub>i"
   shows "\<^bold>{I h\<^sub>l h\<^sub>h\<^bold>} tank_sol c\<^sub>i c\<^sub>o h\<^sub>l h\<^sub>h \<tau> \<^bold>{I h\<^sub>l h\<^sub>h\<^bold>}"
-  apply(hyb_hoare "U(I h\<^sub>l h\<^sub>h \<and> t = 0 \<and> h\<^sub>0 = h)")
+  apply(hyb_hoare "\<^U>(I h\<^sub>l h\<^sub>h \<and> t = 0 \<and> h\<^sub>0 = h)")
               prefer 4 prefer 8 using assms local_flow_tank apply force+
   using assms tank_arith by rel_auto'
 
@@ -602,7 +604,7 @@ no_notation tank_dyn_sol ("dyn")
 \<comment> \<open>Verified with invariants \<close>
 
 lemma tank_diff_inv:
-  "0 \<le> \<tau> \<Longrightarrow> diff_invariant  \<lbrakk>dI h\<^sub>l h\<^sub>h k\<rbrakk>\<^sub>e (f k) {0..\<tau>} UNIV 0 Guard"
+  "0 \<le> \<tau> \<Longrightarrow> diff_invariant  (dI h\<^sub>l h\<^sub>h k) (f k) {0..\<tau>} UNIV 0 Guard"
   apply(pred_simp, intro diff_invariant_conj_rule)
       apply(force intro!: poly_derivatives diff_invariant_rules)
      apply(rule_tac \<nu>'="\<lambda>t. 0" and \<mu>'="\<lambda>t. 1" in diff_invariant_leq_rule, simp_all)
@@ -644,7 +646,7 @@ abbreviation "tank_dinv c\<^sub>i c\<^sub>o h\<^sub>l h\<^sub>h \<tau> \<equiv> 
 lemma tank_inv:
   assumes "0 \<le> \<tau>" and "0 < c\<^sub>o" and "c\<^sub>o < c\<^sub>i"
   shows "\<^bold>{I h\<^sub>l h\<^sub>h\<^bold>} tank_dinv c\<^sub>i c\<^sub>o h\<^sub>l h\<^sub>h \<tau> \<^bold>{I h\<^sub>l h\<^sub>h\<^bold>}"
-  apply(hyb_hoare "U(I h\<^sub>l h\<^sub>h \<and> t = 0 \<and> h\<^sub>0 = h)")
+  apply(hyb_hoare "\<^U>(I h\<^sub>l h\<^sub>h \<and> t = 0 \<and> h\<^sub>0 = h)")
             prefer 4 prefer 7 using tank_diff_inv assms apply force+
   using assms tank_inv_arith1 tank_inv_arith2 by rel_auto'
 
