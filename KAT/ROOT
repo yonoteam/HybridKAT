@@ -8,6 +8,7 @@ session KAT = "UTP-Hybrid-Imports" +
     B*)
   theories
     "KAT_rKAT_Examples_ndfun"
+    "KAT_rKAT_exuclid_Examples_ndfun"
     (*"KAT_rKAT_Examples_rel"*)
   document_files
     "root.bib"

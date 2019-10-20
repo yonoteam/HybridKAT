@@ -604,7 +604,7 @@ no_notation tank_dyn_sol ("dyn")
 \<comment> \<open>Verified with invariants \<close>
 
 lemma tank_diff_inv:
-  "0 \<le> \<tau> \<Longrightarrow> diff_invariant  (dI h\<^sub>l h\<^sub>h k) (f k) {0..\<tau>} UNIV 0 Guard"
+  "0 \<le> \<tau> \<Longrightarrow> diff_invariant (dI h\<^sub>l h\<^sub>h k) (f k) {0..\<tau>} UNIV 0 Guard"
   apply(pred_simp, intro diff_invariant_conj_rule)
       apply(force intro!: poly_derivatives diff_invariant_rules)
      apply(rule_tac \<nu>'="\<lambda>t. 0" and \<mu>'="\<lambda>t. 1" in diff_invariant_leq_rule, simp_all)

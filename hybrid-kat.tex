@@ -640,7 +640,7 @@ in $\dH$:
 \isacommand{abbreviation}\ %\isamarkupfalse%
 %\ ftherm\ {\isacharcolon}{\isacharcolon}\ {\isachardoublequoteopen}real\ {\isasymRightarrow}\ real\ {\isasymRightarrow}\ {\isacharparenleft}real{\isacharcomma}\ {\isadigit{4}}{\isacharparenright}\ vec\ {\isasymRightarrow}\ {\isacharparenleft}real{\isacharcomma}\ {\isadigit{4}}{\isacharparenright}\ vec{\isachardoublequoteclose}\ {\isacharparenleft}{\isachardoublequoteopen}f{\isachardoublequoteclose}{\isacharparenright}\isanewline
 %\ \ \isakeyword{where}\ 
-{\isachardoublequoteopen}f\ a\ c\ {\isasymequiv}\ {\isasymlbrakk}{\isacharbrackleft}T\ {\isasymmapsto}\ {\isacharminus}\ a\ {\isacharasterisk}\ {\isacharparenleft}T\ {\isacharminus}\ c{\isacharparenright}{\isacharcomma}\ t\ {\isasymmapsto}\ {\isadigit{1}}{\isacharcomma}\ $T_0$\ {\isasymmapsto}\ {\isadigit{0}}{\isacharcomma}\ {\isasymtheta}\ {\isasymmapsto}\ {\isadigit{0}}{\isacharbrackright}{\isasymrbrakk}\isactrlsub e{\isachardoublequoteclose}\isanewline
+{\isachardoublequoteopen}f\ a\ c\ {\isasymequiv}\ {\isacharbrackleft}T\ {\isasymmapsto}\isactrlsub s\ {\isacharminus}\ {\isacharparenleft}a\ {\isacharasterisk}\ {\isacharparenleft}T\ {\isacharminus}\ c{\isacharparenright}{\isacharparenright}{\isacharcomma}\ $T_0$\ {\isasymmapsto}\isactrlsub s\ {\isadigit{0}}{\isacharcomma}\ {\isasymtheta}\ {\isasymmapsto}\isactrlsub s\ {\isadigit{0}}{\isacharcomma}\ t\ {\isasymmapsto}\isactrlsub s\ {\isadigit{1}}{\isacharbrackright}{\isachardoublequoteclose}\isanewline
 \end{isabellebody} 
 \noindent The brackets around the right-hand expression are rudiments of
 Isabelle/UTP syntax without conceptual relevance. We write $;$ instead
@@ -691,7 +691,7 @@ thermostat with $\dH$  is then
 \ \ \isakeyword{assumes}\ {\isachardoublequoteopen}{\isadigit{0}}\ {\isacharless}\ a{\isachardoublequoteclose}\ \isakeyword{and}\ {\isachardoublequoteopen}{\isadigit{0}}\ {\isasymle}\ {\isasymtau}{\isachardoublequoteclose}\ \isakeyword{and}\ {\isachardoublequoteopen}{\isadigit{0}}\ {\isacharless}\ $T_l${\isachardoublequoteclose}\ \isakeyword{and}\ {\isachardoublequoteopen}$T_h$\ {\isacharless}\ $T_u${\isachardoublequoteclose}\isanewline
 \ \ \isakeyword{shows}\ {\isachardoublequoteopen}\ \isactrlbold {\isacharbraceleft}I\ $T_l$\ $T_h$\isactrlbold {\isacharbraceright}\ therm\ $T_l$\ $T_h$\ a\ $T_u$\ {\isasymtau}\ \isactrlbold {\isacharbraceleft}I\ $T_l$\ $T_h$\isactrlbold {\isacharbraceright}{\isachardoublequoteclose}\isanewline
 \ \ \isacommand{apply}\isamarkupfalse%
-{\isacharparenleft}hyb{\isacharunderscore}hoare\ {\isachardoublequoteopen}U{\isacharparenleft}I\ T\isactrlsub m\ T\isactrlsub M\ {\isasymand}\ t{\isacharequal}{\isadigit{0}}\ {\isasymand}\ T\isactrlsub {\isadigit{0}}\ {\isacharequal}\ T{\isacharparenright}{\isachardoublequoteclose}{\isacharparenright}\isanewline
+{\isacharparenleft}hyb{\isacharunderscore}hoare\ {\isachardoublequoteopen}U{\isacharparenleft}I\ $T_l$\ $T_h$\ {\isasymand}\ t{\isacharequal}{\isadigit{0}}\ {\isasymand}\ T\isactrlsub {\isadigit{0}}\ {\isacharequal}\ T{\isacharparenright}{\isachardoublequoteclose}{\isacharparenright}\isanewline
 \ \ \isacommand{prefer}\isamarkupfalse%
 \ {\isadigit{4}}\ \isacommand{prefer}\isamarkupfalse%
 \ {\isadigit{8}}\ \isacommand{using}\isamarkupfalse%
@@ -807,7 +807,7 @@ following procedure for verifying $\{P\}\, x' = f\, \&\, G\, \{Q\}$:
 \isacommand{abbreviation}\ %\isamarkupfalse%
 %\ ftank\ {\isacharcolon}{\isacharcolon}\ {\isachardoublequoteopen}real\ {\isasymRightarrow}\ {\isacharparenleft}real{\isacharcomma}\ {\isadigit{4}}{\isacharparenright}\ vec\ {\isasymRightarrow}\ {\isacharparenleft}real{\isacharcomma}\ {\isadigit{4}}{\isacharparenright}\ vec{\isachardoublequoteclose}\ {\isacharparenleft}{\isachardoublequoteopen}f{\isachardoublequoteclose}{\isacharparenright}\isanewline
 %\ \ \isakeyword{where}\ 
-{\isachardoublequoteopen}f\ k\ {\isasymequiv}\ {\isasymlbrakk}{\isacharbrackleft}h\ {\isasymmapsto}\ k{\isacharcomma}\ t\ {\isasymmapsto}\ {\isadigit{1}}{\isacharcomma}\ $h_0$\ {\isasymmapsto}\ {\isadigit{0}}{\isacharcomma}\ {\isasympi}\ {\isasymmapsto}\ {\isadigit{0}}{\isacharbrackright}{\isasymrbrakk}\isactrlsub e{\isachardoublequoteclose}\isanewline
+{\isachardoublequoteopen}f\ k\ {\isasymequiv}\ {\isacharbrackleft}{\isasympi}\ {\isasymmapsto}\isactrlsub s\ {\isadigit{0}}{\isacharcomma}\ h\ {\isasymmapsto}\isactrlsub s\ k{\isacharcomma}\ $h_0$\ {\isasymmapsto}\isactrlsub s\ {\isadigit{0}}{\isacharcomma}\ t\ {\isasymmapsto}\isactrlsub s\ {\isadigit{1}}{\isacharbrackright}{\isachardoublequoteclose}\isanewline
 \isanewline
 \isacommand{abbreviation}\ %\isamarkupfalse%
 %\ tank{\isacharunderscore}diff{\isacharunderscore}inv\ {\isacharcolon}{\isacharcolon}\ {\isachardoublequoteopen}real\ {\isasymRightarrow}\ real\ {\isasymRightarrow}\ real\ {\isasymRightarrow}\ {\isacharparenleft}real{\isacharcircum}{\isadigit{4}}{\isacharparenright}\ upred{\isachardoublequoteclose}\ {\isacharparenleft}{\isachardoublequoteopen}dI{\isachardoublequoteclose}{\isacharparenright}\isanewline
@@ -861,13 +861,12 @@ itself---and this time a differential invariant \isa{dI} as well:
 \end{isabellebody}
 
 \noindent The correctness specification and verification of the water
-tank with is $\dH$ then
+tank with $\dH$ is then
 
 \begin{isabellebody}
 \isanewline
 \isacommand{lemma}\isamarkupfalse%
-\ tank{\isacharunderscore}diff{\isacharunderscore}inv{\isacharcolon}\isanewline
-\ \ {\isachardoublequoteopen}{\isadigit{0}}\ {\isasymle}\ {\isasymtau}\ {\isasymLongrightarrow}\ diff{\isacharunderscore}invariant\ \ {\isasymlbrakk}dI\ $h_l$\ $h_h$\ k{\isasymrbrakk}\isactrlsub e\ {\isacharparenleft}f\ k{\isacharparenright}\ {\isacharbraceleft}{\isadigit{0}}{\isachardot}{\isachardot}{\isasymtau}{\isacharbraceright}\ UNIV\ {\isadigit{0}}\ Guard{\isachardoublequoteclose}\isanewline
+\ tank{\isacharunderscore}diff{\isacharunderscore}inv{\isacharcolon}\ {\isachardoublequoteopen}{\isadigit{0}}\ {\isasymle}\ {\isasymtau}\ {\isasymLongrightarrow}\ diff{\isacharunderscore}invariant\ {\isacharparenleft}dI\ $h_l$\ $h_h$\ k{\isacharparenright}\ {\isacharparenleft}f\ k{\isacharparenright}\ {\isacharbraceleft}{\isadigit{0}}{\isachardot}{\isachardot}{\isasymtau}{\isacharbraceright}\ UNIV\ {\isadigit{0}}\ Guard{\isachardoublequoteclose}\isanewline
 \ \ $\langle \isa{proof}\rangle$\isanewline
 \isanewline
 \isacommand{lemma}\isamarkupfalse%
@@ -875,7 +874,7 @@ tank with is $\dH$ then
 \ \ \isakeyword{assumes}\ {\isachardoublequoteopen}{\isadigit{0}}\ {\isasymle}\ {\isasymtau}{\isachardoublequoteclose}\ \isakeyword{and}\ {\isachardoublequoteopen}{\isadigit{0}}\ {\isacharless}\ c\isactrlsub o{\isachardoublequoteclose}\ \isakeyword{and}\ {\isachardoublequoteopen}c\isactrlsub o\ {\isacharless}\ c\isactrlsub i{\isachardoublequoteclose}\isanewline
 \ \ \isakeyword{shows}\ {\isachardoublequoteopen}\ \isactrlbold {\isacharbraceleft}I\ $h_l$\ $h_h$\isactrlbold {\isacharbraceright}\ tank{\isacharunderscore}dinv\ c\isactrlsub i\ c\isactrlsub o\ $h_l$\ $h_h$\ {\isasymtau}\ \isactrlbold {\isacharbraceleft}I\ $h_l$\ $h_h$\isactrlbold {\isacharbraceright}{\isachardoublequoteclose}\isanewline
 \ \ \isacommand{apply}\isamarkupfalse%
-{\isacharparenleft}hyb{\isacharunderscore}hoare\ {\isachardoublequoteopen}U{\isacharparenleft}I\ h\isactrlsub m\ h\isactrlsub M\ {\isasymand}\ t\ {\isacharequal}\ {\isadigit{0}}\ {\isasymand}\ h\isactrlsub {\isadigit{0}}\ {\isacharequal}\ h{\isacharparenright}{\isachardoublequoteclose}{\isacharparenright}\isanewline
+{\isacharparenleft}hyb{\isacharunderscore}hoare\ {\isachardoublequoteopen}U{\isacharparenleft}I\ $h_l$\ $h_h$\ {\isasymand}\ t\ {\isacharequal}\ {\isadigit{0}}\ {\isasymand}\ h\isactrlsub {\isadigit{0}}\ {\isacharequal}\ h{\isacharparenright}{\isachardoublequoteclose}{\isacharparenright}\isanewline
 \ \ \isacommand{prefer}\isamarkupfalse%
 \ {\isadigit{4}}\ \isacommand{prefer}\isamarkupfalse%
 \ {\isadigit{7}}\ \isacommand{using}\isamarkupfalse%
