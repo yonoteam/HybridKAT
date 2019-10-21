@@ -521,7 +521,7 @@ evaluation of deterministic programs.
 
 Lenses support various store models, including records and
 functions~\cite{FosterZW16}. We provide models for
-vector spaces, and executable and infinite Euclidean spaces:
+vector spaces, executable and infinite Euclidean spaces:
 %
 \begin{align*}
   \textit{vec-lens}^n_k &=  (\reals, \reals^n, \lambda s.\, \textit{vec-nth}~s~k, \lambda s~v.\, \textit{vec-upd}~k~v~s), & \text{if~} k < n, \\
@@ -642,8 +642,7 @@ in $\dH$:
 %\ \ \isakeyword{where}\ 
 {\isachardoublequoteopen}f\ a\ c\ {\isasymequiv}\ {\isacharbrackleft}T\ {\isasymmapsto}\isactrlsub s\ {\isacharminus}\ {\isacharparenleft}a\ {\isacharasterisk}\ {\isacharparenleft}T\ {\isacharminus}\ c{\isacharparenright}{\isacharparenright}{\isacharcomma}\ $T_0$\ {\isasymmapsto}\isactrlsub s\ {\isadigit{0}}{\isacharcomma}\ {\isasymtheta}\ {\isasymmapsto}\isactrlsub s\ {\isadigit{0}}{\isacharcomma}\ t\ {\isasymmapsto}\isactrlsub s\ {\isadigit{1}}{\isacharbrackright}{\isachardoublequoteclose}\isanewline
 \end{isabellebody} 
-\noindent The brackets around the right-hand expression are rudiments of
-Isabelle/UTP syntax without conceptual relevance. We write $;$ instead
+\noindent Working indistinctly with $\textit{vec-lens}^n_k$ or $\textit{eucl-lens}^{(m,n)}_k$, we write $;$ instead
 of $\cdot$ for sequential composition and use a guard $G$ to restrict
 evolutions between $T_l$ and $T_h$ by setting
 \begin{equation*}
