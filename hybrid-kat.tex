@@ -642,9 +642,10 @@ in $\dH$:
 %\ \ \isakeyword{where}\ 
 {\isachardoublequoteopen}f\ a\ c\ {\isasymequiv}\ {\isacharbrackleft}T\ {\isasymmapsto}\isactrlsub s\ {\isacharminus}\ {\isacharparenleft}a\ {\isacharasterisk}\ {\isacharparenleft}T\ {\isacharminus}\ c{\isacharparenright}{\isacharparenright}{\isacharcomma}\ $T_0$\ {\isasymmapsto}\isactrlsub s\ {\isadigit{0}}{\isacharcomma}\ {\isasymtheta}\ {\isasymmapsto}\isactrlsub s\ {\isadigit{0}}{\isacharcomma}\ t\ {\isasymmapsto}\isactrlsub s\ {\isadigit{1}}{\isacharbrackright}{\isachardoublequoteclose}\isanewline
 \end{isabellebody} 
-\noindent Working indistinctly with $\textit{vec-lens}^n_k$ or $\textit{eucl-lens}^{(m,n)}_k$, we write $;$ instead
-of $\cdot$ for sequential composition and use a guard $G$ to restrict
-evolutions between $T_l$ and $T_h$ by setting
+\noindent Working alternatively with $\textit{vec-lens}^n_k$ or
+$\textit{eucl-lens}^{(m,n)}_k$, we write $;$ instead of $\cdot$ for
+sequential composition and use a guard $G$ to restrict evolutions
+between $T_l$ and $T_h$ by setting
 \begin{equation*}
 G\, T_l\, T_h\, a\, c = \left(t\leq -\frac{1}{a}\ln\left(\frac{c-\Delta_c}{c-T_0}\right)\right),
 \end{equation*}
