@@ -91,6 +91,8 @@
 \newcommand{\seq}{\mathop{\,;\,}}
 \newcommand{\subapp}{\mathop{\,\dagger\,}}
 
+\newcommand{\isactrlU}{\textbf{\textsf{U}}}
+
 \urlstyle{rm}
 \isabellestyle{it}
 
@@ -691,7 +693,7 @@ thermostat with $\dH$  is then
 \ \ \isakeyword{assumes}\ {\isachardoublequoteopen}{\isadigit{0}}\ {\isacharless}\ a{\isachardoublequoteclose}\ \isakeyword{and}\ {\isachardoublequoteopen}{\isadigit{0}}\ {\isasymle}\ {\isasymtau}{\isachardoublequoteclose}\ \isakeyword{and}\ {\isachardoublequoteopen}{\isadigit{0}}\ {\isacharless}\ $T_l${\isachardoublequoteclose}\ \isakeyword{and}\ {\isachardoublequoteopen}$T_h$\ {\isacharless}\ $T_u${\isachardoublequoteclose}\isanewline
 \ \ \isakeyword{shows}\ {\isachardoublequoteopen}\ \isactrlbold {\isacharbraceleft}I\ $T_l$\ $T_h$\isactrlbold {\isacharbraceright}\ therm\ $T_l$\ $T_h$\ a\ $T_u$\ {\isasymtau}\ \isactrlbold {\isacharbraceleft}I\ $T_l$\ $T_h$\isactrlbold {\isacharbraceright}{\isachardoublequoteclose}\isanewline
 \ \ \isacommand{apply}\isamarkupfalse%
-{\isacharparenleft}hyb{\isacharunderscore}hoare\ {\isachardoublequoteopen}U{\isacharparenleft}I\ $T_l$\ $T_h$\ {\isasymand}\ t{\isacharequal}{\isadigit{0}}\ {\isasymand}\ T\isactrlsub {\isadigit{0}}\ {\isacharequal}\ T{\isacharparenright}{\isachardoublequoteclose}{\isacharparenright}\isanewline
+{\isacharparenleft}hyb{\isacharunderscore}hoare\ {\isachardoublequoteopen}{\isactrlU}{\isacharparenleft}I\ $T_l$\ $T_h$\ {\isasymand}\ t{\isacharequal}{\isadigit{0}}\ {\isasymand}\ T\isactrlsub {\isadigit{0}}\ {\isacharequal}\ T{\isacharparenright}{\isachardoublequoteclose}{\isacharparenright}\isanewline
 \ \ \isacommand{prefer}\isamarkupfalse%
 \ {\isadigit{4}}\ \isacommand{prefer}\isamarkupfalse%
 \ {\isadigit{8}}\ \isacommand{using}\isamarkupfalse%
@@ -705,11 +707,12 @@ thermostat with $\dH$  is then
 structure of \isa{therm} using $\dH$. To apply \isa{hyb-hoare}, the
 program must be an iteration of the composition of two
 programs---usually control and dynamics. The tactic requires a
-description of the store between those programs as an Isabelle
-UTP-predicate $U(-)$. Lemma
-\isa{local-flow-therm}, whose proof captures the procedure described
-above, supplies the flow for $f\, a\, c$: $\flow\, a\, c\, \tau =
-(-e^{-a\cdot\tau}(c-T)+c, \tau+t, T_0, \vartheta)^\top$, 
+description of the store between those programs as an Isabelle/UTP
+expression~\cite{FosterZW16}, denoted by the $\isactrlU(-)$
+quotation. Lemma \isa{local-flow-therm}, whose proof captures the
+procedure described above, supplies the flow for $f\, a\, c$:
+$\flow\, a\, c\, \tau = (-e^{-a\cdot\tau}(c-T)+c, \tau+t, T_0,
+\vartheta)^\top$,
 %\begin{isabellebody}
 %\isanewline
 %\isacommand{abbreviation}\isamarkupfalse%
