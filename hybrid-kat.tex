@@ -397,7 +397,7 @@ distinguish variables. Each program variable is a lens
 $x : \reals \lto S$. State spaces of the form
 $S \subseteq \reals^n$ thus have $n$ independent lenses
 $x_1 \cdots x_n$ corresponding to projections from
-$\reals^n$. Yet more complex state spaces using matrices or
+$\reals^n$. Yet more general state spaces such as vector spaces or
 infinite Euclidean spaces can be supported as well.
 
 Systems of equations are modelled using vector fields: functions of
@@ -527,15 +527,17 @@ vector spaces, executable and infinite Euclidean spaces:
 %
 \begin{align*}
   \textit{vec-lens}^n_k &=  (\reals, \reals^n, \lambda s.\, \textit{vec-nth}~s~k, \lambda s~v.\, \textit{vec-upd}~k~v~s), & \text{if~} k < n, \\
-  \textit{eucl-lens}^{(m,n)}_k & = (\reals, M^{(m,n)}, \lambda s.\, \textit{eucl-nth}~s~k, \lambda s~v.\, \textit{eucl-upd}~k~v~s), & \text{if~} k < mn, \\
+  \textit{eucl-lens}^n_k & = (\reals, V, \lambda s.\, \textit{eucl-nth}~s~k, \lambda s~v.\, \textit{eucl-upd}~k~v~s), & \text{if~} k < n, \\
+%  \textit{eucl-lens}^{(m,n)}_k & = (\reals, M^{(m,n)}, \lambda s.\, \textit{eucl-nth}~s~k, \lambda s~v.\, \textit{eucl-upd}~k~v~s), & \text{if~} k < mn, \\
   \textit{fun-lens}^{(A,B)}_i &= (B, A \to B, (\lambda f. f i), (\lambda f~v. \, f(i := v))).
 \end{align*}
 
 \noindent The vector lens selects the $k$th element of an $n$
 dimension vector using $\textit{vec-nth}$ and $\textit{vec-upd}$ from
-the HOL Analysis library~\cite{HolzlIH13}, which provides a indexed
-type for $\reals^n$. The Euclidean lens uses executable Euclidean
-spaces~\cite{ImmlerT19} that permit both vectors and matrices. The
+the HOL Analysis library~\cite{HolzlIH13}, which provides an indexed
+type for the space $\reals^n$. The Euclidean lens uses executable Euclidean
+spaces~\cite{ImmlerT19} that provide a list representation of the vectors in the 
+$n$-dimensional $V$ via an ordered basis and an inner product. The
 function lens selects range elements of a function associated with a
 domain element $i \in A$. It can be used in particular with infinite
 Euclidean spaces, $\mathbb{N} \to \reals$. All three satisfy the lens
@@ -645,7 +647,7 @@ in $\dH$:
 {\isachardoublequoteopen}f\ a\ c\ {\isasymequiv}\ {\isacharbrackleft}T\ {\isasymmapsto}\isactrlsub s\ {\isacharminus}\ {\isacharparenleft}a\ {\isacharasterisk}\ {\isacharparenleft}T\ {\isacharminus}\ c{\isacharparenright}{\isacharparenright}{\isacharcomma}\ $T_0$\ {\isasymmapsto}\isactrlsub s\ {\isadigit{0}}{\isacharcomma}\ {\isasymtheta}\ {\isasymmapsto}\isactrlsub s\ {\isadigit{0}}{\isacharcomma}\ t\ {\isasymmapsto}\isactrlsub s\ {\isadigit{1}}{\isacharbrackright}{\isachardoublequoteclose}\isanewline
 \end{isabellebody} 
 \noindent Working alternatively with $\textit{vec-lens}^n_k$ or
-$\textit{eucl-lens}^{(m,n)}_k$, we write $;$ instead of $\cdot$ for
+$\textit{eucl-lens}^n_k $, we write $;$ instead of $\cdot$ for
 sequential composition and use a guard $G$ to restrict evolutions
 between $T_l$ and $T_h$ by setting
 \begin{equation*}
@@ -663,7 +665,7 @@ loop invariant, discrete control and continuous dynamics.
 %\isamarkupfalse%
 %\ therm{\isacharunderscore}loop{\isacharunderscore}inv\ {\isacharcolon}{\isacharcolon}\ {\isachardoublequoteopen}real\ {\isasymRightarrow}\ real\ {\isasymRightarrow}\ {\isacharparenleft}real{\isacharcircum}{\isadigit{4}}{\isacharparenright}\ upred{\isachardoublequoteclose}\ {\isacharparenleft}{\isachardoublequoteopen}I{\isachardoublequoteclose}{\isacharparenright}\isanewline
 %\  \isakeyword{where}
-{\isachardoublequoteopen}I\ $T_l$\ $T_h$\ {\isasymequiv}\ U{\isacharparenleft}$T_l$\ {\isasymle}\ T\ {\isasymand}\ T\ {\isasymle}\ $T_h$\ {\isasymand}\ {\isacharparenleft}{\isasymtheta}\ {\isacharequal}\ {\isadigit{0}}\ {\isasymor}\ {\isasymtheta}\ {\isacharequal}\ {\isadigit{1}}{\isacharparenright}{\isacharparenright}{\isachardoublequoteclose}\isanewline
+{\isachardoublequoteopen}I\ $T_l$\ $T_h$\ {\isasymequiv}\ \isactrlU{\isacharparenleft}$T_l$\ {\isasymle}\ T\ {\isasymand}\ T\ {\isasymle}\ $T_h$\ {\isasymand}\ {\isacharparenleft}{\isasymtheta}\ {\isacharequal}\ {\isadigit{0}}\ {\isasymor}\ {\isasymtheta}\ {\isacharequal}\ {\isadigit{1}}{\isacharparenright}{\isacharparenright}{\isachardoublequoteclose}\isanewline
 \isanewline
 \isacommand{abbreviation}\ %\isamarkupfalse%
 %\ therm{\isacharunderscore}ctrl\ {\isacharcolon}{\isacharcolon}\ {\isachardoublequoteopen}real\ {\isasymRightarrow}\ real\ {\isasymRightarrow}\ {\isacharparenleft}real{\isacharcircum}{\isadigit{4}}{\isacharparenright}\ nd{\isacharunderscore}fun{\isachardoublequoteclose}\ {\isacharparenleft}{\isachardoublequoteopen}ctrl{\isachardoublequoteclose}{\isacharparenright}\isanewline
@@ -816,7 +818,7 @@ following procedure for verifying $\{P\}\, x' = f\, \&\, G\, \{Q\}$:
 %\ tank{\isacharunderscore}diff{\isacharunderscore}inv\ {\isacharcolon}{\isacharcolon}\ {\isachardoublequoteopen}real\ {\isasymRightarrow}\ real\ {\isasymRightarrow}\ real\ {\isasymRightarrow}\ {\isacharparenleft}real{\isacharcircum}{\isadigit{4}}{\isacharparenright}\ upred{\isachardoublequoteclose}\ {\isacharparenleft}{\isachardoublequoteopen}dI{\isachardoublequoteclose}{\isacharparenright}\isanewline
 %\ \ \isakeyword{where}\ 
 {\isachardoublequoteopen}dI\ $h_l$\ $h_h$\ k\ {\isasymequiv}\isanewline
-\ \ U{\isacharparenleft}h\ {\isacharequal}\ k\ {\isasymcdot}\ t\
+\ \ {\isactrlU}{\isacharparenleft}h\ {\isacharequal}\ k\ {\isasymcdot}\ t\
 {\isacharplus}\ $h_0$\ {\isasymand}\ {\isadigit{0}}\ {\isasymle}\ t\
 {\isasymand}\ $h_l$\ {\isasymle}\ $h_0$\ {\isasymand}\ $h_0$\
 {\isasymle}\ $h_h$\ {\isasymand}\ {\isacharparenleft}{\isasympi}\
@@ -836,12 +838,12 @@ itself---and this time a differential invariant \isa{dI} as well:
 \isacommand{abbreviation}\ %\isamarkupfalse%
 %\ tank{\isacharunderscore}guard\ {\isacharcolon}{\isacharcolon}\ {\isachardoublequoteopen}real\ {\isasymRightarrow}\ real\ {\isasymRightarrow}\ {\isacharparenleft}real{\isacharcircum}{\isadigit{4}}{\isacharparenright}\ upred{\isachardoublequoteclose}\ {\isacharparenleft}{\isachardoublequoteopen}G{\isachardoublequoteclose}{\isacharparenright}\isanewline
 %\ \ \isakeyword{where}\
-{\isachardoublequoteopen}G\ h\isactrlsub x\ k\ {\isasymequiv}\ U{\isacharparenleft}t\ {\isasymle}\ {\isacharparenleft}h\isactrlsub x\ {\isacharminus}\ $h_0${\isacharparenright}{\isacharslash}k{\isacharparenright}{\isachardoublequoteclose}\isanewline
+{\isachardoublequoteopen}G\ h\isactrlsub x\ k\ {\isasymequiv}\ {\isactrlU}{\isacharparenleft}t\ {\isasymle}\ {\isacharparenleft}h\isactrlsub x\ {\isacharminus}\ $h_0${\isacharparenright}{\isacharslash}k{\isacharparenright}{\isachardoublequoteclose}\isanewline
 \isanewline
 \isacommand{abbreviation}\ %\isamarkupfalse%
 %\ tank{\isacharunderscore}loop{\isacharunderscore}inv\ {\isacharcolon}{\isacharcolon}\ {\isachardoublequoteopen}real\ {\isasymRightarrow}\ real\ {\isasymRightarrow}\ {\isacharparenleft}real{\isacharcircum}{\isadigit{4}}{\isacharparenright}\ upred{\isachardoublequoteclose}\ {\isacharparenleft}{\isachardoublequoteopen}I{\isachardoublequoteclose}{\isacharparenright}\isanewline
 %\ \ \isakeyword{where}\ 
-{\isachardoublequoteopen}I\ $h_l$\ $h_h$\ {\isasymequiv}\ U{\isacharparenleft}$h_l$\ {\isasymle}\ T\ {\isasymand}\ T\ {\isasymle}\ $h_h$\ {\isasymand}\ {\isacharparenleft}{\isasympi}\ {\isacharequal}\ {\isadigit{0}}\ {\isasymor}\ {\isasympi}\ {\isacharequal}\ {\isadigit{1}}{\isacharparenright}{\isacharparenright}{\isachardoublequoteclose}\isanewline
+{\isachardoublequoteopen}I\ $h_l$\ $h_h$\ {\isasymequiv}\ {\isactrlU}{\isacharparenleft}$h_l$\ {\isasymle}\ T\ {\isasymand}\ T\ {\isasymle}\ $h_h$\ {\isasymand}\ {\isacharparenleft}{\isasympi}\ {\isacharequal}\ {\isadigit{0}}\ {\isasymor}\ {\isasympi}\ {\isacharequal}\ {\isadigit{1}}{\isacharparenright}{\isacharparenright}{\isachardoublequoteclose}\isanewline
 \isanewline
 \isacommand{abbreviation}\ %\isamarkupfalse%
 %\ tank{\isacharunderscore}ctrl\ {\isacharcolon}{\isacharcolon}\ {\isachardoublequoteopen}real\ {\isasymRightarrow}\ real\ {\isasymRightarrow}\ {\isacharparenleft}real{\isacharcircum}{\isadigit{4}}{\isacharparenright}\ nd{\isacharunderscore}fun{\isachardoublequoteclose}\ {\isacharparenleft}{\isachardoublequoteopen}ctrl{\isachardoublequoteclose}{\isacharparenright}\isanewline
@@ -877,7 +879,7 @@ tank with $\dH$ is then
 \ \ \isakeyword{assumes}\ {\isachardoublequoteopen}{\isadigit{0}}\ {\isasymle}\ {\isasymtau}{\isachardoublequoteclose}\ \isakeyword{and}\ {\isachardoublequoteopen}{\isadigit{0}}\ {\isacharless}\ c\isactrlsub o{\isachardoublequoteclose}\ \isakeyword{and}\ {\isachardoublequoteopen}c\isactrlsub o\ {\isacharless}\ c\isactrlsub i{\isachardoublequoteclose}\isanewline
 \ \ \isakeyword{shows}\ {\isachardoublequoteopen}\ \isactrlbold {\isacharbraceleft}I\ $h_l$\ $h_h$\isactrlbold {\isacharbraceright}\ tank{\isacharunderscore}dinv\ c\isactrlsub i\ c\isactrlsub o\ $h_l$\ $h_h$\ {\isasymtau}\ \isactrlbold {\isacharbraceleft}I\ $h_l$\ $h_h$\isactrlbold {\isacharbraceright}{\isachardoublequoteclose}\isanewline
 \ \ \isacommand{apply}\isamarkupfalse%
-{\isacharparenleft}hyb{\isacharunderscore}hoare\ {\isachardoublequoteopen}U{\isacharparenleft}I\ $h_l$\ $h_h$\ {\isasymand}\ t\ {\isacharequal}\ {\isadigit{0}}\ {\isasymand}\ h\isactrlsub {\isadigit{0}}\ {\isacharequal}\ h{\isacharparenright}{\isachardoublequoteclose}{\isacharparenright}\isanewline
+{\isacharparenleft}hyb{\isacharunderscore}hoare\ {\isachardoublequoteopen}{\isactrlU}{\isacharparenleft}I\ $h_l$\ $h_h$\ {\isasymand}\ t\ {\isacharequal}\ {\isadigit{0}}\ {\isasymand}\ h\isactrlsub {\isadigit{0}}\ {\isacharequal}\ h{\isacharparenright}{\isachardoublequoteclose}{\isacharparenright}\isanewline
 \ \ \isacommand{prefer}\isamarkupfalse%
 \ {\isadigit{4}}\ \isacommand{prefer}\isamarkupfalse%
 \ {\isadigit{7}}\ \isacommand{using}\isamarkupfalse%
@@ -1202,7 +1204,7 @@ specification and proof with $\dH$ and $\dR$ are then straightforward.
 \ \ \isakeyword{assumes}\ {\isachardoublequoteopen}g\ {\isacharless}\ {\isadigit{0}}{\isachardoublequoteclose}\ \isakeyword{and}\ {\isachardoublequoteopen}h\ {\isasymge}\ {\isadigit{0}}{\isachardoublequoteclose}\isanewline
 \ \ \isakeyword{shows}\ {\isachardoublequoteopen}\ \isactrlbold {\isacharbraceleft}x\ {\isacharequal}\ h\ {\isasymand}\ v\ {\isacharequal}\ {\isadigit{0}}\isactrlbold {\isacharbraceright}\ bb{\isacharunderscore}evol\ g\ h\ T\ \isactrlbold {\isacharbraceleft}{\isadigit{0}}\ {\isasymle}\ x\ {\isasymand}\ x\ {\isasymle}\ h\isactrlbold {\isacharbraceright}{\isachardoublequoteclose}\isanewline
 \ \ \isacommand{apply}\isamarkupfalse%
-{\isacharparenleft}hyb{\isacharunderscore}hoare\ {\isachardoublequoteopen}U{\isacharparenleft}{\isadigit{0}}\ {\isasymle}\ x\ {\isasymand}\ {\isadigit{2}}\ {\isasymcdot}\ g\ {\isasymcdot}\ x\ {\isacharequal}\ {\isadigit{2}}\ {\isasymcdot}\ g\ {\isasymcdot}\ h\ {\isacharplus}\ v\ {\isasymcdot}\ v{\isacharparenright}{\isachardoublequoteclose}{\isacharparenright}\isanewline
+{\isacharparenleft}hyb{\isacharunderscore}hoare\ {\isachardoublequoteopen}{\isactrlU}{\isacharparenleft}{\isadigit{0}}\ {\isasymle}\ x\ {\isasymand}\ {\isadigit{2}}\ {\isasymcdot}\ g\ {\isasymcdot}\ x\ {\isacharequal}\ {\isadigit{2}}\ {\isasymcdot}\ g\ {\isasymcdot}\ h\ {\isacharplus}\ v\ {\isasymcdot}\ v{\isacharparenright}{\isachardoublequoteclose}{\isacharparenright}\isanewline
 \ \ \isacommand{using}\isamarkupfalse%
 \ assms\ \isacommand{by}\isamarkupfalse%
 \ {\isacharparenleft}rel{\isacharunderscore}auto{\isacharprime}\ simp{\isacharcolon}\ bb{\isacharunderscore}real{\isacharunderscore}arith{\isacharparenright}\isanewline
