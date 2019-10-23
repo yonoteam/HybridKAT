@@ -206,7 +206,7 @@ evaluated on a small set of simple examples. We present some of them
 to explain the work flows supported by $\dH$ and $\dR$. With Isabelle
 tactics for automated verification condition generation in place, we
 notice little difference relative to our predicate transformer
-components~\cite{MuniveS19}.  The entire Isabelle formalisation, is
+components~\cite{MuniveS19}.  The entire Isabelle formalisation is
 available
 online\footnote{\url{https://github.com/yonoteam/HybridKATpaper}}; our
 repository contains instructions for using it and a postscript proof
@@ -227,9 +227,10 @@ axioms $1+\alpha\cdot\alpha^\ast \le \alpha^\ast$ and
 $\gamma+\alpha\cdot \beta\le \beta\rightarrow \alpha^\ast \cdot
 \gamma\le \beta$,
 as well as their opposities, with multiplication swapped.  The
-ordering on $K$ is defined by $x\le y\leftrightarrow x+y=y$, as
-idempotent semirings are semilattices. We often write $\alpha\beta$
-instead of $\alpha\cdot\beta$, and use $p,q,r,\dots$ for elements of $B$.
+ordering on $K$ is defined by
+$\alpha\le \beta\leftrightarrow \alpha+\beta=\beta$, as idempotent
+semirings are semilattices. We often write $\alpha\beta$ instead of
+$\alpha\cdot\beta$, and use $p,q,r,\dots$ for elements of $B$.
 
 Elements of $K$ represent programs; those of $B$ tests, assertions or
 propositions.  The operation $\cdot$ models the sequential composition
@@ -708,11 +709,11 @@ thermostat with $\dH$  is then
 \noindent The first line uses tactic \isa{hyb-hoare} to blast away the
 structure of \isa{therm} using $\dH$. To apply \isa{hyb-hoare}, the
 program must be an iteration of the composition of two
-programs---usually control and dynamics. The tactic requires a
-description of the store between those programs as an Isabelle/UTP
-expression~\cite{FosterZW16}, denoted by the $\isactrlU(-)$
-quotation. Lemma \isa{local-flow-therm}, whose proof captures the
-procedure described above, supplies the flow for $f\, a\, c$:
+programs---usually control and dynamics. The tactic requires lifting
+the store to an Isabelle/UTP expression~\cite{FosterZW16}, which is
+denoted by the $\isactrlU$ operator. Lemma \isa{local-flow-therm},
+whose proof captures the procedure described above, supplies the flow
+for $f\, a\, c$:
 $\flow\, a\, c\, \tau = (-e^{-a\cdot\tau}(c-T)+c, \tau+t, T_0,
 \vartheta)^\top$,
 %\begin{isabellebody}
@@ -1130,7 +1131,7 @@ for such evolution commands.
 \begin{gather*}
 \{\lambda s\in S.\forall t\in T.\ (\forall
 \tau\in {\downarrow}t.\ G\, (\flow_s\, \tau)) \rightarrow P\,
-(\flow_s\, t)\}\, \mathbf{evol}\, \flow\, G\, \{P\}. \label{eq:h-evlfl}\tag{h-evlfl}\\
+(\flow_s\, t)\}\, \mathbf{evol}\, \flow\, G\, \{P\}, \label{eq:h-evlfl}\tag{h-evlfl}\\
 \mathbf{evol}\, \flow\, G \le [\lambda s.\forall t\in T.\ (\forall
 \tau\in {\downarrow}t.\ G\, (\flow_s\, \tau))\to Q\, (\flow_s\, t),Q],\label{eq:r-evlf}\tag{r-evlf}\\
 (\mathbf{evol}\, \flow\, G) \cdot \left[Q,Q\right] \le [\lambda s. \forall t\in T.\ (\forall
@@ -1282,11 +1283,11 @@ merits of these approaches remain to be explored.
 
 The expressivity and complexity gap between Hoare logic and predicate
 transformer semantics is particularly apparent within algebra. The
-weakest liberal precondition operator---a standard predicate
-transformer---cannot be expressed in $\KAT$~\cite{Struth18}.  The
-equational theory of $\KAT$, which captures propositional Hoare logic,
-is PSPACE complete~\cite{KozenCS96}, that of modal Kleene algebra,
-which yields predicate transformers, is in EXPTIME~\cite{MollerS06}.
+weakest liberal precondition operator cannot be expressed in
+$\KAT$~\cite{Struth18}.  The equational theory of $\KAT$, which
+captures propositional Hoare logic, is PSPACE
+complete~\cite{KozenCS96}, that of modal Kleene algebra, which yields
+predicate transformers, is in EXPTIME~\cite{MollerS06}.
 
 Finally, while $\KAT$ and $\rKAT$ are convenient starting points for
 building program construction and verification components for hybrid
