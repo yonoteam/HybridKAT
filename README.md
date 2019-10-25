@@ -1,4 +1,4 @@
-# Hybrid KAT, differential Hoare Logic and differential Refinement Calculus
+# Differential Hoare Logic and differential Refinement Calculus
 
 The Isabelle files can be found in the KAT folder. The relevant files for the paper are 
 KAT_rKAT_Examples_ndfun.thy, KAT_rKAT_exuclid_Examples_ndfun.thy and all those that they import.
