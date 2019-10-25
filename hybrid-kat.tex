@@ -543,12 +543,12 @@ Euclidean spaces, $\mathbb{N} \to \reals$. All three satisfy the lens
 axioms above.
 
 The development in this section has been formalised with
-Isabelle~\cite{afp:hybrid}, both for a state transformer and a
-relational semantics. An instance of the latter for particular vector
-fields with unique solutions forms the standard semantics of
-$\dL$. By the direct connection to orbits or orbitals, the state
-transformer semantics is arguably conceptually simpler and more
-elegant.
+Isabelle~\cite{afp:hybrid,Foster18c-Optics,Foster19a-IsabelleUTP},
+both for a state transformer and a relational semantics. An instance
+of the latter for particular vector fields with unique solutions forms
+the standard semantics of $\dL$. By the direct connection to orbits or
+orbitals, the state transformer semantics is arguably conceptually
+simpler and more elegant.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -651,8 +651,9 @@ G\, T_l\, T_h\, a\, c = \left(t\leq -\frac{1}{a}\ln\left(\frac{c-\Delta_c}{c-T_0
 \end{equation*}
 where $\Delta_c = T_l$ if $c=0$, and $\Delta_c = T_h$ if $c=T_u$. The
 hybrid program $\isa{therm}\ T_l\ T_h\ a\ T_u$ below models the
-behaviour of the thermostat. To simplify notation, we separate it in
-loop invariant, discrete control and continuous dynamics.
+behaviour of the thermostat. To simplify notation, we separate into
+a loop invariant ($I$), discrete control ($ctrl$), and continuous
+dynamics ($dyn$).
 
 \begin{isabellebody}
 
@@ -704,6 +705,13 @@ whose proof captures the procedure described above, supplies the flow
 for $f\, a\, c$:
 $\flow\, a\, c\, \tau = (-e^{-a\cdot\tau}(c-T)+c, \tau+t, T_0,
 \vartheta)^\top$,
+%\begin{isabellebody}
+%\isanewline
+%\isacommand{abbreviation}\isamarkupfalse%
+%\ therm{\isacharunderscore}flow\ {\isacharcolon}{\isacharcolon}\ {\isachardoublequoteopen}real\ {\isasymRightarrow}\ real\ {\isasymRightarrow}\ real\ {\isasymRightarrow}\ {\isacharparenleft}real{\isacharcircum}{\isadigit{4}}{\isacharparenright}\ usubst{\isachardoublequoteclose}\ {\isacharparenleft}{\isachardoublequoteopen}{\isasymphi}{\isachardoublequoteclose}{\isacharparenright}\ \isanewline
+%\ \ \isakeyword{where}\ {\isachardoublequoteopen}{\isasymphi}\ a\ $T_u$\ {\isasymtau}\ {\isasymequiv}\ {\isacharbrackleft}T\ {\isasymmapsto}\ {\isacharminus}\ exp{\isacharparenleft}{\isacharminus}a\ {\isacharasterisk}\ {\isasymtau}{\isacharparenright}\ {\isacharasterisk}\ {\isacharparenleft}L\ {\isacharminus}\ T{\isacharparenright}\ {\isacharplus}\ $T_u${\isacharcomma}\ t\ {\isasymmapsto}\ {\isasymtau}\ {\isacharplus}\ t{\isacharcomma}\ $T_0$\ {\isasymmapsto}\ $T_0${\isacharcomma}\ {\isasymtheta}\ {\isasymmapsto}\ {\isasymtheta}{\isacharbrackright}{\isachardoublequoteclose}\isanewline
+%\isanewline
+%\end{isabellebody}
 for all $\tau\in\reals$. The remaining proof obligations are
 inequalities of transcendental functions. They are discharged
 automatically using auxiliary lemmas. \qed
