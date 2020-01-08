@@ -248,15 +248,14 @@ lemma bouncing_ball_flow:
 \<comment> \<open>Refined with annotated dynamics \<close>
 
 lemma R_bb_assign: "g < (0::real) \<Longrightarrow> 0 \<le> h \<Longrightarrow> 
-  \<^bold>[v = 0 \<and> 0 \<le> x \<and> 2 \<cdot> g \<cdot> x = 2 \<cdot> g \<cdot> h + v \<cdot> v, 0 \<le> x \<and> 2 \<cdot> g \<cdot> x = 2 \<cdot> g \<cdot> h + v \<cdot> v\<^bold>] \<ge> (v ::= - v)"
+  \<^bold>[x = 0 \<and> 0 \<le> x \<and> 2 \<cdot> g \<cdot> x = 2 \<cdot> g \<cdot> h + v \<cdot> v, 0 \<le> x \<and> 2 \<cdot> g \<cdot> x = 2 \<cdot> g \<cdot> h + v \<cdot> v\<^bold>] \<ge> (v ::= - v)"
   by (rule R_assign_law, pred_simp)
 
 lemma R_bouncing_ball_dyn:
   assumes "g < 0" and "h \<ge> 0"
   shows "\<^bold>[x = h \<and> v = 0, 0 \<le> x \<and> x \<le> h\<^bold>] \<ge> bb_evol g h T"
   apply(refinement; (rule R_bb_assign[OF assms])?)
-  using assms apply (rel_auto' simp: bb_real_arith)
-  oops
+  using assms by (rel_auto' simp: bb_real_arith)
 
 no_notation fball ("f")
         and ball_flow ("\<phi>")
