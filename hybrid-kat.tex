@@ -117,7 +117,7 @@
   structure and generating verification conditions at this level.
   Lenses capture hybrid program stores in a generic algebraic way. The
   approach has been formalised with the Isabelle/HOL proof
-  assistant. A number of examples explains the workflow with the
+  assistant. Several examples explain the workflow with the
   resulting verification components.
 \end{abstract}
 
@@ -137,10 +137,8 @@ with evolution commands in $\dL$ requires either explicit solutions to
 differential equations represented by the vector field, or invariant
 sets~\cite{Teschl12} that describe these evolutions implicitly. Verification
 components inspired by $\dL$ have already been formalised in the
-Isabelle proof assistant~\cite{MuniveS19}. 
-\rin{$(1)$ the difference between what is presented in this work and what is considered previous work (\cite{MuniveS19}) needs to be made clear, following lines leave some confusion}
-Yet the shallow embedding
-used has shifted the focus from the original proof-theoretic approach
+Isabelle proof assistant~\cite{MuniveS19}. Yet the shallow embedding
+used in this work has shifted the focus from the original proof-theoretic approach
 to a semantic one, and ultimately to predicate transformer algebras
 supporting a quite different workflow.
 
@@ -162,19 +160,6 @@ formalisms envisaged might not be expressive enough for hybrid program
 verification or less suitable than $\dL$ in practice. Conceptually it
 is also not obvious what exactly it would take to extend a standard
 Hoare logic or refinement calculus to hybrid programs.
-
-\rin{$(3)$ The contributions are not clearly stated}
-\jin{Contributions are stated in paragraphs below.}
-\rin{$(3)$ many definitions are missing.}
-\jin{It would be helpful to know which definitions the reviewer considers missing}
-\rin{$(3)$ The deduction rules of hL and rL are dispatched along the paper. The proof of their correctness is not clear to me. I guess that this is the content of lemmas 5.1 and 7.1 for example, but again this is not clear from the statements.}
-\jin{Sections 3 and 7 include the deduction rules of Hoare logic and Refinement calculus respectively. Lemmas 5.1 and 7.1 extend them to their hybrid versions. Section 7 explicitly states ``the laws in this section form the differential refinement calculus''.}
-\rin{$(3)$ The authors say that they found  hL and rL easier to implement in Isabelle. This is certainly true, but this is not a proof that those logics make verification of hybrid programs any simpler. Does the verification process become faster? Benchmarks would have been useful to support this work.}
-\jin{It was not the purpose of this work to compare the velocity of the verification process using $\dH$ and $\dR$ with existing approaches. Main contribution is stated below.}
-\rin{$(3)$ Are the deduction rules complete?}
-\jin{It was not the purpose of this work to obtain a proof of completeness for a calculus. Main contribution is stated below.}
-\rin{$(3)$ In sum, the subject is interesting, but the paper would benefit from a deep reorganization and rewriting}
-\jin{Perhaps the reviewer was expecting a standard presentation of logics $\dH$ and $\dR$ where syntax, grammar, semantics are introduced one after the other. However, that approach would be unfaithful to the development and discovery of the logics as extensions of $\KAT$. Should we add words to make this more explicit?}
 
 Our main contribution consists in evidence that $\dH$ and $\dR$ are as
 feasible and applicable for verifying simple hybrid programs as $\dL$,
@@ -201,10 +186,7 @@ reasoning and shallow embeddings with proof assistants. Our
 verification components merely require formalising a state transformer
 semantics for $\KAT$ and $\rKAT$ along the lines of~\cite{MuniveS19}
 and concrete store semantics for hybrid
-programs. 
-\rin{$(4)$ Could we do the same things without lenses? They don't seem essential to your development, i.e., the power of lenses seems overkill for what you're trying to do.}
-\jin{Below we indicate how we take advantage of the power of lenses. Should we add words to make it more explicit?}
-Lenses~\cite{FosterZW16} give us the flexibility to switch
+programs. Lenses~\cite{FosterZW16} give us the flexibility to switch
 seamlessly between stores based on real vector spaces or executable
 Euclidean spaces. Beyond that it suffices to derive a few algebraic
 laws for invariants and the Hoare-axioms and refinement laws for
@@ -227,9 +209,7 @@ tactics for automated verification condition generation in place, we
 notice little difference relative to our predicate transformer
 components~\cite{MuniveS19}.  The entire Isabelle formalisation is
 available
-online\footnote{\url{https://github.com/yonoteam/HybridKATpaper}}; our
-repository contains instructions for using it and a postscript proof
-document for reading the Isabelle code without installing the tool.
+online\footnote{\url{https://github.com/yonoteam/HybridKATpaper}}.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -248,15 +228,11 @@ $\gamma+\alpha\cdot \beta\le \beta\rightarrow \alpha^\ast \cdot
 as well as their opposities, with multiplication swapped.  The
 ordering on $K$ is defined by
 $\alpha\le \beta\leftrightarrow \alpha+\beta=\beta$, as idempotent
-semirings are semilattices. 
-\rin{$(1)$ In Section 4 and onwards, $\alpha\beta$ seems to refer to function application, which looks so similar that I suggest not to leave out the dot.}
-We often write $\alpha\beta$ instead of
-$\alpha\cdot\beta$, and use $p,q,r,\dots$ for elements of $B$.
-\jin{Added the $\cdot$ everywhere (only needed in Sections $3$ and $7$).}
+semirings are semilattices.
 
 Elements of $K$ represent programs; those of $B$ tests, assertions or
 propositions.  The operation $\cdot$ models the sequential composition
-of programs, $+$ their nondeterministic choice, $(-)^\ast$ their
+of programs\footnote{We therefore often write $;$ for this operation in later sections.}, $+$ their nondeterministic choice, $(-)^\ast$ their
 finite unbounded iteration. Program $0$ aborts and $1$ skips.  Tests
 are embedded implicitly into programs. They are meant to hold in some
 states of a program and fail in others; $p\alpha$ ($\alpha p$)
@@ -305,25 +281,19 @@ A \emph{state transformer $\KAT$} over $S$ is any subalgebra of
 $\sta\, S$. 
 
 We have already formalised $\KAT$ via type classes in
-Isabelle~\cite{afp:kat}.  As these allow only one type parameter, we
-use an alternative approach 
-\rin{$(1)$ alternative to what? Especially: is this alternative approach given in~\cite{afp:kat} or is it an alternative to~\cite{afp:kat}?}
-\jin{Suggestion: ``Following the formalisation of $\KAT$ in~\cite{afp:kat}, we expand Kleene algebra $K$ by an \emph{antitest} function''\dots}
-that expands a Kleene algebra $K$ by an
+Isabelle~\cite{afp:kat}.  As type classes allow only one type parameter, we
+use an alternative to the standard two-sorted approach that expands a Kleene algebra $K$ by an
 \emph{antitest} function $n:K\to K$ from which a \emph{test} function
 $t:K\to K$ is defined as $t=n^2$. Then
 $K_t = \{\alpha \mid t\, \alpha = \alpha\}$ forms a boolean algebra in
 which $n$ acts as test complementation. It can be used in place of
 $B$.  The formalised state transformer model of $\KAT$ is a
 contribution to this article.
-\rin{$(1)$ Also for ``these allow only one type parameter'', perhaps repeat 'type classes' instead of 'these'. More crucially: why is that a problem? What do you need more type parameters for?}
-\rin{$(1)$ Another question that came up, is whether $n = tn$ or $n=n^3$ is the defining requirement here for antitests. I don't really see the antitests in the remainder of the paper either.}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Propositional Hoare Logic and Invariants}\label{sec:hl-invariants}
-\rin{$(1)$ In Section 3, I would have liked to see composition (or ;) introduced right at the beginning, to help me verify that I am understanding the intention behind the KAT operations. }
 $\KAT$ provides a simple algebraic semantics for while
 programs with
 \begin{align*}
@@ -353,18 +323,12 @@ verification condition generation:
   \{t\cdot p\}\, \alpha\, \{p\}\ \rightarrow\ & \{p\}\, \WHILE{t}{\alpha}\, \{\neg t\cdot p\}.\label{eq:h-while}\tag{h-while}
 \end{align}
 
-\rin{$(2)$ what do the statements ''while t inv i do alpha'' and ''loop alpha inv i'' mean?  how does their semantic definition differ from ''while t do alpha'' and ''loop alpha''?  what happens if i is not actually an invariant of the iteration?  does the statement become abort?}
-\jin{Answers to all these questions are given below or can be deduced from the results. Maybe we should add words to make them more explicit.}
-
 Rules for commands with invariant assertions $\alpha\ \mathbf{inv}\ i$
 are derivable, too (operationally,
-$\alpha\, \mathbf{inv}\, i = \alpha$)
-\rin{$(1)$ When introducing 'inv', add 'we define'.}.  An \emph{invariant} for
+$\alpha\, \mathbf{inv}\, i = \alpha$).  An \emph{invariant} for
 $\alpha\in K$ is a test $i\in B$ satisfying $\{i\}\, \alpha\, \{i\}$.
 Then, with $\mathbf{loop}\, \alpha$ as syntactic sugar for
 $\alpha^\ast$, we obtain
-\rin{$(1)$ For (h-inv-plus), consider changing the left hand side $\wedge$ into a $\vee$.}
-\jin{Suggestion by reviewer is not true. Perhaps add some words about it?}
 \begin{align}
   p\le i \land \{i\}\, \alpha\, \{i\}\land i\le q\ \rightarrow\
   &\{p\}\, \alpha\, \{q\},\label{eq:h-inv}\tag{h-inv}\\
@@ -378,18 +342,15 @@ $\alpha^\ast$, we obtain
                                                                    \{p\}\, \mathbf{loop}\, \alpha\,
     \mathbf{inv}\, i\, \{q\}. \label{eq:h-loop-inv}\tag{h-loop-inv}
 \end{align}
-\rin{$(1)$ At this point, it is unclear whether we are working in an abstract KAT, or one in which $\cdot$ is Kleisli composition.}
-\jin{At the beginning of the section we state that we work in $\KAT$}
 We use (\ref{eq:h-inv}) for invariants for continuous
 evolutions of hybrid systems in Section~\ref{sec:hoare-inv}-\ref{sec:from-flows}. The rules (\ref{eq:h-inv-mult}) and (\ref{eq:h-inv-plus}) are part of a procedure, described in Section~\ref{sec:hoare-inv}. Rule (\ref{eq:h-while-inv})
 is standard for  invariants for while loops;
 (\ref{eq:h-loop-inv}) is specific to loops of hybrid programs (see
 Section~\ref{sec:sta-hybrid}).
-\rin{$(1)$ a reference to h-loop-inv is made, which I did not find in Section 4 although the phrasing suggests an explanation about it (especially why programs need it)}
-\jin{reference is for ``hybrid program's syntax''. Perhaps add ``syntax'' inside parenthesis?}
 The rules for propositional Hoare logic in Isabelle have been derived
 for $\KAT$ in~\cite{afp:kat,afp:vericomp}. The rules for invariants
-have been developed specifically for this article.
+have been developed specifically for this article. By Proposition~\ref{P:kleisli-ka},all rules derived in this section hold in particular in the state transformer semantics. We have formalised this fact with Isabelle. At this stage, verification condition rules for the basic commands for assignments and evolution commands are still missing. These are added in the concrete state transformer semantics as explained in Section~\ref{sec:hoare-flow}.
+
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -397,19 +358,14 @@ have been developed specifically for this article.
 \section{State Transformer Semantics for Hybrid
   Programs}\label{sec:sta-hybrid}
 
-\rin{$(4)$ where is the full state transformer semantics for all operators of the hybrid program? It would be really interesting to see if fully fleshed out.}
-
 Hybrid programs of differential dynamic logic ($\dL$)~\cite{Platzer18}
 are defined by the syntax
 \begin{equation*}
 \mathcal{C}\ ::= \ x:=e \mid x' = f \, \&\, G \mid ?P\mid \mathcal{C};\mathcal{C}\mid \mathcal{C}+\mathcal{C}\mid \mathcal{C}^*
 \end{equation*}
-\rin{$(2)$ what is a hybrid program?  the programs that the paper studies are very different from the kind that morgan investigates in his book, but I could not tell which of these differences makes them hybrid.  neither this paper nor some of its bibliographic references has an explicit definition.}
-\jin{Definition is given here. Should we add words to make it more explicit?}
-\rin{$(1)$ the type of f is unclear. The type of e is also missing but can be guessed more easily. On a second reading of the paper, it is clear that the evolution commands are explained by the paragraph starting with 'Systems of equations', but that paragraph does not even mention the term 'evolution commands' ands takes the reader for a tour through definitions of trajectories, orbits and IVPs, before showing (st-evl). The explanation of assignments seems to be split between the second and third paragraph, and the paragraph following (st-evl).}
-\jin{added type in lines below}
+
 that adds \emph{evolution commands} $x' = f \, \&\, G$ to the language
-of $\KAT$---function $?(-)$ embeds tests explicitly into programs.
+of $\KAT$---function $?(-)$ embeds tests explicitly into programs; in the tradition of $\KAT$ we leave this embedding implicit.
 Evolution commands introduce a time independent vector field $f:S\to S$ for
 an autonomous system of ordinary differential equations
 (ODEs)~\cite{Teschl12} together with a guard $G$, a predicate
@@ -436,30 +392,24 @@ where $s \in S$ and $v, v' \in A$.
 Lenses $x$ and $y$ can also be checked for independence
 using the predicate $x \lindep y$, which we use to
 distinguish variables.
-\rin{$(1)$ Here, the notion of independence needs to be explained (or at least make explicit that you are not referring to linear independence)} Each program variable is a lens
+\rin{$(1)$ Here, the notion of independence needs to be explained (or at least make explicit that you are not referring to linear independence)} 
+\jin{For Simon to address.} Each program variable is a lens
 $x : \reals \lto S$. State spaces of the form
 $S \subseteq \reals^n$ thus have $n$ independent lenses
 $x_1 \cdots x_n$ corresponding to projections from
-$\reals^n$. Yet more general state spaces such as vector spaces or
-infinite Euclidean spaces can be supported as well.
-\rin{$(1)$ you write that Euclidean spaces 'can be' supported. Are they supported? If not, why not, what was the difficulty? (Perhaps this does not need to be mentioned, currently it raises questions).}
+$\reals^n$. Yet more general state spaces such as vector spaces are supported as well.
 
 Systems of equations are modelled using vector fields: functions of
 type $S\to S$ on some open set $S$. Geometrically, vector field $f$
 assigns a vector to any point of the state space $S$. A solution to
 the \emph{initial value problem} (IVP) for the pair $(f,s)$ and
 initial value $(0,s)\in T\times S$, where $T$ is an open interval in
-$\reals$ containing $0$,
-\rin{$(1)$ Also, I don't understand why you would need T to be open.}
-\jin{This is a formalization requirement (from Isabelle); but mathematically we could just ask for $T$ to be a neighbourhood of $0$} 
-is then a function $X:T\to S$ that satisfies
+$\reals$ containing $0$, is then a function $X:T\to S$ that satisfies
 $X'\, t = f\, (X\, t)$---an autonomous system of ODEs in vector
 form---and $X\, 0 = s$. Solution $X$ is thus a curve in $S$ through
 $s$, parametrised in $T$ and tangential to $f$ at any point in $S$; it
 is called the \emph{trajectory} or the \emph{integral curve} of $f$ at $s$
 whenever it is uniquely defined~\cite{Teschl12}.
-\rin{$(1)$ For terms 'trajectory' and 'integral curve', use the word 'the' to disambiguate which of these terms apply to whether the term applies if it is uniquely defined.}
-\jin{Changed it.}
 For IVP $(f,s)$ with continuous vector field $f:S\to S$ and initial
 state $s\in S$ we define the set of solutions on
 $T$ as
@@ -475,17 +425,15 @@ $\gamma^X_G:S\to \Pow\, S$ as
 \gamma^X_{G}\, s= \left\{X\, t\mid t\in T\land \forall \tau\in
 {\downarrow}t.\ G\, (X\, \tau)\right\},
 \end{equation*}
-where ${\downarrow}t = \left\{t'\in T\mid t'\le t\right\}$, and the
+where ${\downarrow}t = \left\{t'\in T\mid t'\le t\right\}$. Intuitively, $\gamma_G^X\, s$ is the orbit at $s$ defined along the longest interval in $T$ that satisfies $G$. We also define the
 $G$-\emph{guarded orbital} of $f$ along $T$ in $s$~\cite{MuniveS19}
 via the state transformer $\gamma^f_G:S\to \Pow\, S$ as
 \begin{equation*}
   \gamma^f_G\ s = \bigcup\left\{\gamma^X_G\, s\mid X\in \Sols\, f\, T\, s\right\}.
 \end{equation*}
+
 In applications, ${\downarrow}t$ is usually an interval
-$[0,t]\subseteq T$.  
-\rin{$(1)$ You write that T is an open interval. This puzzled me a lot: many of your examples seem to start at 0 (including 0), making the intervals non-open (they might still be open at the other end). Especially you claim that downward-arrow-t is usually the closed interval [0,t] seems to contradict that T is open.}
-\jin{We are stating here that ${\downarrow}t=[0,t]\subseteq T$. There should be no confusion; but we can make it more explicit with this notation.}
-Expanding definitions,
+$[0,t]\subseteq T$. Expanding definitions,
 \begin{equation*}
 \gamma^f_G\, s = \left\{X\, t \mid X\in \Sols\, f\, T\, s \land t\in T
 \land \forall \tau\in{\downarrow}t.\ G\, (X\, \tau)\right\}.
@@ -499,7 +447,7 @@ $G:S\to \bools$ as
 {\left(x'= f\, \&\, G\right)} = \gamma^f_G.\label{eq:st-evl}\tag{st-evl}
 \end{equation}
 
-Defining the state transformer semantics of assignments is
+In the evolution command $x'= f\, \&\, G$, $x'$ is part of the traditional syntax used for specifying systems of ODEs, while in reality only a vector field $f$ is specified. This explains why $x$ does not appear in the right-hand side of~(\ref{eq:st-evl}). Defining the state transformer semantics of assignments is
 standard~\cite{MuniveS19}, though we generalise using lenses. First,
 we use lenses to define state updates:
 $$\sigma(x\mapsto e) = \lambda s.\ \lput_x ~ (\sigma~s) ~ (e~s)$$
@@ -555,8 +503,7 @@ commute provided that neither assigned expression depend on
 the corresponding variable.  Assignment can be distributed
 through conditionals by a substitution to the
 condition. Such laws can be applied recursively for symbolic
-evaluation of deterministic programs.
-\rin{$(1)$ The addition of the word deterministic suggests that this cannot be applied to programs that are non-deterministic, yet your examples show non-deterministic programs. Also, the laws seem to apply to non-deterministic programs as well. If you intentionally added this word, you will need to explain your intention to the reader.}
+evaluation of hybrid programs.
 % First we define a state update function
 % $f_a:V\to (S \to E) \to S\to S$ as
 % \begin{equation*}
@@ -606,17 +553,14 @@ simpler and more elegant.
 
 \section{Differential Hoare Logic for Flows}\label{sec:hoare-flow}
 
-In the standard semantics of Hoare triples, the Kleisli composition in
+In the state transformer semantics of Hoare triples, the Kleisli composition in
 the left hand side of $p\cdot\alpha\le \alpha\cdot q$ ensures that $p$ holds
 before executing $\alpha$. The left hand side guarantees that $q$ holds
-after its execution. 
-\rin{$(1)$ At this point, (instead of ``With evolution commands'') it might be nice to have a sentence that starts with 'In other words, ...' so that I can verify that I understood everything.} 
-\jin{Changed it, but not used suggestion.}
-Specifically for evolution commands, and consistently with
-$\dL$, the $q$ holds at every point in the orbit of a solution for $f$.
+after its execution. Specifically for evolution commands, and consistently with
+$\dL$, $q$ holds along the entire orbit of a solution for $f$. We now complete the derivation of inference rules of $\dH$ by adding Hoare-style rules for assignments and evolution commands in the concrete state transformer semantics.
 
 The assignment axiom of Hoare logic needs no explanation. Our concrete
-semantics allows us to derive it:
+state transformer semantics allows us to derive it:
 
 \begin{equation}
 \left\{P[e/x]\right\}\,  x:=e\, \{P\}. \label{eq:h-assgn}\tag{h-assgn}
@@ -630,42 +574,27 @@ semantics allows us to derive it:
 Hence, all we need to add to Hoare logic is a rule for evolution
 commands.  We restrict our attention to Lipschitz-continuous vector
 fields for which unique solutions to IVPs are guaranteed by
-Picard-Lindel\"of's theorem~\cite{Teschl12}.  
-\rin{$(4)$ Why do you restrict yourself to cases where the Picard-Lindelof's theorem is applicable? dL doesn't do that explicitly. What does it buy you here? It's unclear where you use this assumption.}
-\jin{$\dL$ is even more restricted as all ODEs in $\dL$ satisfy Picard-Lindel\"of, but not all ODEs that satisfy it can be written in $\dL$.}
-\rin{$(4)$ The notation ($\phi_s t$) vs. ($\phi t s$) is super confusing. Pick one and stick to it. Same thing for get/put vs $get_x$. It's just confusing.}
+Picard-Lindel\"of's theorem~\cite{Teschl12}. 
 These are \emph{(local)\
   flows} $\flow:T\to S\to S$ and $X=\flow_s=\lambda t.\ \flow\, t\, s$
 is the trajectory at $s$. Guarded orbitals $\gamma^f_G$ then
 specialise to \emph{guarded orbits}
-\rin{$(1)$ Why does your logic use the ${\downarrow}t$ (which is even based on T rather than U), it seems like this intentionally complicated your semantics, but that intention is not clear from the paper. }
-\jin{Mistake indeed. In this equation ${\downarrow}t=\left\{t'\in U\mid t'\le t\right\}$. Should we add a subscript for distinction, e.g. ${\downarrow}_Tt$ and ${\downarrow}_Ut$? (In Isabelle the operation requires both arguments)}
 \begin{equation*}
   \gamma^f_{G,U} = \left\{\flow_s\, t\mid t\in U\land \forall\tau \in
   {\downarrow}t.\ G\, (\flow_s\, \tau)\right\},
 \end{equation*}
-\rin{$(1)$ In the specialised guarded orbits, the last t (fourth character from the right) should probably be a tau.}
-\jin{Changed it.}
-\rin{$(4)$ Why do you take a T and a U and how are they defined in practice? In my understanding, dL always imposed T and U to be the same, and it imposes it to be [0,+oo) or whatever is the longest interval where the flow is defined.}
-\jin{$\dL$ uses precondition $\forall t\geq 0.\ (\forall \tau\in [0,t].\ G\, (\flow_s\, \tau))\to Q\, (\flow_s\, t)$ because their solutions are defined in all of $\reals$. Such cases correspond to our $T=\reals$, $U=[0,\infty)$ and ${\downarrow}t=[0,t]$}
 where $U\subseteq T$ is a time domain of interest, typically an
-interval $[0,t]$ for some $t\in T$~\cite{MuniveS19}.  Accordingly,
-(\ref{eq:st-evl}) becomes
+interval $[0,t]$ for some $t\in T$~\cite{MuniveS19} where, by contrast to the previous section ${\downarrow}t=\{t'\in U\mid t'\leq t\}$ is now relativised to $U$. This relativisation seems important for the analysis of hybrid systems. First of all, it gives the flexibility to consider dynamics over closed time intervals, secondly it allows us to focus on time intervals and IVPs starting at time $t=0$. Accordingly,
+(\ref{eq:st-evl}) specialises to the following state transformer semantics for evolution commands.
 \begin{equation}
   \left(x' = f\, \&\, G\right)= \gamma^f_{G,U}.\label{eq:st-evl-flow}\tag{st-evl-flow}
 \end{equation}
-\rin{$(1)$ I need some help in understanding when these variables are bound: for instance, perhaps x itself is syntax here? is U an essential part of the operational semantics? Does it determine a range for the system by which it gives execution back to the program?}
 The following Hoare-style rule for evolution commands is then
-derivable.
-\rin{$(4)$ In Lemma 5.1, please write down explicitly that $P:S\to B$, $Q:S\to B$ and $G:S\to B$. I got confused for a while (at least P is not mentioned). Please also explain the ($\lambda s.$) in the precondition, which puzzled me for a while (until I realized $P:S\to B$).}
-\rin{$(4)$ Lemma 5.1 (and the subsequent lemmas) can only be proved sound with respect to a semantics, but you never explicitly provide a semantics.}
-\jin{We provide the semantics in (st-evl-flow) and Section 2. Should we add words to make it more explicit?}
-\rin{$(4)$ I am very confused by Lemma 5.1. In particular, it looks like if I take U to take the empty set (which I am allowed to do, at least in my understanding), the precondition is vacuously true and I can always prove the postcondition. Something must be missing here, please fix it. I am quite concerned about this technical issue, and I don't understand how you can possibly prove Lemma 5.1 state like this.}
-\jin{Reviewer is right. The sentence above (st-evl-flow), should state that $U$  is a closed interval $[0,t]$ for $t\in T$, just like in the Isabelle formalisation.}
+derivable in this semantics.
 \begin{lemma}\label{P:h-evl-lemma}
   Let $f:S\to S$ be a Lipschitz continuous vector field on
   $S\subseteq \reals^n$ and $\flow:T\to S\to S$ its local flow with
-  $0\in T\subseteq \reals$. Then, for $U\subseteq T$ and
+  $0\in T\subseteq \reals$. Then, for $U\subseteq T$ with $0\in U$ and
   $G,Q:S\to\bools$,
 \begin{equation}
 \left\{\lambda s\in S.\forall t\in U.\ \left(\forall
@@ -677,10 +606,7 @@ derivable.
 This finishes the derivation of rules for a Hoare logic $\dH$ for
 hybrid programs---to our knowledge, the first Hoare logic of this
 kind. As usual, there is one rule per programming construct, 
-\rin{$(4)$ but you only show the ones for assignment and differential equations. Do you use the standard ones for the test, sequential composition, star and plus?}
-\jin{Refer reviewer to derived rules in Section 3. Should we add words to make it more explicit?}
-so that
-their recursive application generates proof obligations that are
+so that the recursive application of the rules of propositional Hoare logic together with (\ref{eq:h-assgn}) and (\ref{eq:h-evl}) generates proof obligations that are
 entirely about data-level relationships---the discrete and continuous
 evolution of hybrid program stores.
 
@@ -707,16 +633,13 @@ in $\dH$:
   resets time to $0$, measures the temperature, and turns the heater
   on or off dependent on the value obtained.  With $0<T_l$, $T_h<T_u$,
   $0 < a$,
-  $U={\isacharbraceleft}{\isadigit{0}}{\isachardot}{\isachardot}{\isasymtau}{\isacharbraceright}=[0,\tau]$
-  we define $f$, for $c\in\{0,T_u\}$, as
-\rin{$(1)$ $\{0,T_u\}$ is a closed set, not open as required right above the example, which leads me to conclude that 'f a c' itself must be of the type $S\to S $(indeed, abbreviation dyn supports this reading). However, not knowing how to interpret [ ] with $\mapsto_s$, I fail to understand how to match the symbols in the example to the h-evl definition. Also, what is the intention behind $T_u$?}
-\jin{As discussed, more writing space allows better explanations of the various notations.}
+  $U={\isacharbraceleft}{\isadigit{0}}{\isachardot}{\isachardot}{\isasymtau}{\isacharbraceright}=[0,\tau]$ we define $f$, for $c\in\{0,T_u\}$, as
 \begin{isabellebody}
 \isanewline
 \isacommand{abbreviation}\
 {\isachardoublequoteopen}f\ a\ c\ {\isasymequiv}\ {\isacharbrackleft}T\ {\isasymmapsto}\isactrlsub s\ {\isacharminus}\ {\isacharparenleft}a\ {\isacharasterisk}\ {\isacharparenleft}T\ {\isacharminus}\ c{\isacharparenright}{\isacharparenright}{\isacharcomma}\ $T_0$\ {\isasymmapsto}\isactrlsub s\ {\isadigit{0}}{\isacharcomma}\ {\isasymtheta}\ {\isasymmapsto}\isactrlsub s\ {\isadigit{0}}{\isacharcomma}\ t\ {\isasymmapsto}\isactrlsub s\ {\isadigit{1}}{\isacharbrackright}{\isachardoublequoteclose}\isanewline
 \end{isabellebody} 
-\noindent Working alternatively with $\textit{vec-lens}^n_k$ or
+\noindent The notation $x\mapsto_s f\, x$ indicates that vector field $f\, a\, c$ maps variable $x$ to $f\, x$ for $x \in \{T,T_0,\vartheta,t\}$. Working alternatively with $\textit{vec-lens}^n_k$ or
 $\textit{eucl-lens}^n_k $, we write $;$ instead of $\cdot$ for
 sequential composition and use a guard $G$ to restrict evolutions
 between $T_l$ and $T_h$ by setting
@@ -749,12 +672,6 @@ dynamics ($dyn$).
 \isacommand{abbreviation}\ {\isachardoublequoteopen}therm\ $T_l$\ $T_h$\ a\ $T_u$\ {\isasymtau}\ {\isasymequiv}\isanewline 
 \ \ LOOP\ {\isacharparenleft}ctrl\ $T_l$\ $T_h${\isacharsemicolon}\ dyn\ $T_l$\ $T_h$\ a\ $T_u$\ {\isasymtau}{\isacharparenright}\ INV\ {\isacharparenleft}I\ $T_l$\ $T_h${\isacharparenright}{\isachardoublequoteclose}\isanewline
 \end{isabellebody}
-\rin{$(4)$ please define explicitly the hybrid program you're working with.}
-\jin{Defined immediately above. Should we add words to make it more explicit? }
-\rin{$(1)$ Here, $on \{0..\tau\} UNIV @ 0$ shows up, it seems that some of the free variables I was concerned about earlier are actually determined by the syntax of programs, yet left out in the syntax descriptions so far?}
-\jin{More space to explain constants is needed.}
-\rin{$(1)$ What does the bold U mean? Does it bind T?}
-\jin{More space to explain constants is needed, but bold U is explained below.}
 
 \noindent The correctness specification and verification of the
 thermostat with $\dH$  is then
@@ -775,8 +692,6 @@ thermostat with $\dH$  is then
 \ rel{\isacharunderscore}auto{\isacharprime}\isanewline
 \end{isabellebody}
 
-\rin{$(1)$ You use the equality symbol both as program syntax and as mathematical equality, and $\{\}$ both for Hoare-logic and for set-notations. I initially parsed such statements as $(\{P\}x') = (f \& G \{Q\})$, which makes no sense. It would help me if whitespace was adjusted in such a way that it mimics the precedence a bit: less whitespace around the =, and more around the $\{\}$.}
-
 \noindent The first line uses tactic \isa{hyb-hoare} to blast away the
 structure of \isa{therm} using $\dH$. To apply \isa{hyb-hoare}, the
 program must be an iteration of the composition of two
@@ -787,13 +702,6 @@ whose proof captures the procedure described above, supplies the flow
 for $f\, a\, c$:
 $\flow\, a\, c\, \tau = (-e^{-a\cdot\tau}(c-T)+c, \tau+t, T_0,
 \vartheta)^\top$,
-%\begin{isabellebody}
-%\isanewline
-%\isacommand{abbreviation}\isamarkupfalse%
-%\ therm{\isacharunderscore}flow\ {\isacharcolon}{\isacharcolon}\ {\isachardoublequoteopen}real\ {\isasymRightarrow}\ real\ {\isasymRightarrow}\ real\ {\isasymRightarrow}\ {\isacharparenleft}real{\isacharcircum}{\isadigit{4}}{\isacharparenright}\ usubst{\isachardoublequoteclose}\ {\isacharparenleft}{\isachardoublequoteopen}{\isasymphi}{\isachardoublequoteclose}{\isacharparenright}\ \isanewline
-%\ \ \isakeyword{where}\ {\isachardoublequoteopen}{\isasymphi}\ a\ $T_u$\ {\isasymtau}\ {\isasymequiv}\ {\isacharbrackleft}T\ {\isasymmapsto}\ {\isacharminus}\ exp{\isacharparenleft}{\isacharminus}a\ {\isacharasterisk}\ {\isasymtau}{\isacharparenright}\ {\isacharasterisk}\ {\isacharparenleft}L\ {\isacharminus}\ T{\isacharparenright}\ {\isacharplus}\ $T_u${\isacharcomma}\ t\ {\isasymmapsto}\ {\isasymtau}\ {\isacharplus}\ t{\isacharcomma}\ $T_0$\ {\isasymmapsto}\ $T_0${\isacharcomma}\ {\isasymtheta}\ {\isasymmapsto}\ {\isasymtheta}{\isacharbrackright}{\isachardoublequoteclose}\isanewline
-%\isanewline
-%\end{isabellebody}
 for all $\tau\in\reals$. The remaining proof obligations are
 inequalities of transcendental functions. They are discharged
 automatically using auxiliary lemmas. \qed
@@ -901,7 +809,7 @@ following procedure for verifying $\{P\}\, x' = f\, \&\, G\, \{Q\}$:
 \isanewline
 \end{isabellebody}
 \noindent This vector field differs from that of the thermostat
-(Example~\ref{ex:therm-sol}). A hybrid program for the controller is
+(Example~\ref{ex:therm-sol}). A hybrid program \isa{tank-dinv} for the controller is
 given once again by guard $G\ h_x\ k$ with
 $h_x\in\{h_l,h_h\}$ that restricts evolutions beyond $h_x$,
 loop invariant $I$, control and dynamic part before the program
@@ -930,14 +838,8 @@ itself:
 \ \ LOOP\ {\isacharparenleft}ctrl\ $h_l$\ $h_h${\isacharsemicolon}\ dyn\ c\isactrlsub i\ c\isactrlsub o\ $h_l$\ $h_h$\ {\isasymtau}{\isacharparenright}\ INV\ {\isacharparenleft}I\ $h_l$\ $h_h${\isacharparenright}{\isachardoublequoteclose}\isanewline
 \end{isabellebody}
 
-\rin{$(1)$ In abbreviation dyn, DINV is used. This has not been defined operationally. I see no reason why it would differ from INV (or why it would need a separate symbol). }
-\jin{Agreed, should we change it both in paper and Isabelle theories?}
-
-\noindent The correctness specification and verification of the water
-tank with $\dH$ is the following. Notice that guards are irrelevant in the proof of differential invariance (Lemma \isa{tank-diff-inv}).
-
-\rin{$(1)$ what is Guard? (Is it a free variable, syntax or a constant?)}
-\jin{added a sentence above}
+\noindent In the Isabelle code above, we distinguish DINV and INV to make specifications intelligible.The correctness specification and verification of the water
+tank with $\dH$ is the following.
 
 \begin{isabellebody}
 \isanewline
@@ -964,7 +866,7 @@ tank with $\dH$ is the following. Notice that guards are irrelevant in the proof
 \noindent As in Example~\ref{ex:therm-sol}, tactic \isa{hyb-hoare}
 blasts away the control structure of this program. The second proof
 line uses Lemma \isa{tank-diff-inv} to check that \isa{dI} is an
-invariant, using the procedure outlined (see our repository for
+invariant for any guard (that is, \isa{Guard} is a universally quantified variable in Lemma \isa{tank-diff-inv}), using the procedure outlined (see our repository for
 technical details). Auxiliary lemmas then discharge the remaining
 arithmetic proof obligations.  \qed
 \end{example}
@@ -1169,9 +1071,6 @@ those for the first two assignment and the evolution commands. \qed
 \isanewline
 \end{isabellebody}
 
-\rin{$(1)$ you use ?R instead of .... If this is for clarity, perhaps use three different variables, ?R1, ?R2, ?R3.}
-\jin{Changed it above}
-
 \noindent The proof incrementally refines the specification of
 \isa{tank{\isacharunderscore}dinv} using the laws of $\dR$. As in
 Example~\ref{ex:therm-rsol}, after refining the first two assignments,
@@ -1179,10 +1078,8 @@ tactic \isa{refinement} completes the construction of
 \isa{ctrl}. Then, the invariant is supplied via lemma
 \isa{tank{\isacharunderscore}diff{\isacharunderscore}inv} from
 Example~\ref{ex:tank-inv} to construct \isa{dyn}. The final program is then
-refined by transitivity of $\leq$. A more detailed derivation
-is also possible. 
-\rin{$(1)$ To the last sentence, add 'Correctness of' (the final program itself is not obtained, it was always tank-dinv).}
-\jin{Changed obtained by refined}
+constructed by transitivity of $\leq$. A more detailed derivation
+is also possible.
 \qed
 \end{example}
 
@@ -1260,7 +1157,7 @@ program~\cite{Platzer18}
 {\isacharparenleft}EVOL\
 {\isacharparenleft}{\isasymphi}\ g{\isacharparenright}\
 {\isacharparenleft}x\ {\isasymge}\ {\isadigit{0}}{\isacharparenright}\
-T{\isacharsemicolon} {\isacharparenleft}IF\ {\isacharparenleft}v\ {\isacharequal}\ {\isadigit{0}}{\isacharparenright}\ THEN\ {\isacharparenleft}v\ {\isacharcolon}{\isacharcolon}{\isacharequal}\ {\isacharminus}v{\isacharparenright}\ ELSE\ skip{\isacharparenright}{\isacharparenright}\ \isanewline
+T{\isacharsemicolon} {\isacharparenleft}IF\ {\isacharparenleft}x\ {\isacharequal}\ {\isadigit{0}}{\isacharparenright}\ THEN\ {\isacharparenleft}v\ {\isacharcolon}{\isacharcolon}{\isacharequal}\ {\isacharminus}v{\isacharparenright}\ ELSE\ skip{\isacharparenright}{\isacharparenright}\ \isanewline
 \ \   INV\ {\isacharparenleft}{\isadigit{0}}\ {\isasymle}\ x\ {\isasymand}\ {\isadigit{2}}\ {\isasymcdot}\ g\ {\isasymcdot}\ x\ {\isacharequal}\ {\isadigit{2}}\ {\isasymcdot}\ g\ {\isasymcdot}\ h\ {\isacharplus}\ v\ {\isasymcdot}\ v{\isacharparenright}{\isachardoublequoteclose}\isanewline
 \end{isabellebody}
 \noindent Its loop invariant conjoins the guard $G$ with a
@@ -1306,8 +1203,7 @@ assignment \isa{v\ {\isacharcolon}{\isacharcolon}{\isacharequal}\
   {\isacharminus}v}. This is supplied via lemma
 \isa{R{\isacharunderscore}bb{\isacharunderscore}assign} and the
 remaining obligations are discharged with the same arithmetical
-facts. 
-\rin{$(1)$ abbreviation bb-evol, the condition is 'v = 0', although the text suggests that this should be 'x = 0'. This error in your program will allow the proofs to go through, so it is a good example on how you may still have errors in your programs even though the programs satisfy their specifications. In particular, your use of guards will typically cause many of the desired correctness properties to go through for faulty programs. This, in my view, is a fundamental weakness in using evolution commands to model hybrid systems. As a counter-argument, it might be merely related to not having termination proofs for these systems. Feel free to speculate on this in your discussion.}
+facts.
 
 \qed
 \end{example}
@@ -1325,8 +1221,7 @@ specifically the first standalone Hoare logic $\dH$ for hybrid
 programs, the first Morgan-style refinement calculus $\dR$ for such
 programs, more generic state spaces modelled by lenses, improved
 Isabelle syntax for correctness specifications and hybrid programs,
-and increased proof automation via tactics. 
-\rin{$(4)$ You claim "increased proof automation", but I see no evidence of that. Could you please elaborate? In particular, how do you compare with the proof automation provided by a tool like e.g. KeYmaera X?}
+and increased proof automation via the tactics \isa{hyb-hoare} and \isa{refinement}. 
 These components support
 three workflows based on certifying solutions to Lipschitz-continuous
 vector fields, reasoning with invariant sets for continuous vector
@@ -1357,14 +1252,10 @@ differential refinement logic based on $\dL$ has been developed as
 part of Loos' PhD work~\cite{LoosP16}.  It uses a proof system with
 inference rules for reasoning about inequalities between $\KAT$
 expressions, which are interpreted in a rather non-standard way as
-refinements between hybrid programs. It differs substantially from the
+refinements between hybrid programs. According to the authors~\cite{LoosP16}, it differs substantially from the
 calculi developed by Back and von Wright~\cite{BackW98},
-Morgan~\cite{Morgan94} and others, and thus from the predicate
-transformer algebras in~\cite{MuniveS19} and from $\dR$.  The relative
-merits of these approaches remain to be explored.
-\rin{$(4)$ Please compare the dR part of your work thoroughly with reference [20], rather than punt with "The relative merits of these approaches remain to be explored."}
-\rin{$(4)$ Why are you developing a Hoare Logic when a Dynamic Logic already exists? The Hoare Logic is less powerful, but also has less complexity (but you never make this argument explicitly in the paper).}
-\jin{Perhaps some words on the introduction extending the comments below would be useful.}
+Morgan~\cite{Morgan94} and others in that local instead of global refinement relations can be used. On the other hand however, their refinement logic has the same expressivity as $\dL$~\cite{LoosP16}, which is essentially a predicate transformer calculus for hybrid programs~\cite{MuniveS19} and therefore, a Back a von Wright style refinement calculus. Ultimately, this suggests that Loos' refinement logic is more expressive than our refinement calculus. The relative merits of these approaches remain to be explored. The proof theory of $\dL$ has already been formalised in various proof assistants~\cite{BohrerRVVP17} yet with a focus on soundness proofs for its inference rules and a mechanisation of its idiosyncratic substitution calculus in a deep embedding, but not on verification components.
+
 The expressivity and complexity gap between Hoare logic and predicate
 transformer semantics is particularly apparent within algebra. The
 weakest liberal precondition operator cannot be expressed in
@@ -1382,10 +1273,8 @@ forever---or even for multirelational
 semantics~\cite{FurusawaS16,FurusawaS15} as needed for differential
 game logic~\cite{Platzer18}. This, however, is left for future work.
 
-\rin{$(4)$ You don't seem to be aware that dL has previously been formalized in both Coq and Isabelle, see the CPP'17 paper by Bohrer, B., Rahli, V., Vukotic, I., Völp, M., and Platzer, A. (2017, January).  Formally verified differential dynamic logic. In particular, at least the Coq formalization of the CPP'17 paper uses a *deep* embedding while you use a *shallow* embedding. It would be really useful to discuss the respective merits of a deep and of a shallow embedding.}
-
 \paragraph{Acknowledgements.}
-Second author is sponsored by CONACYT's scholarship no. 440404.
+The authors wish to thank the reviewers for their very thorough and insightful comments, and to Andr\'e Platzer and Sergey Goncharov for discussions of a preliminary version. The second author is sponsored by CONACYT's scholarship no. 440404.
 
 
 
