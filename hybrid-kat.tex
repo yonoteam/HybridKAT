@@ -398,11 +398,12 @@ and $v, v' \in A$,
 \lput~s~(\lget~s) = s.
 \end{equation*}
 
-Lenses $x$ and $y$ can be checked for independence using the predicate
-$x \lindep y$, which characterise when $x$ and $y$ refer to two different regionts of $S$. As each program variable is a lens
-$x : \reals \lto S$, state spaces $S \subseteq \reals^n$ require $n$
-independent lenses $x_1 \cdots x_n$. Yet more general state spaces
-such as vector spaces are supported as well.
+The predicate $x \lindep y$ checks independence of lenses $x$ and $y$,
+which holds when $x$ and $y$ refer to two different regionts of
+$S$. As each program variable is a lens $x : \reals \lto S$, state
+spaces $S \subseteq \reals^n$ require $n$ independent lenses
+$x_1 \cdots x_n$. Yet more general state spaces such as vector spaces
+are supported as well.
 
 Systems of ODEs are modelled using vector fields: functions of type
 $S\to S$ on some open set $S$. Geometrically, vector field $f$ assigns
@@ -1202,9 +1203,7 @@ assignment \isa{v\ {\isacharcolon}{\isacharcolon}{\isacharequal}\
   {\isacharminus}v}. This is supplied via lemma
 \isa{R{\isacharunderscore}bb{\isacharunderscore}assign} and the
 remaining obligations are discharged with the same arithmetical
-facts.
-
-\qed
+facts. \qed
 \end{example}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1224,7 +1223,7 @@ fields, reasoning with invariant sets for continuous vector fields,
 and working directly with flows without certification.
 
 Compared to the standard $\dL$ toolchain, $\dH$ and $\dR$ emphasise a
-natural mathematical style of reasoning semantically about dynamical
+natural mathematical style of semantic reasoning about dynamical
 systems, with minimal conceptual overhead relative to standard Hoare
 logics and refinement calculi. $\dH$, in particular, is only used for
 automated verification condition generation. The modular approach with
