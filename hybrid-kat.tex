@@ -399,10 +399,7 @@ and $v, v' \in A$,
 \end{equation*}
 
 Lenses $x$ and $y$ can be checked for independence using the predicate
-$x \lindep y$, which we use to distinguish variables.  \rin{$(1)$
-  Here, the notion of independence needs to be explained (or at least
-  make explicit that you are not referring to linear independence)}
-\jin{For Simon to address.} As each program variable is a lens
+$x \lindep y$, which characterise when $x$ and $y$ refer to two different regionts of $S$. As each program variable is a lens
 $x : \reals \lto S$, state spaces $S \subseteq \reals^n$ require $n$
 independent lenses $x_1 \cdots x_n$. Yet more general state spaces
 such as vector spaces are supported as well.
@@ -475,16 +472,9 @@ $$[x_1 \mapsto e_1, x_2 \mapsto e_2, \cdots, x_n \mapsto e_n] =
 e_n),$$
 where $\textit{id}$ is the identity function. State updates commute
 when assigning to independent lenses; they cancel one another out,
-when made to the same lens. We also define a substitution operator for
-state updates, $\sigma \dagger e = e \circ \sigma$, that composes
-expression $e$ with $\sigma$. We can then define a semantic analog of
-the substitution operator $e[f/x] = [x \mapsto f] \subapp e$ that
-satisfies the standard laws~\cite{FosterZW16}.  \rin{$(1)$ I don't
-  believe the dagger symbol is used elsewhere in the paper. In
-  addition to a reference to~\cite{FosterZW16} where one might find
-  'the expected laws', perhaps a reference to an Isabelle theorem name
-  might help the reader to find out which laws you are referring to
-  exactly (without needing to repeat them in the paper).} Finally, we
+when made to the same lens. We can then define a semantic analog of
+the substitution operator $e[f/x] = e\circ[x \mapsto f]$ that
+satisfies the standard laws~\cite{FosterZW16}. Finally, we
 define the generalised simultaneous assignment operator
 
 \begin{equation}
@@ -662,9 +652,8 @@ in $\dH$:
 \isacommand{abbreviation}\
 {\isachardoublequoteopen}f\ a\ c\ {\isasymequiv}\ {\isacharbrackleft}T\ {\isasymmapsto}\isactrlsub s\ {\isacharminus}\ {\isacharparenleft}a\ {\isacharasterisk}\ {\isacharparenleft}T\ {\isacharminus}\ c{\isacharparenright}{\isacharparenright}{\isacharcomma}\ $T_0$\ {\isasymmapsto}\isactrlsub s\ {\isadigit{0}}{\isacharcomma}\ {\isasymtheta}\ {\isasymmapsto}\isactrlsub s\ {\isadigit{0}}{\isacharcomma}\ t\ {\isasymmapsto}\isactrlsub s\ {\isadigit{1}}{\isacharbrackright}{\isachardoublequoteclose}\isanewline
 \end{isabellebody} 
-\noindent The notation $x\mapsto_s f\, x$ indicates that vector field $f\, a\, c$ maps variable $x$ to $f\, x$ for $x \in \{T,T_0,\vartheta,t\}$. Working alternatively with $\textit{vec-lens}^n_k$ or
-$\textit{eucl-lens}^n_k $, we write $;$ instead of $\cdot$ for
-sequential composition and use a guard $G$ to restrict evolutions
+\noindent The notation $x\mapsto_s f\, x$ indicates that vector field $f\, a\, c$ maps variable $x$ to $f\, x$ for $x \in \{T,T_0,\vartheta,t\}$. Working with $\textit{vec-lens}^n_k$ or
+$\textit{eucl-lens}^n_k $, we write $;$ instead of $\cdot$ and use guard $G$ to restrict evolutions
 between $T_l$ and $T_h$ by setting
 \begin{equation*}
 G\, T_l\, T_h\, a\, c = \left(t\leq -\frac{1}{a}\ln\left(\frac{c-\Delta_c}{c-T_0}\right)\right),
@@ -769,8 +758,7 @@ Hence we can use a variant of (\ref{eq:h-inv}) for verification condition genera
   P\le I \land \{I\}\, x' = f\, \&\, G\, \{I\}\land (I\cdot G)\le Q\ \rightarrow\
   &\{P\}\, x' = f\, \&\, G\, \{Q\}.\label{eq:h-invg}\tag{h-invg}
 \end{align}
-It remains to check invariance in the antecedent of this rule. The
-following lemma leads to a procedure.
+The following lemma leads to a procedure.
 
 \begin{lemma}[\cite{MuniveS19}]\label{P:invrules}
   Let $f:S\to S$ be a continuous vector field, $\mu,\nu:S\to\reals$
@@ -780,21 +768,10 @@ following lemma leads to a procedure.
   $X\in \Sols f\, T\, s$, then $\{\mu=\nu\}\, x' = f\, \&\, G\, \{\mu=\nu\}$, 
 \item if $(\mu\circ X)'\, t\leq(\nu\circ X)'\, t$ when $t> 0$, and $(\mu\circ X)'\, t\geq(\nu\circ X)'\, t$ when $t< 0$, for all $X\in \Sols f\, T\, s$,
   then $\{\mu <\nu\}\, x' = f\, \&\, G\, \{\mu <\nu\}$
-\item $\mu\neq \nu$ if and only if $\mu < \nu$ or $\nu < \mu$,
-\item $\mu \not\le \nu$ if and only if $\nu < \mu$.
+\item if $0$ is the least element in $T$, then $\{\mu\neq \nu\}\, x' = f\, \&\, G\, \{\mu\neq \nu\}$ if and only if $\{\mu <\nu\}\, x' = f\, \&\, G\, \{\mu <\nu\}$ and $\{\mu >\nu\}\, x' = f\, \&\, G\, \{\mu >\nu\}$,
+\item $\{\mu\not\le \nu\}\, x' = f\, \&\, G\, \{\mu\not\le \nu\}$ if and only if $\{\mu >\nu\}\, x' = f\, \&\, G\, \{\mu >\nu\}$.
 \end{enumerate}
 \end{lemma}
-
-\rin{$(1)$ In Lemma 6.2, I feel like I would need to know more about
-  how $<$ is defined on differentiable functions in order to verify
-  part 3 and 4. The inclusion of these properties also makes me wonder
-  about what is intended in part 2. In typical interpretations,
-  $\mu = \lambda x. x$ and $\nu = \lambda x. - x$ should be
-  counterexamples to 3 and 4 for S = any open interval on R that
-  includes 0.}  \jin{Reviewer's counterexample is sensible. Should
-  replace 3 and 4 for definition of invariance
-$$\{\mu\neq \nu\}\, x' = f\, \&\, G\, \{\mu\neq \nu\}\Longleftrightarrow \{\mu <\nu\}\, x' = f\, \&\, G\, \{\mu <\nu\}\text{ or }\{\mu >\nu\}\, x' = f\, \&\, G\, \{\mu >\nu\}$$
-$$\{\mu\not\le \nu\}\, x' = f\, \&\, G\, \{\mu\not\le \nu\}\Longleftrightarrow \{\mu <\nu\}\, x' = f\, \&\, G\, \{\mu <\nu\}$$}
 
 Condition $(1)$ follows from the well known fact that two continuously
 differentiable functions are equal if they intersect at some point and
@@ -837,12 +814,10 @@ following procedure for verifying $\{P\}\, x' = f\, \&\, G\, \{Q\}$:
 {\isadigit{1}}{\isacharparenright}{\isacharparenright}{\isachardoublequoteclose}
 \isanewline
 \end{isabellebody}
-\noindent This vector field differs from that of the thermostat
-(Example~\ref{ex:therm-sol}). A hybrid program \isa{tank-dinv} for the controller is
-given once again by guard $G\ h_x\ k$ with
+\noindent  Program \isa{tank-dinv} for the controller is
+given by guard $G\ h_x\ k$ with
 $h_x\in\{h_l,h_h\}$ that restricts evolutions beyond $h_x$,
-loop invariant $I$, control and dynamic part before the program
-itself:
+loop invariant $I$, control and dynamics:
 \begin{isabellebody}
 \isanewline
 \isacommand{abbreviation}\ 
@@ -852,23 +827,22 @@ itself:
 {\isachardoublequoteopen}I\ $h_l$\ $h_h$\ {\isasymequiv}\ {\isactrlU}{\isacharparenleft}$h_l$\ {\isasymle}\ h\ {\isasymand}\ h\ {\isasymle}\ $h_h$\ {\isasymand}\ {\isacharparenleft}{\isasympi}\ {\isacharequal}\ {\isadigit{0}}\ {\isasymor}\ {\isasympi}\ {\isacharequal}\ {\isadigit{1}}{\isacharparenright}{\isacharparenright}{\isachardoublequoteclose}\isanewline
 \isanewline
 \isacommand{abbreviation}\
+{\isachardoublequoteopen}dyn\ c\isactrlsub i\ c\isactrlsub o\ $h_l$\ $h_h$\ {\isasymtau}\ {\isasymequiv}\ IF\ {\isacharparenleft}{\isasympi}\ {\isacharequal}\ {\isadigit{0}}{\isacharparenright}\ THEN\ \isanewline
+\ \ \ \ x{\isasymacute}{\isacharequal}\ f\ {\isacharparenleft}c\isactrlsub i{\isacharminus}c\isactrlsub o{\isacharparenright}\ {\isacharampersand}\ G\ $h_h$\ {\isacharparenleft}c\isactrlsub i{\isacharminus}c\isactrlsub o{\isacharparenright}\ on\ {\isacharbraceleft}{\isadigit{0}}{\isachardot}{\isachardot}{\isasymtau}{\isacharbraceright}\ UNIV\ {\isacharat}\ {\isadigit{0}}\ DINV\ {\isacharparenleft}dI\ $h_l$\ $h_h$\ {\isacharparenleft}c\isactrlsub i{\isacharminus}c\isactrlsub o{\isacharparenright}{\isacharparenright}\isanewline
+\ \ ELSE\ x{\isasymacute}{\isacharequal}\ f\ {\isacharparenleft}{\isacharminus}c\isactrlsub o{\isacharparenright}\ {\isacharampersand}\ G\ $h_l$\ {\isacharparenleft}{\isacharminus}c\isactrlsub o{\isacharparenright}\ on\ {\isacharbraceleft}{\isadigit{0}}{\isachardot}{\isachardot}{\isasymtau}{\isacharbraceright}\ UNIV\ {\isacharat}\ {\isadigit{0}}\ DINV\ {\isacharparenleft}dI\ $h_l$\ $h_h$\ {\isacharparenleft}{\isacharminus}c\isactrlsub o{\isacharparenright}{\isacharparenright}{\isachardoublequoteclose}\isanewline
+\isanewline
+\isacommand{abbreviation}\
 {\isachardoublequoteopen}ctrl\ $h_l$\ $h_h$\ {\isasymequiv}\isanewline
 \ \ {\isacharparenleft}t\ {\isacharcolon}{\isacharcolon}{\isacharequal}{\isadigit{0}}{\isacharparenright}{\isacharsemicolon}{\isacharparenleft}$h_0$\ {\isacharcolon}{\isacharcolon}{\isacharequal}\ h{\isacharparenright}{\isacharsemicolon}\isanewline
 \ \ {\isacharparenleft}IF\ {\isacharparenleft}{\isasympi}\ {\isacharequal}\ {\isadigit{0}}\ {\isasymand}\ $h_0$\ {\isasymle}\ $h_l$\ {\isacharplus}\ {\isadigit{1}}{\isacharparenright}\ THEN\ {\isacharparenleft}{\isasympi}\ {\isacharcolon}{\isacharcolon}{\isacharequal}\ {\isadigit{1}}{\isacharparenright}\ ELSE\isanewline
 \ \ {\isacharparenleft}IF\ {\isacharparenleft}{\isasympi}\ {\isacharequal}\ {\isadigit{1}}\ {\isasymand}\ $h_0$\ {\isasymge}\ $h_h$\ {\isacharminus}\ {\isadigit{1}}{\isacharparenright}\ THEN\ {\isacharparenleft}{\isasympi}\ {\isacharcolon}{\isacharcolon}{\isacharequal}\ {\isadigit{0}}{\isacharparenright}\ ELSE\ skip{\isacharparenright}{\isacharparenright}{\isachardoublequoteclose}\isanewline
-\isanewline
-\isacommand{abbreviation}\
-{\isachardoublequoteopen}dyn\ c\isactrlsub i\ c\isactrlsub o\ $h_l$\ $h_h$\ {\isasymtau}\ {\isasymequiv}\ IF\ {\isacharparenleft}{\isasympi}\ {\isacharequal}\ {\isadigit{0}}{\isacharparenright}\ THEN\ \isanewline
-\ \ \ \ x{\isasymacute}{\isacharequal}\ f\ {\isacharparenleft}c\isactrlsub i{\isacharminus}c\isactrlsub o{\isacharparenright}\ {\isacharampersand}\ G\ $h_h$\ {\isacharparenleft}c\isactrlsub i{\isacharminus}c\isactrlsub o{\isacharparenright}\ on\ {\isacharbraceleft}{\isadigit{0}}{\isachardot}{\isachardot}{\isasymtau}{\isacharbraceright}\ UNIV\ {\isacharat}\ {\isadigit{0}}\ DINV\ {\isacharparenleft}dI\ $h_l$\ $h_h$\ {\isacharparenleft}c\isactrlsub i{\isacharminus}c\isactrlsub o{\isacharparenright}{\isacharparenright}\isanewline
-\ \ ELSE\ x{\isasymacute}{\isacharequal}\ f\ {\isacharparenleft}{\isacharminus}c\isactrlsub o{\isacharparenright}\ {\isacharampersand}\ G\ $h_l$\ {\isacharparenleft}{\isacharminus}c\isactrlsub o{\isacharparenright}\ on\ {\isacharbraceleft}{\isadigit{0}}{\isachardot}{\isachardot}{\isasymtau}{\isacharbraceright}\ UNIV\ {\isacharat}\ {\isadigit{0}}\ DINV\ {\isacharparenleft}dI\ $h_l$\ $h_h$\ {\isacharparenleft}{\isacharminus}c\isactrlsub o{\isacharparenright}{\isacharparenright}{\isachardoublequoteclose}\isanewline
 \isanewline
 \isacommand{abbreviation}\isamarkupfalse%
 \ {\isachardoublequoteopen}tank{\isacharunderscore}dinv\ c\isactrlsub i\ c\isactrlsub o\ $h_l$\ $h_h$\ {\isasymtau}\ {\isasymequiv}\isanewline 
 \ \ LOOP\ {\isacharparenleft}ctrl\ $h_l$\ $h_h${\isacharsemicolon}\ dyn\ c\isactrlsub i\ c\isactrlsub o\ $h_l$\ $h_h$\ {\isasymtau}{\isacharparenright}\ INV\ {\isacharparenleft}I\ $h_l$\ $h_h${\isacharparenright}{\isachardoublequoteclose}\isanewline
 \end{isabellebody}
 
-\noindent In the Isabelle code above, we distinguish DINV and INV to
-make specifications more intelligible. The correctness specification
+\noindent We distinguish DINV and INV to structure specifications. The correctness specification
 and verification of the water tank with $\dH$ then proceeds as follows:
 
 \begin{isabellebody}
@@ -893,12 +867,11 @@ and verification of the water tank with $\dH$ then proceeds as follows:
 \ rel{\isacharunderscore}auto{\isacharprime}\isanewline
 \end{isabellebody}
 
-\noindent As in Example~\ref{ex:therm-sol}, tactic \isa{hyb-hoare}
-blasts away the control structure of this program. The second proof
+\noindent Tactic \isa{hyb-hoare} blasts away the control structure. The second proof
 line uses Lemma \isa{tank-diff-inv} to check that \isa{dI} is an
-invariant for any guard (that is, \isa{Guard} is a universally
+invariant for any guard (\isa{Guard} is a universally
 quantified variable in Lemma \isa{tank-diff-inv}), using the procedure
-outlined. Auxiliary lemmas then discharge the remaining arithmetic
+outlined. Auxiliary lemmas discharge the remaining
 proof obligations.  \qed
 \end{example}
 
@@ -920,9 +893,7 @@ which makes $[p,q]$ the greatest element of $K$ that satisfies the Hoare
 triple with precondition $p$ and postcondition $q$.  Indeed, in
 $\sta\, S$ and for $S\subseteq \reals^n$,
 $ [P,Q] = \bigcup \left\{f:S\to \Pow\, S \mid \{P\}\, f\,
-  \{Q\}\right\}$. 
-
-Variants of Morgan's laws~\cite{Morgan94} of a \emph{propositional
+  \{Q\}\right\}$. Variants of Morgan's laws~\cite{Morgan94} of a \emph{propositional
   refinement calculus}---once more ignoring assignments---are then derivable in
 $\rKAT$~\cite{ArmstrongGS16}.
 \begin{align}
@@ -972,14 +943,11 @@ t)\right]\cdot (x' = f\, \&\, G) \, \le \, [Q,Q].\label{eq:r-evlr}\tag{r-evlr}
 The laws in this section form the differential refinement calculus
 $\dR$.  They suffice for constructing hybrid programs from initial
 specification statements by step-wise refinement incrementally and
-compositionally. To our knowledge, $\dR$ is the first refinement
-calculus for hybrid programs of this kind.  A more powerful variant
+compositionally. A more powerful variant
 based on predicate transformers \`a la Back and von
-Wright~\cite{BackW98} has been developed in~\cite{MuniveS19}, but
+Wright~\cite{BackW98} has been developed in~\cite{MuniveS19};
 applications remain to be explored.  A previous approach to refinement
-for hybrid programs in $\dL$~\cite{LoosP16} is quite different to the
-two standard calculi mentioned and much more intricate than the
-approach presented.
+in $\dL$~\cite{LoosP16} is quite different to the two standard calculi mentioned.
 
 \begin{example}[Thermostat refinement via solutions]\label{ex:therm-rsol}
   We now construct program \isa{therm} from Example~\ref{ex:therm-sol}
@@ -1142,7 +1110,7 @@ for such evolution commands.
 (\mathbf{evol}\, \flow\, G) \cdot \left[Q,Q\right] \le [\lambda s. \forall t\in T.\ (\forall
 \tau\in {\downarrow}t.\ G\, (\flow_s\, \tau))\to Q\, (\flow_s\, t),Q],\label{eq:r-evlfl}\tag{r-evlfl}\\
 \left[Q,\lambda s. \forall t\in T.\ (\forall
-\tau\in {\downarrow}t.\ G\, (\flow_s\, \tau))\to Q\, (\flow_s\, t)\right]\cdot (\mathbf{evol}\, \flow\, G) \le [Q,Q].\label{eq:r-evlfr}\tag{r-evlfr}\\
+\tau\in {\downarrow}t.\ G\, (\flow_s\, \tau))\to Q\, (\flow_s\, t)\right]\cdot (\mathbf{evol}\, \flow\, G) \le [Q,Q].\label{eq:r-evlfr}\tag{r-evlfr}
 \end{gather*}
 \end{lemma}
 
