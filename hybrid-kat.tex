@@ -600,13 +600,14 @@ specialise to \emph{guarded orbits}
   \gamma^f_{G,U} = \left\{\flow_s\, t\mid t\in U\land \forall\tau \in
   {\downarrow}t.\ G\, (\flow_s\, \tau)\right\},
 \end{equation*}
-where $U\subseteq T$ is a time domain of interest, typically an
-interval $[0,t]$ for some $t\in T$~\cite{MuniveS19} where, by contrast
-to the previous section ${\downarrow}t=\{t'\in U\mid t'\leq t\}$ is
-relativised to $U$. This gives us the flexibility to consider dynamics
-over closed time intervals and it allows us to focus on time intervals
-and IVPs starting at $t=0$. Accordingly, (\ref{eq:st-evl}) specialises
-to the following state transformer semantics for evolution commands.
+where $T$ is fixed by the Picard-Lindel\"of theorem and $U\subseteq T$
+is a time domain of interest, typically an interval $[0,t]$ for some
+$t\in T$~\cite{MuniveS19} where, by contrast to the previous section
+${\downarrow}t=\{t'\in U\mid t'\leq t\}$ is relativised to $U$. This
+gives us the flexibility to consider dynamics over closed time
+intervals and it allows us to focus on time intervals and IVPs
+starting at $t=0$. Accordingly, (\ref{eq:st-evl}) specialises to the
+following state transformer semantics for evolution commands.
 \begin{equation}
   \left(x' = f\, \&\, G\right)= \gamma^f_{G,U}.\label{eq:st-evl-flow}\tag{st-evl-flow}
 \end{equation}
