@@ -128,7 +128,7 @@
 
 Differential dynamic logic ($\dL$) is a prominent deductive method for
 verifying hybrid systems~\cite{Platzer18}. It extends dynamic logic
-with domain-specific inference rules for reasoning about the discrete
+with specific inference rules for reasoning about the discrete
 control and continuous dynamics that characterise such
 systems. Continuous evolutions are modelled by $\dL$'s evolution
 commands within a hybrid program syntax. These declare a vector field
@@ -140,18 +140,18 @@ components inspired by $\dL$ have already been formalised in the
 Isabelle proof assistant~\cite{MuniveS19}. Yet the shallow embedding
 used in this work has shifted the focus from the original proof-theoretic approach
 to a semantic one, and ultimately to predicate transformer algebras
-supporting a quite different workflow.
+supporting a  different workflow.
 
 Dynamic logics and predicate transformers are powerful tools. They
-support reasoning about program equivalences and transformations
-far beyond what standard program verification requires~\cite{BackW98}. For
+support reasoning about program equivalences and transformations far
+beyond what standard program verification requires~\cite{BackW98}. For
 the latter, much simpler Hoare logics generate precisely the
 verification conditions needed.  Asking about the feasibility of a
-\emph{differential Hoare logic} ($\dH$) is therefore natural and
-interesting.  As Hoare logic is strongly related to Morgan's
-refinement calculus~\cite{Morgan94}, it is equally reasonable to
-ask whether and how a Morgan-style \emph{differential refinement calculus}
-($\dR$) might allow constructing hybrid programs from specifications.
+\emph{differential Hoare logic} ($\dH$) is therefore natural.  As
+Hoare logic is strongly related to Morgan's refinement
+calculus~\cite{Morgan94}, it is equally reasonable to ask whether and
+how a Morgan-style \emph{differential refinement calculus} ($\dR$)
+might allow constructing hybrid programs from specifications.
 
 A prima facie answer to these questions seems positive: after all, the
 laws of Morgan's refinement calculus can be proved using the rules of
@@ -162,10 +162,10 @@ is also not obvious what exactly it would take to extend a standard
 Hoare logic or refinement calculus to hybrid programs.
 
 Our main contribution consists in evidence that $\dH$ and $\dR$ are as
-feasible and applicable for verifying simple hybrid programs as $\dL$,
-and that developing these novel methods requires simply adding a
-single Hoare-style axiom and a single refinement rule for evolution
-commands to the standard formalisms.
+applicable for verifying simple hybrid programs as $\dL$, and that
+developing these novel methods requires simply adding a single
+Hoare-style axiom and a single refinement rule for evolution commands
+to the standard formalisms.
 
 This conceptual simplicity is reflected in the Isabelle verification
 components for $\dH$ and $\dR$. These reuse components for
@@ -203,10 +203,12 @@ method in which solutions, that is flows, are declared ab initio in
 correctness specifications and need not be certified.
 
 Our program construction and verification components have so far been
-evaluated on a small set of simple examples. We present some of them
-to explain the work flows supported by $\dH$ and $\dR$. With Isabelle
-tactics for automated verification condition generation in place, we
-notice little difference relative to our predicate transformer
+evaluated on a small set of simple examples. Further work is needed to
+evidence scalability or compare performance with the standard $\dL$
+tool chain. We present some examples to explain the work flows
+supported by $\dH$ and $\dR$. With Isabelle tactics for automated
+verification condition generation in place, we notice little
+difference relative to our predicate transformer
 components~\cite{MuniveS19}.  The entire Isabelle formalisation is
 available
 online\footnote{\url{https://github.com/yonoteam/HybridKATpaper}}.
@@ -280,15 +282,15 @@ $\sta\, S = ((\Pow\, S)^S,B_S,\cup,\circ_K,\lambda x.\
 A \emph{state transformer $\KAT$} over $S$ is any subalgebra of
 $\sta\, S$. 
 
-We have already formalised $\KAT$ via type classes in
-Isabelle~\cite{afp:kat}.  As type classes allow only one type parameter, we
-use an alternative to the standard two-sorted approach that expands a Kleene algebra $K$ by an
-\emph{antitest} function $n:K\to K$ from which a \emph{test} function
-$t:K\to K$ is defined as $t=n^2$. Then
+$\KAT$ has been formalised via type classes in
+Isabelle~\cite{afp:kat}.  As these allow only one type parameter, we
+use an alternative to the standard two-sorted approach that expands a
+Kleene algebra $K$ by an \emph{antitest} function $n:K\to K$ from
+which a \emph{test} function $t:K\to K$ is defined as $t=n^2$. Then
 $K_t = \{\alpha \mid t\, \alpha = \alpha\}$ forms a boolean algebra in
 which $n$ acts as test complementation. It can be used in place of
-$B$.  The formalised state transformer model of $\KAT$ is a
-contribution to this article.
+$B$.  The state transformer model of $\KAT$ has been formalised for
+this article.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -324,7 +326,7 @@ verification condition generation:
 \end{align}
 
 Rules for commands with invariant assertions $\alpha\ \mathbf{inv}\ i$
-are derivable, too (operationally,
+are derivable in $\KAT$, too (operationally,
 $\alpha\, \mathbf{inv}\, i = \alpha$).  An \emph{invariant} for
 $\alpha\in K$ is a test $i\in B$ satisfying $\{i\}\, \alpha\, \{i\}$.
 Then, with $\mathbf{loop}\, \alpha$ as syntactic sugar for
@@ -342,14 +344,22 @@ $\alpha^\ast$, we obtain
                                                                    \{p\}\, \mathbf{loop}\, \alpha\,
     \mathbf{inv}\, i\, \{q\}. \label{eq:h-loop-inv}\tag{h-loop-inv}
 \end{align}
-We use (\ref{eq:h-inv}) for invariants for continuous
-evolutions of hybrid systems in Section~\ref{sec:hoare-inv}-\ref{sec:from-flows}. The rules (\ref{eq:h-inv-mult}) and (\ref{eq:h-inv-plus}) are part of a procedure, described in Section~\ref{sec:hoare-inv}. Rule (\ref{eq:h-while-inv})
-is standard for  invariants for while loops;
+We use (\ref{eq:h-inv}) for invariants for continuous evolutions of
+hybrid systems in
+Section~\ref{sec:hoare-inv}-\ref{sec:from-flows}. The rules
+(\ref{eq:h-inv-mult}) and (\ref{eq:h-inv-plus}) are part of a
+procedure, described in Section~\ref{sec:hoare-inv}. Rule
+(\ref{eq:h-while-inv}) is standard for invariants for while loops;
 (\ref{eq:h-loop-inv}) is specific to loops of hybrid programs (see
-Section~\ref{sec:sta-hybrid}).
-The rules for propositional Hoare logic in Isabelle have been derived
-for $\KAT$ in~\cite{afp:kat,afp:vericomp}. The rules for invariants
-have been developed specifically for this article. By Proposition~\ref{P:kleisli-ka},all rules derived in this section hold in particular in the state transformer semantics. We have formalised this fact with Isabelle. At this stage, verification condition rules for the basic commands for assignments and evolution commands are still missing. These are added in the concrete state transformer semantics as explained in Section~\ref{sec:hoare-flow}.
+Section~\ref{sec:sta-hybrid}).  The rules for propositional Hoare
+logic in Isabelle have already been derived for
+$\KAT$~\cite{afp:kat,afp:vericomp}, those for invariants have been
+formalised for this work. By Proposition~\ref{P:kleisli-ka}, all of
+them hold in particular in the state transformer semantics. We have
+formalised this fact with Isabelle. At this stage, verification
+condition rules for the basic commands for assignments and evolution
+commands are still missing. These are formalised within the concrete state
+transformer semantics (see Section~\ref{sec:hoare-flow}).
 
 
 
@@ -365,73 +375,71 @@ are defined by the syntax
 \end{equation*}
 
 that adds \emph{evolution commands} $x' = f \, \&\, G$ to the language
-of $\KAT$---function $?(-)$ embeds tests explicitly into programs; in the tradition of $\KAT$ we leave this embedding implicit.
-Evolution commands introduce a time independent vector field $f:S\to S$ for
-an autonomous system of ordinary differential equations
+of $\KAT$---function $?(-)$ embeds tests explicitly into programs; in
+the tradition of $\KAT$ we leave this embedding implicit.  Evolution
+commands introduce a time independent vector field $f:S\to S$ for an
+autonomous system of ordinary differential equations
 (ODEs)~\cite{Teschl12} together with a guard $G$, a predicate
-modelling boundary conditions or similar restrictions on temporal
-evolutions. % Guards are also known as \emph{evolution domain
-  % restrictions}~\cite{DoyenFPP18}.
+modelling boundary conditions or similar restrictions that hold along
+temporal evolutions.  Guards are also known as \emph{evolution domain
+  restrictions}~\cite{DoyenFPP18}.
 
-Formally, we fix a state space $S$ of the hybrid program,
-for example $S\subseteq \reals^n$ and $n\in\mathbb{N}$. We
-model continuous variables algebraically using
-lenses~\cite{FosterZW16} to support different state space
-models generically. A lens, $x : A \lto S$, is a tuple
-$x = (A, S, \lget, \lput)$ with variable type $A$ and state
-space $S$. The functions $\lget_x : S \to A$ and
-$\lput_x : S \to A \to S$ query and update the value of $x$
-in a particular state. They are linked by three intuitive
-algebraic laws~\cite{FosterZW16}:
+Formally, we fix a state space $S$ of the hybrid program such as
+$S\subseteq \reals^n$ for $n\in\mathbb{N}$. We model continuous
+variables algebraically with lenses~\cite{FosterZW16} to support
+different state space models generically. A lens $x : A \lto S$ is a
+tuple $x = (A, S, \lget, \lput)$, where $A$ is a variable type. The
+functions $\lget_x : S \to A$ and $\lput_x : S \to A \to S$ query and
+update the value of $x$ in a particular state. They are linked by
+three intuitive algebraic laws~\cite{FosterZW16}. For all $s \in S$
+and $v, v' \in A$, 
 \begin{equation*}
 \lget~(\lput~s~v) = v, \qquad \lput~(\lput~s~v')~v = \lput~s~v, \qquad
-\lput~s~(\lget~s) = s,
+\lput~s~(\lget~s) = s.
 \end{equation*}
-where $s \in S$ and $v, v' \in A$.
 
-Lenses $x$ and $y$ can also be checked for independence
-using the predicate $x \lindep y$, which we use to
-distinguish variables.
-\rin{$(1)$ Here, the notion of independence needs to be explained (or at least make explicit that you are not referring to linear independence)} 
-\jin{For Simon to address.} Each program variable is a lens
-$x : \reals \lto S$. State spaces of the form
-$S \subseteq \reals^n$ thus have $n$ independent lenses
-$x_1 \cdots x_n$ corresponding to projections from
-$\reals^n$. Yet more general state spaces such as vector spaces are supported as well.
+Lenses $x$ and $y$ can be checked for independence using the predicate
+$x \lindep y$, which we use to distinguish variables.  \rin{$(1)$
+  Here, the notion of independence needs to be explained (or at least
+  make explicit that you are not referring to linear independence)}
+\jin{For Simon to address.} As each program variable is a lens
+$x : \reals \lto S$, state spaces $S \subseteq \reals^n$ require $n$
+independent lenses $x_1 \cdots x_n$. Yet more general state spaces
+such as vector spaces are supported as well.
 
-Systems of equations are modelled using vector fields: functions of
-type $S\to S$ on some open set $S$. Geometrically, vector field $f$
-assigns a vector to any point of the state space $S$. A solution to
-the \emph{initial value problem} (IVP) for the pair $(f,s)$ and
-initial value $(0,s)\in T\times S$, where $T$ is an open interval in
-$\reals$ containing $0$, is then a function $X:T\to S$ that satisfies
+Systems of ODEs are modelled using vector fields: functions of type
+$S\to S$ on some open set $S$. Geometrically, vector field $f$ assigns
+vectors to each point of the state space $S$. A solution to the
+\emph{initial value problem} (IVP) for the pair $(f,s)$ and initial
+value $(0,s)\in T\times S$, where $T$ is an open interval in $\reals$
+containing $0$, is then a function $X:T\to S$ that satisfies
 $X'\, t = f\, (X\, t)$---an autonomous system of ODEs in vector
 form---and $X\, 0 = s$. Solution $X$ is thus a curve in $S$ through
 $s$, parametrised in $T$ and tangential to $f$ at any point in $S$; it
-is called the \emph{trajectory} or the \emph{integral curve} of $f$ at $s$
-whenever it is uniquely defined~\cite{Teschl12}.
-For IVP $(f,s)$ with continuous vector field $f:S\to S$ and initial
-state $s\in S$ we define the set of solutions on
-$T$ as
+is called the \emph{trajectory} or \emph{integral curve} of $f$ at $s$
+whenever it is uniquely defined~\cite{Teschl12}.  For IVP $(f,s)$ with
+continuous vector field $f:S\to S$ and initial state $s\in S$ we
+define the set of solutions on $T$ as
 \begin{equation*}
 \Sols f\, T\, s = \left\{X \mid \forall t\in T.\  X'\, t = f\, (X\, t)\land X\, 0 = s\right\}.
 \end{equation*}
-Each solution $X$ is then continuously differentiable and thus
-$f\circ X$ integrable in $T$.  For $X\in \Sols\, f\, T\, s$ and
-$G:S\to\bools$, we further define the $G$-\emph{guarded orbit} of $X$
-along $T$ in $s$~\cite{MuniveS19} with the help of the state transformer
-$\gamma^X_G:S\to \Pow\, S$ as 
+Each solution $X$ is thus continuously differentiable and thus
+$f\circ X$ integrable in $T$.  For $X\in \Sols\, f\, T\, s$ and guard
+$G:S\to\bools$, we then define the $G$-\emph{guarded orbit} of $X$
+along $T$ in $s$~\cite{MuniveS19} as a state transformer
+$\gamma^X_G:S\to \Pow\, S$ by
 \begin{equation*}
 \gamma^X_{G}\, s= \left\{X\, t\mid t\in T\land \forall \tau\in
 {\downarrow}t.\ G\, (X\, \tau)\right\},
 \end{equation*}
-where ${\downarrow}t = \left\{t'\in T\mid t'\le t\right\}$. Intuitively, $\gamma_G^X\, s$ is the orbit at $s$ defined along the longest interval in $T$ that satisfies $G$. We also define the
+where ${\downarrow}t = \left\{t'\in T\mid t'\le t\right\}$.
+Intuitively, $\gamma_G^X\, s$ is the orbit at $s$ defined along the
+longest interval in $T$ that satisfies guard $G$. We also define the
 $G$-\emph{guarded orbital} of $f$ along $T$ in $s$~\cite{MuniveS19}
 via the state transformer $\gamma^f_G:S\to \Pow\, S$ as
 \begin{equation*}
   \gamma^f_G\ s = \bigcup\left\{\gamma^X_G\, s\mid X\in \Sols\, f\, T\, s\right\}.
 \end{equation*}
-
 In applications, ${\downarrow}t$ is usually an interval
 $[0,t]\subseteq T$. Expanding definitions,
 \begin{equation*}
@@ -447,41 +455,47 @@ $G:S\to \bools$ as
 {\left(x'= f\, \&\, G\right)} = \gamma^f_G.\label{eq:st-evl}\tag{st-evl}
 \end{equation}
 
-In the evolution command $x'= f\, \&\, G$, $x'$ is part of the traditional syntax used for specifying systems of ODEs, while in reality only a vector field $f$ is specified. This explains why $x$ does not appear in the right-hand side of~(\ref{eq:st-evl}). Defining the state transformer semantics of assignments is
+In the evolution command $x'= f\, \&\, G$, $x'$ is part of the
+traditional syntax used for specifying systems of ODEs, while in
+reality only a vector field $f$ is specified. This explains why $x$
+does not appear in the right-hand side of~(\ref{eq:st-evl}). Defining
+the state transformer semantics of assignments is
 standard~\cite{MuniveS19}, though we generalise using lenses. First,
 we use lenses to define state updates:
 $$\sigma(x\mapsto e) = \lambda s.\ \lput_x ~ (\sigma~s) ~ (e~s)$$
 for $x : A \lto S$, $e : S \to A$, and $\sigma : S \to S$.
-Intuitively, this updates the value of variable $x$ in the state
-update $\sigma : S \to S$ to have the value given by $e$. Here, the
-function $e$ models an ``expression'' that is evaluated in
-state $s$. For example, if $x$ and $y$ are
-variables, then the expression $x / (2 + y)$ is modelled by
+Intuitively, this updates the value of variable $x$ by
+$\sigma : S \to S$ to the value given by ``expression'' $e$ in state
+$s$. For variables $x$ and $y$, for example, the expression
+$x / (2 + y)$ is modelled by
 $\lambda s. \ \lget_x~s ~/~ (2 + \lget_y~s)$. We can also update $n$
 variables simultaneously:
-$$[x_1 \mapsto e_1, x_2 \mapsto e_2, \cdots, x_n \mapsto e_n] = \textit{id}(x_1 \mapsto e_1)(x_2 \mapsto e_2)\cdots(x_n \mapsto e_n),$$ 
-where $\textit{id}$ is the identity function. State updates
-commute, when assigning to independent lenses, and cancel
-one another out, when made to the same lens, in a natural
-way. We also define a substitution operator for state
-updates, $\sigma \dagger e = e \circ \sigma$, that simply
-composes expression $e$ with $\sigma$. We can then define a
-semantic analog of the substitution operator,
-$e[f/x] = [x \mapsto f] \subapp e$ that satisfies the
-expected laws~\cite{FosterZW16}. 
-\rin{$(1)$ I don't believe the dagger symbol is used elsewhere in the paper. In addition to a reference to~\cite{FosterZW16} where one might find 'the expected laws', perhaps a reference to an Isabelle theorem name might help the reader to find out which laws you are referring to exactly (without needing to repeat them in the paper).} Finally, we define a
-generalised assignment operator:
+$$[x_1 \mapsto e_1, x_2 \mapsto e_2, \cdots, x_n \mapsto e_n] =
+\textit{id}\, (x_1 \mapsto e_1)(x_2 \mapsto e_2)\cdots(x_n \mapsto
+e_n),$$
+where $\textit{id}$ is the identity function. State updates commute
+when assigning to independent lenses; they cancel one another out,
+when made to the same lens. We also define a substitution operator for
+state updates, $\sigma \dagger e = e \circ \sigma$, that composes
+expression $e$ with $\sigma$. We can then define a semantic analog of
+the substitution operator $e[f/x] = [x \mapsto f] \subapp e$ that
+satisfies the standard laws~\cite{FosterZW16}.  \rin{$(1)$ I don't
+  believe the dagger symbol is used elsewhere in the paper. In
+  addition to a reference to~\cite{FosterZW16} where one might find
+  'the expected laws', perhaps a reference to an Isabelle theorem name
+  might help the reader to find out which laws you are referring to
+  exactly (without needing to repeat them in the paper).} Finally, we
+define the generalised simultaneous assignment operator
 
 \begin{equation}
   \langle \sigma \rangle = \lambda s.\ \{ \sigma(s) \}.\tag{st-assgn}
 \end{equation}
 %
-This applies $\sigma : S \to S$ as an assignment. With our state
+that applies $\sigma : S \to S$ as an assignment. With our state
 update function, singleton assignment is a special case:
-$(x := e) =\langle x \mapsto e \rangle$, and we can also assign
-several variables simultaneously. These foundations allow us to derive
-standard laws for assignments algebraically, as for instance in
-schematic $\KAT$~\cite{AngusK01}:
+$(x := e) =\langle x \mapsto e \rangle$. These concepts allow us to
+derive standard laws for assignments, as for instance in schematic
+$\KAT$~\cite{AngusK01}:
 %
 \begin{align*}
   x := x &~=~ \sskip, \\
@@ -499,7 +513,7 @@ $x$~\cite{FosterZW16}. An assignment of $x$ to itself is
 simply $\sskip$. Two assignments to $x$ result in a single
 assignment, with a semantic substitution
 applied. Assignments to independent variables $x$ and $y$
-commute provided that neither assigned expression depend on
+commute provided that neither assigned expression depends on
 the corresponding variable.  Assignment can be distributed
 through conditionals by a substitution to the
 condition. Such laws can be applied recursively for symbolic
@@ -553,11 +567,14 @@ simpler and more elegant.
 
 \section{Differential Hoare Logic for Flows}\label{sec:hoare-flow}
 
-In the state transformer semantics of Hoare triples, the Kleisli composition in
-the left hand side of $p\cdot\alpha\le \alpha\cdot q$ ensures that $p$ holds
-before executing $\alpha$. The left hand side guarantees that $q$ holds
-after its execution. Specifically for evolution commands, and consistently with
-$\dL$, $q$ holds along the entire orbit of a solution for $f$. We now complete the derivation of inference rules of $\dH$ by adding Hoare-style rules for assignments and evolution commands in the concrete state transformer semantics.
+In the state transformer semantics of Hoare triples, the Kleisli
+composition in the left-hand side of $p\cdot\alpha\le \alpha\cdot q$
+ensures that $p$ holds before executing $\alpha$. The right-hand side
+guarantees that $q$ holds after its execution. Specifically for
+evolution commands, and consistently with $\dL$, $q$ holds along the
+entire orbit of a solution for $f$. We now complete the derivation of
+inference rules of $\dH$ by adding Hoare-style rules for assignments
+and evolution commands in the concrete state transformer semantics.
 
 The assignment axiom of Hoare logic needs no explanation. Our concrete
 state transformer semantics allows us to derive it:
@@ -571,7 +588,7 @@ state transformer semantics allows us to derive it:
 % \left\{x = e[x_0/x] \wedge p[x_0/x]\right\}, S \, \left\{q\right\} \Longrightarrow \left\{p \right\}\, x := e \seq S \,\left\{ q \right\}
 % \end{equation}
 
-Hence, all we need to add to Hoare logic is a rule for evolution
+Hence all we need to add to Hoare logic is a rule for evolution
 commands.  We restrict our attention to Lipschitz-continuous vector
 fields for which unique solutions to IVPs are guaranteed by
 Picard-Lindel\"of's theorem~\cite{Teschl12}. 
@@ -584,13 +601,17 @@ specialise to \emph{guarded orbits}
   {\downarrow}t.\ G\, (\flow_s\, \tau)\right\},
 \end{equation*}
 where $U\subseteq T$ is a time domain of interest, typically an
-interval $[0,t]$ for some $t\in T$~\cite{MuniveS19} where, by contrast to the previous section ${\downarrow}t=\{t'\in U\mid t'\leq t\}$ is now relativised to $U$. This relativisation seems important for the analysis of hybrid systems. First of all, it gives the flexibility to consider dynamics over closed time intervals, secondly it allows us to focus on time intervals and IVPs starting at time $t=0$. Accordingly,
-(\ref{eq:st-evl}) specialises to the following state transformer semantics for evolution commands.
+interval $[0,t]$ for some $t\in T$~\cite{MuniveS19} where, by contrast
+to the previous section ${\downarrow}t=\{t'\in U\mid t'\leq t\}$ is
+relativised to $U$. This gives us the flexibility to consider dynamics
+over closed time intervals and it allows us to focus on time intervals
+and IVPs starting at $t=0$. Accordingly, (\ref{eq:st-evl}) specialises
+to the following state transformer semantics for evolution commands.
 \begin{equation}
   \left(x' = f\, \&\, G\right)= \gamma^f_{G,U}.\label{eq:st-evl-flow}\tag{st-evl-flow}
 \end{equation}
 The following Hoare-style rule for evolution commands is then
-derivable in this semantics.
+derivable.
 \begin{lemma}\label{P:h-evl-lemma}
   Let $f:S\to S$ be a Lipschitz continuous vector field on
   $S\subseteq \reals^n$ and $\flow:T\to S\to S$ its local flow with
@@ -605,10 +626,11 @@ derivable in this semantics.
 
 This finishes the derivation of rules for a Hoare logic $\dH$ for
 hybrid programs---to our knowledge, the first Hoare logic of this
-kind. As usual, there is one rule per programming construct, 
-so that the recursive application of the rules of propositional Hoare logic together with (\ref{eq:h-assgn}) and (\ref{eq:h-evl}) generates proof obligations that are
-entirely about data-level relationships---the discrete and continuous
-evolution of hybrid program stores.
+kind. As usual, there is one rule per programming construct, so that
+the recursive application of the rules of propositional Hoare logic
+together with (\ref{eq:h-assgn}) and (\ref{eq:h-evl}) generates proof
+obligations that are entirely about data-level relationships---the
+discrete and continuous evolution of hybrid program stores.
 
 The rule~(\ref{eq:h-evl}) supports the following procedure
 for reasoning with an evolution command $x' = f\, \&\, G$ and set $U$
@@ -762,8 +784,14 @@ following lemma leads to a procedure.
 \end{enumerate}
 \end{lemma}
 
-\rin{$(1)$ In Lemma 6.2, I feel like I would need to know more about how $<$ is defined on differentiable functions in order to verify part 3 and 4. The inclusion of these properties also makes me wonder about what is intended in part 2. In typical interpretations, $\mu = \lambda x. x$ and $\nu = \lambda x. - x$ should be counterexamples to 3 and 4 for S = any open interval on R that includes 0.}
-\jin{Reviewer's counterexample is sensible. Should replace 3 and 4 for definition of invariance 
+\rin{$(1)$ In Lemma 6.2, I feel like I would need to know more about
+  how $<$ is defined on differentiable functions in order to verify
+  part 3 and 4. The inclusion of these properties also makes me wonder
+  about what is intended in part 2. In typical interpretations,
+  $\mu = \lambda x. x$ and $\nu = \lambda x. - x$ should be
+  counterexamples to 3 and 4 for S = any open interval on R that
+  includes 0.}  \jin{Reviewer's counterexample is sensible. Should
+  replace 3 and 4 for definition of invariance
 $$\{\mu\neq \nu\}\, x' = f\, \&\, G\, \{\mu\neq \nu\}\Longleftrightarrow \{\mu <\nu\}\, x' = f\, \&\, G\, \{\mu <\nu\}\text{ or }\{\mu >\nu\}\, x' = f\, \&\, G\, \{\mu >\nu\}$$
 $$\{\mu\not\le \nu\}\, x' = f\, \&\, G\, \{\mu\not\le \nu\}\Longleftrightarrow \{\mu <\nu\}\, x' = f\, \&\, G\, \{\mu <\nu\}$$}
 
@@ -838,8 +866,9 @@ itself:
 \ \ LOOP\ {\isacharparenleft}ctrl\ $h_l$\ $h_h${\isacharsemicolon}\ dyn\ c\isactrlsub i\ c\isactrlsub o\ $h_l$\ $h_h$\ {\isasymtau}{\isacharparenright}\ INV\ {\isacharparenleft}I\ $h_l$\ $h_h${\isacharparenright}{\isachardoublequoteclose}\isanewline
 \end{isabellebody}
 
-\noindent In the Isabelle code above, we distinguish DINV and INV to make specifications intelligible.The correctness specification and verification of the water
-tank with $\dH$ is the following.
+\noindent In the Isabelle code above, we distinguish DINV and INV to
+make specifications more intelligible. The correctness specification
+and verification of the water tank with $\dH$ then proceeds as follows:
 
 \begin{isabellebody}
 \isanewline
@@ -866,9 +895,10 @@ tank with $\dH$ is the following.
 \noindent As in Example~\ref{ex:therm-sol}, tactic \isa{hyb-hoare}
 blasts away the control structure of this program. The second proof
 line uses Lemma \isa{tank-diff-inv} to check that \isa{dI} is an
-invariant for any guard (that is, \isa{Guard} is a universally quantified variable in Lemma \isa{tank-diff-inv}), using the procedure outlined (see our repository for
-technical details). Auxiliary lemmas then discharge the remaining
-arithmetic proof obligations.  \qed
+invariant for any guard (that is, \isa{Guard} is a universally
+quantified variable in Lemma \isa{tank-diff-inv}), using the procedure
+outlined. Auxiliary lemmas then discharge the remaining arithmetic
+proof obligations.  \qed
 \end{example}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1208,8 +1238,6 @@ facts.
 \qed
 \end{example}
 
-
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Conclusion}\label{sec:conclusion}
@@ -1217,52 +1245,59 @@ facts.
 We have contributed new methods and Isabelle components to an open
 modular semantic framework for verifying hybrid systems that so far
 focussed on predicate transformer semantics~\cite{MuniveS19}; more
-specifically the first standalone Hoare logic $\dH$ for hybrid
-programs, the first Morgan-style refinement calculus $\dR$ for such
-programs, more generic state spaces modelled by lenses, improved
-Isabelle syntax for correctness specifications and hybrid programs,
-and increased proof automation via the tactics \isa{hyb-hoare} and \isa{refinement}. 
-These components support
-three workflows based on certifying solutions to Lipschitz-continuous
-vector fields, reasoning with invariant sets for continuous vector
-fields, and working directly with flows without certification.
+specifically a Hoare logic $\dH$ and a Morgan-style refinement
+calculus $\dR$ for hybrid programs, more generic state spaces modelled
+by lenses, improved Isabelle syntax for correctness specifications and
+hybrid programs, and increased proof automation via the tactics
+\isa{hyb-hoare} and \isa{refinement}.  These components support three
+workflows based on certifying solutions to Lipschitz-continuous vector
+fields, reasoning with invariant sets for continuous vector fields,
+and working directly with flows without certification.
 
-Compared to the standard $\dL$ toolchain, $\dH$ and $\dR$ are
-simple. They emphasise the natural mathematical style of reasoning
-about dynamical systems, with minimal conceptual overhead relative to
-standard Hoare logics and refinement calculi. $\dH$, in particular,
-remains invisible and is only used for automated verification
-condition generation. The modular approach with algebras and a shallow
-embedding has simplified the construction of these verification
-components and made it incremental relative to extant ones. Our
-framework is not only open to use any proof method and mathematical
-approach supported by Isabelle, it should also allow adding new
-methods, for instance based on discrete dynamical systems, hybrid
-automata or duration calculi~\cite{LiuLQZZZZ10}, or integrate CAS's
-for finding solutions. It should be equally straightforward to
-formalise $\dH$ and $\dR$ based on other Hoare logics in Isabelle with
-our hybrid store models.
+Compared to the standard $\dL$ toolchain, $\dH$ and $\dR$ emphasise a
+natural mathematical style of reasoning semantically about dynamical
+systems, with minimal conceptual overhead relative to standard Hoare
+logics and refinement calculi. $\dH$, in particular, is only used for
+automated verification condition generation. The modular approach with
+algebras and a shallow embedding has simplified the construction of
+these verification components and made it incremental relative to
+extant ones. Our framework is not only open to use any proof method
+and mathematical approach supported by Isabelle, it should also allow
+adding new methods, for instance based on discrete dynamical systems,
+hybrid automata or duration calculi~\cite{LiuLQZZZZ10}, or integrate
+CAS's for finding solutions.
 
 The relevance of $\dH$ and $\dR$ to hybrid systems verification is
 further evidenced by the fact that such approaches are not new: A
 hybrid Hoare logic has been proposed by Liu et al.~\cite{LiuLQZZZZ10}
-for a duration calculus based on hybrid CSP and been widely used
-since. It is conceptually very different from $\dH$ and $\dL$. A
-differential refinement logic based on $\dL$ has been developed as
-part of Loos' PhD work~\cite{LoosP16}.  It uses a proof system with
-inference rules for reasoning about inequalities between $\KAT$
-expressions, which are interpreted in a rather non-standard way as
-refinements between hybrid programs. According to the authors~\cite{LoosP16}, it differs substantially from the
-calculi developed by Back and von Wright~\cite{BackW98},
-Morgan~\cite{Morgan94} and others in that local instead of global refinement relations can be used. On the other hand however, their refinement logic has the same expressivity as $\dL$~\cite{LoosP16}, which is essentially a predicate transformer calculus for hybrid programs~\cite{MuniveS19} and therefore, a Back a von Wright style refinement calculus. Ultimately, this suggests that Loos' refinement logic is more expressive than our refinement calculus. The relative merits of these approaches remain to be explored. The proof theory of $\dL$ has already been formalised in various proof assistants~\cite{BohrerRVVP17} yet with a focus on soundness proofs for its inference rules and a mechanisation of its idiosyncratic substitution calculus in a deep embedding, but not on verification components.
+for a duration calculus based on hybrid CSP. It is conceptually very
+different from $\dH$ and $\dL$. A differential refinement logic based
+on $\dL$ has been developed as part of Loos' PhD work~\cite{LoosP16}.
+It uses a proof system with inference rules for reasoning about
+inequalities between $\KAT$ expressions, which are interpreted as
+refinements between hybrid programs. According to the
+authors~\cite{LoosP16}, it differs substantially from the calculi
+developed by Back and von Wright~\cite{BackW98},
+Morgan~\cite{Morgan94} and others in that local instead of global
+refinement relations can be used. Nevertheless their logic has the
+same expressivity as $\dL$~\cite{LoosP16}, which is essentially a
+predicate transformer calculus for hybrid programs~\cite{MuniveS19}
+and thus a refinement calculus \`a la Back and von Wright. Ultimately,
+this suggests that Loos' logic is more expressive than our
+Morgan-style calculus, but the relative merits of the two approaches
+remain to be explored. The proof theory of $\dL$ has already been
+deeply embedded in proof assistants~\cite{BohrerRVVP17}, yet with a
+focus on soundness proofs for its inference rules and a mechanisation
+of its idiosyncratic substitution calculus, but not as prima facie
+verification components.
 
 The expressivity and complexity gap between Hoare logic and predicate
-transformer semantics is particularly apparent within algebra. The
-weakest liberal precondition operator cannot be expressed in
-$\KAT$~\cite{Struth18}.  The equational theory of $\KAT$, which
-captures propositional Hoare logic, is PSPACE
-complete~\cite{KozenCS96}, that of modal Kleene algebra, which yields
-predicate transformers, is in EXPTIME~\cite{MollerS06}.
+transformer semantics is apparent within algebra. The weakest liberal
+precondition operator cannot be expressed in $\KAT$~\cite{Struth18}.
+The equational theory of $\KAT$, which captures propositional Hoare
+logic, is PSPACE complete~\cite{KozenCS96}, that of modal Kleene
+algebra, which yields predicate transformers, in
+EXPTIME~\cite{MollerS06}.
 
 Finally, while $\KAT$ and $\rKAT$ are convenient starting points for
 building program construction and verification components for hybrid
@@ -1271,10 +1306,13 @@ semigroups~\cite{Struth18} would support developing hybrid Hoare
 logics for total program correctness---where balls may bounce
 forever---or even for multirelational
 semantics~\cite{FurusawaS16,FurusawaS15} as needed for differential
-game logic~\cite{Platzer18}. This, however, is left for future work.
+game logic~\cite{Platzer18}. This is left for future work.
 
 \paragraph{Acknowledgements.}
-The authors wish to thank the reviewers for their very thorough and insightful comments, and to Andr\'e Platzer and Sergey Goncharov for discussions of a preliminary version. The second author is sponsored by CONACYT's scholarship no. 440404.
+The authors wish to thank the reviewers for their very thorough and
+insightful comments, and to Andr\'e Platzer and Sergey Goncharov for
+discussions on a preliminary version. The second author is sponsored
+by CONACYT's scholarship no. 440404.
 
 
 
