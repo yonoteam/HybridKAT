@@ -767,9 +767,13 @@ The following lemma leads to a procedure.
 \begin{enumerate}
 \item If $(\mu\circ X)' =(\nu\circ X)'$ for all
   $X\in \Sols f\, T\, s$, then $\{\mu=\nu\}\, x' = f\, \&\, G\, \{\mu=\nu\}$, 
-\item if $(\mu\circ X)'\, t\leq(\nu\circ X)'\, t$ when $t> 0$, and $(\mu\circ X)'\, t\geq(\nu\circ X)'\, t$ when $t< 0$, for all $X\in \Sols f\, T\, s$,
-  then $\{\mu <\nu\}\, x' = f\, \&\, G\, \{\mu <\nu\}$
-\item if $0$ is the least element in $T$, then $\{\mu\neq \nu\}\, x' = f\, \&\, G\, \{\mu\neq \nu\}$ if and only if $\{\mu <\nu\}\, x' = f\, \&\, G\, \{\mu <\nu\}$ and $\{\mu >\nu\}\, x' = f\, \&\, G\, \{\mu >\nu\}$,
+\item if $(\mu\circ X)'\, t\leq(\nu\circ X)'\, t$ when $t> 0$, and
+  $(\mu\circ X)'\, t\geq(\nu\circ X)'\, t$ when $t< 0$, for all
+  $X\in \Sols f\, T\, s$, then
+  $\{\mu <\nu\}\, x' = f\, \&\, G\, \{\mu <\nu\}$
+\item if $\{\mu <\nu\}\, x' = f\, \&\, G\, \{\mu <\nu\}$ and
+  $\{\mu >\nu\}\, x' = f\, \&\, G\, \{\mu >\nu\}$, then
+  $\{\mu\neq \nu\}\, x' = f\, \&\, G\, \{\mu\neq \nu\}$ (and conversely if $0$ is the least element in $T$),
 \item $\{\mu\not\le \nu\}\, x' = f\, \&\, G\, \{\mu\not\le \nu\}$ if and only if $\{\mu >\nu\}\, x' = f\, \&\, G\, \{\mu >\nu\}$.
 \end{enumerate}
 \end{lemma}
@@ -1277,10 +1281,13 @@ semantics~\cite{FurusawaS16,FurusawaS15} as needed for differential
 game logic~\cite{Platzer18}. This is left for future work.
 
 \paragraph{Acknowledgements.}
-The authors wish to thank the reviewers for their very thorough and insightful comments, and to Andr\'e Platzer and
-Sergey Goncharov for discussions on a preliminary version. The second author is sponsored by CONACYT's scholarship
-no. 440404. This work is also partly supported by the EPSRC project CyPhyAssure\footnote{CyPhyAssure Project:
-  \url{https://www.cs.york.ac.uk/circus/CyPhyAssure/}} (Grant EP/S001190/1).
+The authors wish to thank the reviewers for their very thorough and
+insightful comments, and to Andr\'e Platzer and Sergey Goncharov for
+discussions on a preliminary version. The second author is sponsored
+by CONACYT's scholarship no. 440404. This work is also partly
+supported by the EPSRC project CyPhyAssure\footnote{CyPhyAssure
+  Project: \url{https://www.cs.york.ac.uk/circus/CyPhyAssure/}} (Grant
+EP/S001190/1).
 
 
 
