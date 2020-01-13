@@ -15,7 +15,8 @@ theory KAT_rKAT_rVCs_ndfun
     "Hybrid_Systems_VCs.HS_ODEs"
 begin recall_syntax
 
-subsection \<open> Store and Hoare triples \<close>
+
+subsection \<open> ODEs Invariant Extensions \<close>
 
 type_synonym 'a pred = "'a \<Rightarrow> bool"
 
@@ -27,6 +28,125 @@ no_notation Archimedean_Field.ceiling ("\<lceil>_\<rceil>")
         and Relation.relcomp (infixl ";" 75)
         and proto_near_quantale_class.bres (infixr "\<rightarrow>" 60)
         and tt ("\<lparr>_\<rparr>_\<lparr>_\<rparr>")
+
+lemma diff_invariant_nleq_rule:
+  fixes \<mu>1::"'a::banach \<Rightarrow> real"
+  shows "diff_invariant (\<lambda>s. \<not> \<mu>1 s \<le> \<mu>2 s) f T S t\<^sub>0 G \<longleftrightarrow> diff_invariant (\<lambda>s. \<mu>1 s > \<mu>2 s) f T S t\<^sub>0 G"
+  unfolding diff_invariant_eq
+  by safe (clarsimp, erule_tac x=s in allE, simp, erule_tac x=X in ballE, force, force)+
+
+lemma diff_invariant_neq_rule1 [diff_invariant_rules]:
+  fixes \<mu>1::"'a::banach \<Rightarrow> real"
+  assumes "diff_invariant (\<lambda>s. \<mu>1 s < \<mu>2 s) f T S t\<^sub>0 G"
+    and "diff_invariant (\<lambda>s. \<mu>1 s > \<mu>2 s) f T S t\<^sub>0 G"
+  shows "diff_invariant (\<lambda>s. \<mu>1 s \<noteq> \<mu>2 s) f T S t\<^sub>0 G"
+proof(unfold diff_invariant_eq, clarsimp)
+  fix s::'a and X::"real \<Rightarrow> 'a" and t::real
+  assume "\<mu>1 s \<noteq> \<mu>2 s" and Xhyp: "X \<in> Sols (\<lambda>t. f) T S t\<^sub>0 s" 
+     and thyp: "t \<in> T" and Ghyp: "\<forall>\<tau>. \<tau> \<in> T \<and> \<tau> \<le> t \<longrightarrow> G (X \<tau>)"
+  hence "\<mu>1 s < \<mu>2 s \<or> \<mu>1 s > \<mu>2 s"
+    by linarith
+  moreover have "\<mu>1 s < \<mu>2 s \<Longrightarrow> \<mu>1 (X t) < \<mu>2 (X t)"
+    using assms(1) Xhyp thyp Ghyp unfolding diff_invariant_eq by auto
+  moreover have "\<mu>1 s > \<mu>2 s \<Longrightarrow> \<mu>1 (X t) > \<mu>2 (X t)"
+    using assms(2) Xhyp thyp Ghyp unfolding diff_invariant_eq by auto
+  ultimately show "\<mu>1 (X t) = \<mu>2 (X t) \<Longrightarrow> False"
+    by auto
+qed
+
+lemma IVT_two_functions:
+  fixes f :: "('a::{linear_continuum_topology, real_vector}) \<Rightarrow> 
+  ('b::{linorder_topology,real_normed_vector,ordered_ab_group_add})"
+  assumes conts: "continuous_on {a..b} f" "continuous_on {a..b} g"
+      and ahyp: "f a < g a" and bhyp: "g b < f b " and "a \<le> b"
+    shows "\<exists>x\<in>{a..b}. f x = g x"
+proof-
+  let "?h x" = "f x - g x"
+  have "?h a \<le> 0" and "?h b \<ge> 0"
+    using ahyp bhyp by simp_all
+  also have "continuous_on {a..b} ?h"
+    using conts continuous_on_diff by blast 
+  ultimately obtain x where "a \<le> x" "x \<le> b" and "?h x = 0"
+    using IVT'[of "?h"] \<open>a \<le> b\<close> by blast
+  thus ?thesis
+    using \<open>a \<le> b\<close> by auto
+qed
+
+lemma IVT_two_functions_real_ivl:
+  fixes f :: "real \<Rightarrow> real"
+  assumes conts: "continuous_on {a--b} f" "continuous_on {a--b} g"
+      and ahyp: "f a < g a" and bhyp: "g b < f b "
+    shows "\<exists>x\<in>{a--b}. f x = g x"
+proof(cases "a \<le> b")
+  case True
+  then show ?thesis 
+    using IVT_two_functions assms 
+    unfolding closed_segment_eq_real_ivl by auto
+next
+  case False
+  hence "a \<ge> b"
+    by auto
+  hence "continuous_on {b..a} f" "continuous_on {b..a} g"
+    using conts False unfolding closed_segment_eq_real_ivl by auto
+  hence "\<exists>x\<in>{b..a}. g x = f x"
+    using IVT_two_functions[of b a g f] assms(3,4) False by auto
+  then show ?thesis  
+    using \<open>a \<ge> b\<close> unfolding closed_segment_eq_real_ivl by auto force
+qed
+
+lemma diff_invariant_neq_rule2 [diff_invariant_rules]:
+  fixes \<mu>1::"'a::banach \<Rightarrow> real"
+  assumes Thyp: "is_interval T" "t\<^sub>0 \<in> T" "\<forall>t\<in>T. t\<^sub>0 \<le> t"
+      and conts: "\<forall>X. (D X = (\<lambda>\<tau>. f (X \<tau>)) on T) \<longrightarrow> continuous_on (\<P> X T) \<mu>1 \<and> continuous_on (\<P> X T) \<mu>2"
+      and dIhyp:"diff_invariant (\<lambda>s. \<mu>1 s \<noteq> \<mu>2 s) f T S t\<^sub>0 G"
+    shows "diff_invariant (\<lambda>s. \<mu>1 s < \<mu>2 s) f T S t\<^sub>0 G"
+proof(unfold diff_invariant_eq, clarsimp)
+  fix s::'a and X::"real \<Rightarrow> 'a" and t::real
+  assume ineq0: "\<mu>1 s < \<mu>2 s" and Xhyp: "X \<in> Sols (\<lambda>t. f) T S t\<^sub>0 s"
+    and Ghyp: "\<forall>\<tau>. \<tau> \<in> T \<and> \<tau> \<le> t \<longrightarrow> G (X \<tau>)" and thyp: "t\<in>T"
+  hence ineq1: "\<mu>1 (X t\<^sub>0) < \<mu>2 (X t\<^sub>0)"
+    by (auto simp: ivp_solsD)
+  have "t\<^sub>0 \<le> t" and "\<mu>2 (X t) \<noteq> \<mu>1 (X t)"
+    using \<open>t \<in> T\<close> Thyp dIhyp thyp Xhyp Ghyp ineq0 unfolding diff_invariant_eq by force+
+  moreover
+  {assume ineq2:"\<mu>1 (X t) > \<mu>2 (X t)"
+    note continuous_on_compose[OF vderiv_on_continuous_on[OF ivp_solsD(1)[OF Xhyp]]]
+    hence "continuous_on T (\<mu>1 \<circ> X)" and "continuous_on T (\<mu>2 \<circ> X)"
+      using ivp_solsD(1)[OF Xhyp] conts by auto
+    also have "{t\<^sub>0--t} \<subseteq> T"
+      using Thyp thyp by (simp add: closed_segment_subset_interval)
+    ultimately have "continuous_on {t\<^sub>0--t} (\<lambda>\<tau>. \<mu>1 (X \<tau>))" and "continuous_on {t\<^sub>0--t} (\<lambda>\<tau>. \<mu>2 (X \<tau>))"
+      using continuous_on_subset by auto
+    then obtain \<tau> where "\<tau> \<in> {t\<^sub>0--t}" "\<mu>2 (X \<tau>) = \<mu>1 (X \<tau>)"
+      using IVT_two_functions_real_ivl[OF _ _ ineq1 ineq2] by force
+    hence "\<forall>r\<in>down T \<tau>. G (X r)" and "\<tau> \<in> T"
+      using Ghyp \<open>\<tau> \<in> {t\<^sub>0--t}\<close> \<open>t\<^sub>0 \<le> t\<close> \<open>{t\<^sub>0--t} \<subseteq> T\<close> by (auto simp: closed_segment_eq_real_ivl)
+    hence "\<mu>2 (X \<tau>) \<noteq> \<mu>1 (X \<tau>)"
+      using dIhyp Xhyp \<open>\<mu>1 s < \<mu>2 s\<close> unfolding diff_invariant_eq by force
+    hence "False"
+      using \<open>\<mu>2 (X \<tau>) = \<mu>1 (X \<tau>)\<close> by blast}
+  ultimately show "\<mu>1 (X t) < \<mu>2 (X t)"
+    by fastforce
+qed
+
+lemma diff_invariant_neq_rule3 [diff_invariant_rules]:
+  fixes \<mu>1::"'a::banach \<Rightarrow> real"
+  assumes Thyp: "is_interval T" "t\<^sub>0 \<in> T" "\<forall>t\<in>T. t\<^sub>0 \<le> t"
+      and conts: "\<forall>X. (D X = (\<lambda>\<tau>. f (X \<tau>)) on T) \<longrightarrow> continuous_on (\<P> X T) \<mu>1 \<and> continuous_on (\<P> X T) \<mu>2"
+      and dIhyp:"diff_invariant (\<lambda>s. \<mu>1 s \<noteq> \<mu>2 s) f T S t\<^sub>0 G"
+    shows "diff_invariant (\<lambda>s. \<mu>1 s > \<mu>2 s) f T S t\<^sub>0 G"
+proof-
+  have "(\<lambda>s. \<mu>1 s \<noteq> \<mu>2 s) = (\<lambda>s. \<mu>2 s \<noteq> \<mu>1 s)"
+    by auto
+  hence obs: "\<forall>X. (D X = (\<lambda>\<tau>. f (X \<tau>)) on T) \<longrightarrow> continuous_on (\<P> X T) \<mu>2 \<and> continuous_on (\<P> X T) \<mu>1"
+    "diff_invariant (\<lambda>s. \<mu>2 s \<noteq> \<mu>1 s) f T S t\<^sub>0 G"
+    using dIhyp conts by auto
+  show ?thesis
+    using diff_invariant_neq_rule2[OF Thyp obs] .
+qed
+
+
+subsection \<open> Store and Hoare triples \<close>
 
 \<comment> \<open>Canonical lifting from predicates to state transformers and its simplification rules\<close>
 
