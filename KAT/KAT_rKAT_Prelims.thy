@@ -9,7 +9,7 @@ text \<open> In this section we derive the rules of Hoare Logic and a refinement
 
 theory KAT_rKAT_Prelims
   imports
-  KAT_and_DRA.PHL_KAT
+  "KAT_and_DRA.PHL_KAT"
   "Transformer_Semantics.Kleisli_Quantale"
   "UTP.utp_pred_laws"
   "UTP.utp_lift_parser"
