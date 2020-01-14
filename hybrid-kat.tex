@@ -462,7 +462,7 @@ standard~\cite{MuniveS19}, though we generalise using lenses. First,
 we use lenses to define state updates:
 $$\sigma(x\mapsto e) = \lambda s.\ \lput_x ~ (\sigma~s) ~ (e~s)$$
 for $x : A \lto S$, $e : S \to A$, and $\sigma : S \to S$.
-Intuitively, this updates the value of variable $x$ by
+Intuitively, this updates the value of variable $x$ in
 $\sigma : S \to S$ to the value given by ``expression'' $e$ in state
 $s$. For variables $x$ and $y$, for example, the expression
 $x / (2 + y)$ is modelled by
