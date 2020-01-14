@@ -660,7 +660,7 @@ between $T_l$ and $T_h$ by setting
 G\, T_l\, T_h\, a\, c = \left(t\leq -\frac{1}{a}\ln\left(\frac{c-\Delta_c}{c-T_0}\right)\right),
 \end{equation*}
 where $\Delta_c = T_l$ if $c=0$, and $\Delta_c = T_h$ if $c=T_u$. The
-hybrid program $\isa{therm}\ T_l\ T_h\ a\ T_u$ below models the
+hybrid program $\isa{therm}$ below models the
 behaviour of the thermostat. To simplify notation, we separate into
 a loop invariant ($I$), discrete control ($ctrl$), and continuous
 dynamics ($dyn$).
@@ -1128,7 +1128,7 @@ for such evolution commands.
 \isacommand{abbreviation}\ %\isamarkupfalse%
 %\ ball{\isacharunderscore}flow\ {\isacharcolon}{\isacharcolon}\ {\isachardoublequoteopen}real\ {\isasymRightarrow}\ real\ {\isasymRightarrow}\ {\isacharparenleft}real{\isacharcircum}{\isadigit{2}}{\isacharparenright}\ usubst{\isachardoublequoteclose}\ {\isacharparenleft}{\isachardoublequoteopen}{\isasymphi}{\isachardoublequoteclose}{\isacharparenright}\ \isanewline
 %\ \ \isakeyword{where}\ 
-{\isachardoublequoteopen}{\isasymphi}\ g\ {\isasymtau}\ {\isasymequiv}\ {\isacharbrackleft}x\ {\isasymmapsto}\ g\ {\isasymcdot}\ {\isasymtau}\ {\isacharcircum}\ {\isadigit{2}}{\isacharslash}{\isadigit{2}}\ {\isacharplus}\ v\ {\isasymcdot}\ {\isasymtau}\ {\isacharplus}\ x{\isacharcomma}\ \ v\ {\isasymmapsto}\ g\ {\isasymcdot}\ {\isasymtau}\ {\isacharplus}\ v{\isacharbrackright}{\isachardoublequoteclose}\isanewline
+{\isachardoublequoteopen}{\isasymphi}\ g\ {\isasymtau}\ {\isasymequiv}\ {\isacharbrackleft}x\ {\isasymmapsto}\isactrlsub s\ g\ {\isasymcdot}\ {\isasymtau}\ {\isacharcircum}\ {\isadigit{2}}{\isacharslash}{\isadigit{2}}\ {\isacharplus}\ v\ {\isasymcdot}\ {\isasymtau}\ {\isacharplus}\ x{\isacharcomma}\ \ v\ {\isasymmapsto}\isactrlsub s\ g\ {\isasymcdot}\ {\isasymtau}\ {\isacharplus}\ v{\isacharbrackright}{\isachardoublequoteclose}\isanewline
 \end{isabellebody}
 
 % function
@@ -1236,7 +1236,7 @@ these verification components and made it incremental relative to
 extant ones. Our framework is not only open to use any proof method
 and mathematical approach supported by Isabelle, it should also allow
 adding new methods, for instance based on discrete dynamical systems,
-hybrid automata or duration calculi~\cite{LiuLQZZZZ10}, or integrate
+hybrid automata or duration calculi~\cite{LiuLQZZZZ10,Foster19b-HybridRelations}, or integrate
 CAS's for finding solutions.
 
 The relevance of $\dH$ and $\dR$ to hybrid systems verification is
