@@ -163,7 +163,7 @@ Hoare logic or refinement calculus to hybrid programs.
 
 Our main contribution consists in evidence that $\dH$ and $\dR$ are as
 applicable for verifying simple hybrid programs as $\dL$, and that
-developing these novel methods requires simply adding a single
+developing these  methods requires simply adding a single
 Hoare-style axiom and a single refinement rule for evolution commands
 to the standard formalisms.
 
@@ -171,8 +171,8 @@ This conceptual simplicity is reflected in the Isabelle verification
 components for $\dH$ and $\dR$. These reuse components for
 (refinement) Kleene algebra with
 tests~\cite{Kozen97,ArmstrongGS16,afp:vericomp} $(\mathsf{(r)KAT}$)
-for the propositional Hoare logic and refinement calculi---ignoring
-assignment and evolution commands. The axioms and laws for these two
+for the propositional Hoare logic and refinement calculi, ignoring
+assignment and evolution commands. The axioms and laws for these
 basic commands are derived in a concrete state transformer semantics
 for hybrid programs~\cite{afp:hybrid} over a generic hybrid
 store model based on lenses~\cite{FosterZW16}, reusing other Isabelle
@@ -286,10 +286,10 @@ $\KAT$ has been formalised via type classes in
 Isabelle~\cite{afp:kat}.  As these allow only one type parameter, we
 use an alternative to the standard two-sorted approach that expands a
 Kleene algebra $K$ by an \emph{antitest} function $n:K\to K$ from
-which a \emph{test} function $t:K\to K$ is defined as $t=n^2$. Then
+which a \emph{test} function $t:K\to K$ is defined as $t=n\circ n$. Then
 $K_t = \{\alpha \mid t\, \alpha = \alpha\}$ forms a boolean algebra in
-which $n$ acts as test complementation. It can be used in place of
-$B$.  The state transformer model of $\KAT$ has been formalised for
+which $n$ yields test complementation. It can be used in place of
+$B$.  The state transformer $\KAT$ has been formalised for
 this article.
 
 
@@ -413,7 +413,7 @@ value $(0,s)\in T\times S$, where $T$ is an open interval in $\reals$
 containing $0$, is then a function $X:T\to S$ that satisfies
 $X'\, t = f\, (X\, t)$---an autonomous system of ODEs in vector
 form---and $X\, 0 = s$. Solution $X$ is thus a curve in $S$ through
-$s$, parametrised in $T$ and tangential to $f$ at any point in $S$; it
+$s$, parametrised by $T$ and tangential to $f$ at any point in $S$; it
 is called the \emph{trajectory} or \emph{integral curve} of $f$ at $s$
 whenever it is uniquely defined~\cite{Teschl12}.  For IVP $(f,s)$ with
 continuous vector field $f:S\to S$ and initial state $s\in S$ we
@@ -421,7 +421,7 @@ define the set of solutions on $T$ as
 \begin{equation*}
 \Sols f\, T\, s = \left\{X \mid \forall t\in T.\  X'\, t = f\, (X\, t)\land X\, 0 = s\right\}.
 \end{equation*}
-Each solution $X$ is thus continuously differentiable and thus
+Each solution $X$ is thus continuously differentiable and hence
 $f\circ X$ integrable in $T$.  For $X\in \Sols\, f\, T\, s$ and guard
 $G:S\to\bools$, we then define the $G$-\emph{guarded orbit} of $X$
 along $T$ in $s$~\cite{MuniveS19} as a state transformer
@@ -454,12 +454,12 @@ $G:S\to \bools$ as
 \end{equation}
 
 In the evolution command $x'= f\, \&\, G$, $x'$ is part of the
-traditional syntax used for specifying systems of ODEs, while in
-reality only a vector field $f$ is specified. This explains why $x$
-does not appear in the right-hand side of~(\ref{eq:st-evl}). Defining
-the state transformer semantics of assignments is
-standard~\cite{MuniveS19}, though we generalise using lenses. First,
-we use lenses to define state updates:
+traditional syntax used for specifying systems of ODEs, while de facto
+only a vector field $f$ is specified. This explains why $x$ does not
+appear in the right-hand side of~(\ref{eq:st-evl}). Defining the state
+transformer semantics of assignments is standard~\cite{MuniveS19},
+though we generalise using lenses. First, we use lenses to define
+state updates:
 $$\sigma(x\mapsto e) = \lambda s.\ \lput_x ~ (\sigma~s) ~ (e~s)$$
 for $x : A \lto S$, $e : S \to A$, and $\sigma : S \to S$.
 Intuitively, this updates the value of variable $x$ in
@@ -730,7 +730,7 @@ commands instead of supplying flows to~(\ref{eq:h-evl}).  The approach
 has been developed in~\cite{MuniveS19}. Our invariants generalise the
 \emph{differential invariants} of $\dL$~\cite{Platzer18} and the
 \emph{invariant sets} of dynamical systems and (semi)group
-theory~\cite{Teschl12} .
+theory~\cite{Teschl12}.
 
 A predicate $I:S\to\bools$ is an \emph{invariant} of the continuous
 vector field $f:S\to S$ and guard $G:S\to\bools$ \emph{along}
@@ -747,7 +747,7 @@ unfolds to
 \end{equation*}
 For $G=\top$ we call $I$ an \emph{invariant} of $f$ along $T$.
 Intuitively, invariants can be seen as sets of orbits. They are
-coherent with the invariants from
+compatible with the invariants from
 Section~\ref{sec:hl-invariants}.
 \begin{proposition}\label{P:inv-prop}
   Let $f:S\to S$ be continuous, $G:S\to\bools$ and
@@ -780,12 +780,12 @@ The following lemma leads to a procedure.
 
 Condition $(1)$ follows from the well known fact that two continuously
 differentiable functions are equal if they intersect at some point and
-their derivatives are equal. Rules (\ref{eq:h-invg}),
+have the same derivatives. Rules (\ref{eq:h-invg}),
 (\ref{eq:h-inv-mult}), (\ref{eq:h-inv-plus}),
 Proposition~\ref{P:inv-prop} and Lemma~\ref{P:invrules} yield the
 following procedure for verifying $\{P\}\, x' = f\, \&\, G\, \{Q\}$:
 \begin{enumerate}
-\item Check whether a candidate predicate $I$ is an invariant for $f$
+\item Check whether  candidate predicate $I$ is an invariant for $f$
   along $T$:
 	\begin{enumerate}
 	\item transform $I$ into negation normal form;
@@ -798,7 +798,7 @@ following procedure for verifying $\{P\}\, x' = f\, \&\, G\, \{Q\}$:
 
 \begin{example}[Water tank verification via invariants]\label{ex:tank-inv}
   A controller turns a water pump on and off to keep the water level
-  $h$ in a tank within safe bounds $h_l\leq h\leq h_h$.  Variable
+  $h$ in a tank within bounds $h_l\leq h\leq h_h$.  Variable
   $h_0$ stores an initial water level;  $\pi$ indicates whether the pump is
   on or off. The rate of change of the water-level is
   linear with slope $k\in\{-c_o,c_i-c_o\}$ (assuming $c_i>c_o$). The
@@ -951,8 +951,9 @@ specification statements by step-wise refinement incrementally and
 compositionally. A more powerful variant
 based on predicate transformers \`a la Back and von
 Wright~\cite{BackW98} has been developed in~\cite{MuniveS19};
-applications remain to be explored.  A previous approach to refinement
-in $\dL$~\cite{LoosP16} is quite different to the two standard calculi mentioned.
+yet applications remain to be explored.  A previous approach to refinement
+in $\dL$~\cite{LoosP16} is quite different to the two standard calculi
+mentioned (see Conclusion).
 
 \begin{example}[Thermostat refinement via solutions]\label{ex:therm-rsol}
   We now construct program \isa{therm} from Example~\ref{ex:therm-sol}
@@ -1079,7 +1080,7 @@ those for the first two assignment and the evolution commands. \qed
 \isa{tank{\isacharunderscore}dinv} using the laws of $\dR$. As in
 Example~\ref{ex:therm-rsol}, after refining the first two assignments,
 tactic \isa{refinement} completes the construction of
-\isa{ctrl}. Then, the invariant is supplied via lemma
+\isa{ctrl}. After that, the invariant is supplied via lemma
 \isa{tank{\isacharunderscore}diff{\isacharunderscore}inv} from
 Example~\ref{ex:tank-inv} to construct \isa{dyn}. The final program is then
 constructed by transitivity of $\leq$. A more detailed derivation
@@ -1120,7 +1121,7 @@ for such evolution commands.
 \end{lemma}
 
 \begin{example}[Bouncing ball via Hoare logic and refinement]\label{ex:ball-hoare}
-  A ball of mass $m$ falls down from height $h\geq 0$, with
+  A ball  falls down from height $h\geq 0$, with
   $x$ denoting its position, $v$ its velocity and $g$ its
   acceleration. Its kinematics is modelled by the flow
 \begin{isabellebody}
@@ -1247,21 +1248,20 @@ different from $\dH$ and $\dL$. A differential refinement logic based
 on $\dL$ has been developed as part of Loos' PhD work~\cite{LoosP16}.
 It uses a proof system with inference rules for reasoning about
 inequalities between $\KAT$ expressions, which are interpreted as
-refinements between hybrid programs. According to the
-authors~\cite{LoosP16}, it differs substantially from the calculi
-developed by Back and von Wright~\cite{BackW98},
-Morgan~\cite{Morgan94} and others in that local instead of global
-refinement relations can be used. Nevertheless their logic has the
-same expressivity as $\dL$~\cite{LoosP16}, which is essentially a
-predicate transformer calculus for hybrid programs~\cite{MuniveS19}
-and thus a refinement calculus \`a la Back and von Wright. Ultimately,
-this suggests that Loos' logic is more expressive than our
-Morgan-style calculus, but the relative merits of the two approaches
-remain to be explored. The proof theory of $\dL$ has already been
-deeply embedded in proof assistants~\cite{BohrerRVVP17}, yet with a
-focus on soundness proofs for its inference rules and a mechanisation
-of its idiosyncratic substitution calculus, but not as prima facie
-verification components.
+refinements between hybrid programs. According to the authors, it
+differs substantially from the standard
+approaches~\cite{BackW98,Morgan94} in that local instead of global
+refinement relations can be used. Nevertheless their refinement logic
+has the same expressivity as $\dL$~\cite{LoosP16}, which is
+essentially a predicate transformer calculus for hybrid
+programs~\cite{MuniveS19} and thus a refinement calculus
+\`a la Back and von Wright. Ultimately, this suggests that Loos' logic
+is more expressive than our Morgan-style calculus, but the relative
+merits of the two approaches remain to be explored. The proof theory
+of $\dL$ has already been deeply embedded in proof
+assistants~\cite{BohrerRVVP17}, yet with a focus on soundness proofs
+for its inference rules and a mechanisation of its idiosyncratic
+substitution calculus, but not as prima facie verification components.
 
 The expressivity and complexity gap between Hoare logic and predicate
 transformer semantics is apparent within algebra. The weakest liberal
@@ -1277,16 +1277,16 @@ programs, the simple and more general setting of Hoare
 semigroups~\cite{Struth18} would support developing hybrid Hoare
 logics for total program correctness---where balls may bounce
 forever---or even for multirelational
-semantics~\cite{FurusawaS16,FurusawaS15} as needed for differential
-game logic~\cite{Platzer18}. This is left for future work.
+semantics~\cite{FurusawaS16,FurusawaS15}, which are relevant needed
+for differential game logic~\cite{Platzer18}. This is left for future
+work.
 
 \paragraph{Acknowledgements.}
 The authors wish to thank the reviewers for their very thorough and
-insightful comments, and to Andr\'e Platzer and Sergey Goncharov for
+insightful comments, and to Sergey Goncharov and Andr\'e Platzer for
 discussions on a preliminary version. The second author is sponsored
-by CONACYT's scholarship no. 440404. This work is also partly
-supported by the EPSRC project CyPhyAssure\footnote{CyPhyAssure
-  Project: \url{https://www.cs.york.ac.uk/circus/CyPhyAssure/}} (Grant
+by CONACYT's scholarship no. 440404; the third author is supported by
+the EPSRC project CyPhyAssure\footnote{\url{https://www.cs.york.ac.uk/circus/CyPhyAssure/}} (Grant
 EP/S001190/1).
 
 
