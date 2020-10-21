@@ -181,7 +181,7 @@
 \begin{itemize}
 \item Isabelle/HOL verification components for hybrid programs that
 \begin{itemize}
-\item benefit from huge libraries of topology, analysis, and ODEs;
+\item benefit from huge, impressive libraries of topology, analysis, ODEs;
 \item based on $\MKA$;
 \item work with weakest liberal preconditions;
 \item support various verification procedures for systems of ODEs, and
@@ -195,15 +195,15 @@
 %\item in the style of $\dL$.
 %\end{itemize}
 %\vspace{1em}
-\item Yet, program verification requires simpler methods:
+\item Yet, simpler solutions suffice for program verification:
 \begin{itemize}
-\item Hoare logic serves for program verification, and
-\item Morgan's refinement calculus is closely related.
+\item Hoare logic is enough for verification condition generation, and
+\item Morgan's refinement calculus suffices for program construction.
 \end{itemize}
 \end{itemize}
 \vspace{\baselineskip}
 \begin{center}
-\comcol{Can we obtain simpler Hoare logic and refinement calculus to do hybrid program verification?}
+\comcol{Do Hoare logic and refinement calculus suffice for hybrid program verification?}
 \end{center}
 \end{frame}
 
@@ -257,15 +257,15 @@ Development of minimal proof systems for verification of hybrid systems:
 
 \draw[->](4.2,0.2) -- (3.8,0.8);
 %}
-     \end{tikzpicture}
-     \end{center}
-\end{block}
+\end{tikzpicture}
+\end{center}
+\end{block}\vspace{-1.5em}
 \begin{block}{Tests}
 \begin{itemize}
 \item $(B,+,\seqcomp,0,1,\neg)$ is a boolean algebra,
 \item use $\alpha,\beta\in K$ and $p,q\in B$ where $B\subseteq K$,
-\item $\IF{p}{\alpha}{\beta} = p\seqcomp \alpha + \neg p \seqcomp \beta$, and
-%\item $\WHILE{p}{\alpha} = (p\seqcomp \alpha)^\ast \seqcomp \neg p$, and
+\item $\IF{p}{\alpha}{\beta} = p\seqcomp \alpha + \neg p \seqcomp \beta$,
+\item $\WHILE{p}{\alpha} = (p\seqcomp \alpha)^\ast \seqcomp \neg p$, and
 %\item $\LOOP{\alpha} = \alpha^*$, for $\alpha,\beta\in K$.
 \item $\hoare{p}{\alpha}{q}\leftrightarrow p\seqcomp\alpha\leq \beta\seqcomp q$
 \end{itemize}
@@ -305,7 +305,7 @@ $\comcol{\hoare{p}{\alpha}{q}\leftrightarrow (\forall s_1.\ p\, s_1 \rightarrow 
 \begin{equation*}
 \mcol{\lget_x:S\to A}\text{ and }\mcol{\lput_x:S\to A\to S}%(denoted $x : A \Longrightarrow S$)
 \end{equation*}
-\item $A$ provides values of variable while $S$ is the state space
+\item $A$ is a variable type while $S$ is the source
 \item They satisfy the axioms
 \begin{align*}
 \lget_x~(\lput_x~s~v) &= v\\ 
@@ -317,7 +317,7 @@ $\comcol{\hoare{p}{\alpha}{q}\leftrightarrow (\forall s_1.\ p\, s_1 \rightarrow 
 \end{block}
 %\vspace{\baselineskip}
 \begin{block}{}
-Semantics $S\to \Pow\, S$ for assignments are
+Semantics $S\to \Pow\, S$ for assignments is
 \[\comcol{(x:=e)\, s %=\{\id(x\mapsto e)\, s\}
 =\{\lput_x\, s\, (e\, s)\}}\]
 \end{block}
@@ -336,7 +336,7 @@ p_1\le p_2\land \hoare{p_2}{\alpha}{q_2}\land q_2\le q_1\ \rightarrow\ &
 \hoare{r\seqcomp p}{\alpha}{p}\ \rightarrow\ & \hoare{p}{\WHILE{r}{\alpha}}{\neg r\seqcomp p},\\
 &\hoare{\lambda s.\ q\, (\lput_x\, s\, (e\, s))}{x:=e}{q}.
 \end{align*}
-\item Extended to regular programs
+\item Adapted to regular programs
 \begin{align*}
 &\hoare{p}{\sskip}{p},\\
 &\hoare{p}{\aabort}{q},\\
@@ -608,12 +608,16 @@ p \le i\text{ and }\alpha\leq[i,i]\text{ and } i\le q.
 	\item derive a minimal logic $\dH$ for verification of hybrid programs,
 	\item obtain refinement components via the laws of $\dR$,
 	\end{itemize}
-\item Added lenses for better parsing and alternative program stores
+\item Lenses provide
+	\begin{itemize}
+	\item a more algebraic program store,
+	\item better parsing: nicer syntax,
+	\end{itemize}
 \item Future work:
 	\begin{itemize}
 	\item Explore total correctness,
 	\item Adversarial dynamics like in differential game logic,
-	\item Code generation of verified executable code,
+	\item Code generation for verified executable code,
 	\item Integrate with a CAS that supplies solutions and invariants, leaving the certification work to Isabelle.
 	\end{itemize}
 \end{itemize}
