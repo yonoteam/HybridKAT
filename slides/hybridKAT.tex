@@ -181,11 +181,11 @@
 \begin{itemize}
 \item Isabelle/HOL verification components for hybrid programs that
 \begin{itemize}
-\item benefit from huge, impressive libraries of topology, analysis, ODEs;
-\item based on $\MKA$;
-\item work with weakest liberal preconditions;
-\item support various verification procedures for systems of ODEs, and
-\item are correct by construction.
+\item benefit from huge, impressive libraries of topology, analysis, ODEs
+\item based on $\MKA$
+\item work with weakest liberal preconditions
+\item support various verification procedures for systems of ODEs
+\item are correct by construction
 \end{itemize}
 \vspace{1em}
 %\item They support verification procedures for systems of ODEs:
@@ -197,8 +197,8 @@
 %\vspace{1em}
 \item Yet, simpler solutions suffice for program verification:
 \begin{itemize}
-\item Hoare logic is enough for verification condition generation, and
-\item Morgan's refinement calculus suffices for program construction.
+\item Hoare logic is enough for verification condition generation
+\item Morgan's refinement calculus suffices for program construction
 \end{itemize}
 \end{itemize}
 \vspace{\baselineskip}
@@ -212,11 +212,11 @@
 \begin{frame}{Main Contributions}
 Development of minimal proof systems for verification of hybrid systems:
 \begin{enumerate}
-\item rules of differential Hoare logic $\dH$ based on $\KAT$;
-\item laws of differential refinement calculus $\dR$ based on $\rKAT$;
-\item integration of lenses as the store model;
-\item support invariant reasoning in the style of differential dynamic logic $\dL$, and
-\item tactics for automated verification condition generation.
+\item rules of differential Hoare logic $\dH$ based on $\KAT$
+\item laws of differential refinement calculus $\dR$ based on $\rKAT$
+\item integration of lenses as the store model
+\item invariant reasoning in the style of differential dynamic logic $\dL$
+\item tactics for automated verification condition generation
 \end{enumerate}
 \vspace{\baselineskip}
  \begin{center}
@@ -262,10 +262,10 @@ Development of minimal proof systems for verification of hybrid systems:
 \end{block}\vspace{-1.5em}
 \begin{block}{Tests}
 \begin{itemize}
-\item $(B,+,\seqcomp,0,1,\neg)$ is a boolean algebra,
-\item use $\alpha,\beta\in K$ and $p,q\in B$ where $B\subseteq K$,
-\item $\IF{p}{\alpha}{\beta} = p\seqcomp \alpha + \neg p \seqcomp \beta$,
-\item $\WHILE{p}{\alpha} = (p\seqcomp \alpha)^\ast \seqcomp \neg p$, and
+\item $(B,+,\seqcomp,0,1,\neg)$ is a boolean algebra
+\item use $\alpha,\beta\in K$ and $p,q\in B$ where $B\subseteq K$
+\item $\IF{p}{\alpha}{\beta} = p\seqcomp \alpha + \neg p \seqcomp \beta$
+\item $\WHILE{p}{\alpha} = (p\seqcomp \alpha)^\ast \seqcomp \neg p$
 %\item $\LOOP{\alpha} = \alpha^*$, for $\alpha,\beta\in K$.
 \item $\hoare{p}{\alpha}{q}\leftrightarrow p\seqcomp\alpha\leq \beta\seqcomp q$
 \end{itemize}
@@ -278,18 +278,18 @@ Development of minimal proof systems for verification of hybrid systems:
 \begin{frame}{State Transformer Model}
 Programs are functions $S\to\Pow\, S$:
 \begin{align*}
-(\alpha + \beta)\, s = &\ \alpha\, s \cup \beta\, s,\\
-(\alpha \seqcomp \beta)\, s = & (\alpha\circ_K \beta)\, s = \bigcup\{\beta\, s'\mid s'\in \alpha\, s\},\\
-0\, s = &\ \emptyset,\\
-1\, s = &\ \{s\},\\
+(\alpha + \beta)\, s = &\ \alpha\, s \cup \beta\, s\\
+(\alpha \seqcomp \beta)\, s = & (\alpha\circ_K \beta)\, s = \bigcup\{\beta\, s'\mid s'\in \alpha\, s\}\\
+0\, s = &\ \emptyset\\
+1\, s = &\ \{s\}\\
 (\neg p)\, s = &\  
 	\begin{cases}
-	\{s\}, & \text{ if } p\, s=\emptyset,\\
-	\emptyset, & \text{ otherwise},
+	\{s\}, & \text{ if } p\, s=\emptyset\\
+	\emptyset, & \text{ otherwise}
 	\end{cases}\\
-\alpha^*\, s = &\ \bigcup_{n\geq 0}\alpha^n\, s,
+\alpha^*\, s = &\ \bigcup_{n\geq 0}\alpha^n\, s
 \end{align*}
-where $\alpha^{0}\, s=1\, s$ and $\alpha^{n+1}=\alpha^n\circ_K\alpha$.
+where $\alpha^{0}\, s=1\, s$ and $\alpha^{n+1}=\alpha^n\circ_K\alpha$
 \vspace{\baselineskip}
 \begin{center}
 $\comcol{\hoare{p}{\alpha}{q}\leftrightarrow (\forall s_1.\ p\, s_1 \rightarrow (\forall s_2.\ s_2 \in \alpha\, s_1\rightarrow q\, s))}$
@@ -309,8 +309,8 @@ $\comcol{\hoare{p}{\alpha}{q}\leftrightarrow (\forall s_1.\ p\, s_1 \rightarrow 
 \item They satisfy the axioms
 \begin{align*}
 \lget_x~(\lput_x~s~v) &= v\\ 
-\lput_x~(\lput_x~s~u)~v &= \lput_x~s~v,\\
-\lput_x~s~(\lget_x~s) &= s.
+\lput_x~(\lput_x~s~u)~v &= \lput_x~s~v\\
+\lput_x~s~(\lget_x~s) &= s
 \end{align*}
 %\item They allow us to model updates $f(x\mapsto e)\, s=\lput_x\, (f\, s)\, (e\, s)$ for $f:S\to S$ and $e:S\to A$.
 \end{itemize}
@@ -331,19 +331,19 @@ Semantics $S\to \Pow\, S$ for assignments is
 \begin{align*}
 p_1\le p_2\land \hoare{p_2}{\alpha}{q_2}\land q_2\le q_1\ \rightarrow\ &
 \hoare{p_1}{\alpha}{q_1}\\
-\hoare{p}{\alpha}{r}\land\hoare{r}{\beta}{q}\rightarrow\ &\hoare{p}{\alpha\seqcomp\beta}{q},\\
-\hoare{r\seqcomp p}{\alpha}{q}\land \hoare{\neg r\seqcomp p}{\beta}{q}\ \rightarrow\ &\hoare{p}{\IF{r}{\alpha}{\beta}}{q},\\
-\hoare{r\seqcomp p}{\alpha}{p}\ \rightarrow\ & \hoare{p}{\WHILE{r}{\alpha}}{\neg r\seqcomp p},\\
-&\hoare{\lambda s.\ q\, (\lput_x\, s\, (e\, s))}{x:=e}{q}.
+\hoare{p}{\alpha}{r}\land\hoare{r}{\beta}{q}\rightarrow\ &\hoare{p}{\alpha\seqcomp\beta}{q}\\
+\hoare{r\seqcomp p}{\alpha}{q}\land \hoare{\neg r\seqcomp p}{\beta}{q}\ \rightarrow\ &\hoare{p}{\IF{r}{\alpha}{\beta}}{q}\\
+\hoare{r\seqcomp p}{\alpha}{p}\ \rightarrow\ & \hoare{p}{\WHILE{r}{\alpha}}{\neg r\seqcomp p}\\
+&\hoare{\lambda s.\ q\, (\lput_x\, s\, (e\, s))}{x:=e}{q}
 \end{align*}
 \item Adapted to regular programs
 \begin{align*}
-&\hoare{p}{\sskip}{p},\\
-&\hoare{p}{\aabort}{q},\\
-\hoare{p}{\alpha}{q}\land\hoare{p}{\beta}{q}\rightarrow\ &\hoare{p}{\alpha+\beta}{q},\\
-\hoare{p}{\alpha}{p}\rightarrow\ & \hoare{p}{\LOOP{\alpha}}{p},
+&\hoare{p}{\sskip}{p}\\
+&\hoare{p}{\aabort}{q}\\
+\hoare{p}{\alpha}{q}\land\hoare{p}{\beta}{q}\rightarrow\ &\hoare{p}{\alpha+\beta}{q}\\
+\hoare{p}{\alpha}{p}\rightarrow\ & \hoare{p}{\LOOP{\alpha}}{p}
 \end{align*}
-where $\LOOP{\alpha}=\alpha^*$, $\sskip=1$, and $\aabort=0$.
+where $\LOOP{\alpha}=\alpha^*$, $\sskip=1$, and $\aabort=0$
 \end{itemize}
 \vspace{\baselineskip}
 \end{frame}
@@ -395,19 +395,19 @@ $\comcol{\text{orbit}:s\mapsto \{X\, t\mid t\in T\}}$
 \begin{itemize}
 \item $I$ is an invariant for $f$ iff $\hoare{I}{x'{=}f\, \&\, G}{I}$, or equivalently
 \begin{equation*}
-\mcol{\bigcup (\Pow\, (x'{=}f\, \&\, G)\,  I)\subseteq I},
+\mcol{\bigcup (\Pow\, (x'{=}f\, \&\, G)\,  I)\subseteq I}
 \end{equation*}
 \item We obtain the following rules
 \begin{align*}
-p\le i \land \hoare{i}{\alpha}{i}\land i\le q\ \rightarrow\ & \hoare{p}{\INV{\alpha}{i}}{q},\\
-\hoare{i}{\alpha}{i} \land \hoare{j}{\alpha}{j}\rightarrow\ &\hoare{i\seqcomp j}{\alpha}{i\seqcomp j},\\
-\hoare{i}{\alpha}{i} \land \hoare{j}{\alpha}{j}\rightarrow\ &\hoare{i+ j}{\alpha}{i+ j},\\
-p \le i \land \hoare{i\seqcomp t}{\alpha}{i} \land \neg r\seqcomp i\le q\ \rightarrow \ & \hoare{p}{\INV{\WHILE{r}{\alpha}}{i}}{q},\\
+p\le i \land \hoare{i}{\alpha}{i}\land i\le q\ \rightarrow\ & \hoare{p}{\INV{\alpha}{i}}{q}\\
+\hoare{i}{\alpha}{i} \land \hoare{j}{\alpha}{j}\rightarrow\ &\hoare{i\seqcomp j}{\alpha}{i\seqcomp j}\\
+\hoare{i}{\alpha}{i} \land \hoare{j}{\alpha}{j}\rightarrow\ &\hoare{i+ j}{\alpha}{i+ j}\\
+p \le i \land \hoare{i\seqcomp t}{\alpha}{i} \land \neg r\seqcomp i\le q\ \rightarrow \ & \hoare{p}{\INV{\WHILE{r}{\alpha}}{i}}{q}\\
 p\le i \land \hoare{i}{\alpha}{i}\land i\le q\ \rightarrow\ &
-\hoare{p}{\INV{\LOOP{\alpha}}{i}}{q},\\
-\comcol{p\le i \land i\text{ is inv. for }f\land (G\seqcomp i)\le q\ \rightarrow}\ & \comcol{\hoare{p}{\INV{x' = f \, \&\, G}{i}}{q}}.
+\hoare{p}{\INV{\LOOP{\alpha}}{i}}{q}\\
+\comcol{p\le i \land i\text{ is inv. for }f\land (G\seqcomp i)\le q\ \rightarrow}\ & \comcol{\hoare{p}{\INV{x' = f \, \&\, G}{i}}{q}}
 \end{align*}
-where operationally $\INV{\alpha}{i}=\alpha$.
+where operationally $\INV{\alpha}{i}=\alpha$
 \end{itemize}
 \vspace{\baselineskip}
 \end{frame}
@@ -497,19 +497,19 @@ Lenses $\Pi[n]=(\reals,\reals^{\{0,1,2,3\}},\lambda s.\ s\, n,\lambda s\, t.\ s[
 \begin{frame}{Differential Refinement Calculus $\dR$}
 Extend $\KAT$ with refinement operation $[-,-]:B\times B\to K$ such that
 \begin{equation*}
-\mcol{\{p\}\, \alpha\, \{q\} \leftrightarrow \alpha\le [p,q]}.
+\mcol{\{p\}\, \alpha\, \{q\} \leftrightarrow \alpha\le [p,q]}
 \end{equation*}
 
 Obtain traditional Morgan Style Refinement laws:
 \begin{align*}
-\sskip &\le [p,p],\\
+\sskip &\le [p,p]\\
 \aabort & \le [p,q],\\
-[p',q'] &\le [p,q],\qquad \text{ if } p\le p'\text{ and } q'\le q,\\
-[p,r]\seqcomp [r,q] &\le [p,q],\\
-[p,q]+ [p,q] &\le [p,q],\\
-\IF{t}{[t\seqcomp p,q]}{[\neg t\seqcomp p,q]} &\le [p,q],\\
- \WHILE{t}{[t\seqcomp p,p]} &\le [p,\neg t\seqcomp p],\\
-\LOOP{[p,p]} &\le [p,p].
+[p',q'] &\le [p,q]\qquad \text{ if } p\le p'\text{ and } q'\le q\\
+[p,r]\seqcomp [r,q] &\le [p,q]\\
+[p,q]+ [p,q] &\le [p,q]\\
+\IF{t}{[t\seqcomp p,q]}{[\neg t\seqcomp p,q]} &\le [p,q]\\
+ \WHILE{t}{[t\seqcomp p,p]} &\le [p,\neg t\seqcomp p]\\
+\LOOP{[p,p]} &\le [p,p]
 \end{align*}
 \end{frame}
 
@@ -517,11 +517,11 @@ Obtain traditional Morgan Style Refinement laws:
 
 \begin{frame}{More Refinement Laws}
 \begin{itemize}
-\item Laws for assignments $(x := e) \le  \left[\lambda s.\ Q\, (\lput_x\, s\, (e\, s)),Q\right]$.
+\item Laws for assignments $(x := e) \le  \left[\lambda s.\ Q\, (\lput_x\, s\, (e\, s)),Q\right]$
 \item Laws for evolution commands where $X'\, t = f\, (X\, t)$ and $X\, 0 = s$
 \begin{gather*}
 (x' = f\, \&\, G) \leq [\lambda s\in S.\forall t\in T.\ (\forall
-\tau\in [0,t].\ G\, (X\, \tau))\to Q\, (X\, t),Q].%,\\
+\tau\in [0,t].\ G\, (X\, \tau))\to Q\, (X\, t),Q]%,\\
 %(x' = f\, \&\, G) \seqcomp \left[Q,Q\right]\leq [\lambda s\in S. \forall t\in T.\ (\forall
 %\tau\in[0,t].\ G\, (X\, \tau))\to Q\, (X\, t),Q],\\
 %\left[Q,\lambda s\in S. \forall t\in T.\ (\forall
@@ -529,13 +529,13 @@ Obtain traditional Morgan Style Refinement laws:
 \end{gather*}
 \item Monotonoic laws and laws with invariants 
 \begin{align*}
- \IF{t}{\alpha_1}{\beta_1}&\leq \IF{t}{\alpha_2}{\beta_2},\quad\text{if }\alpha_1\leq\alpha_2\text{ and }\beta_1\leq\beta_2;\\
- \WHILE{t}{\alpha_1} &\leq \WHILE{t}{\alpha_2},\qquad\hspace{1.65em}\text{if }\alpha_1\leq\alpha_2;\\
-\LOOP{\alpha_1} &\leq \LOOP{\alpha_2},\qquad\hspace{4.3em}\text{if }\alpha_1\leq\alpha_2;\\
+ \IF{t}{\alpha_1}{\beta_1}&\leq \IF{t}{\alpha_2}{\beta_2}\quad\text{if }\alpha_1\leq\alpha_2\text{ and }\beta_1\leq\beta_2\\
+ \WHILE{t}{\alpha_1} &\leq \WHILE{t}{\alpha_2}\qquad\hspace{1.65em}\text{if }\alpha_1\leq\alpha_2\\
+\LOOP{\alpha_1} &\leq \LOOP{\alpha_2}\qquad\hspace{4.3em}\text{if }\alpha_1\leq\alpha_2\\
 \INV{\WHILE{t}{\alpha}}{i}&\leq [p,q]\quad\text{if }
-p \le i\seqcomp t\text{ and }\alpha\leq[i,i]\text{ and }\neg t\seqcomp i\le q;\\
+p \le i\seqcomp t\text{ and }\alpha\leq[i,i]\text{ and }\neg t\seqcomp i\le q\\
 \INV{\LOOP{\alpha}}{i}&\leq[p,q]\quad\text{if }
-p \le i\text{ and }\alpha\leq[i,i]\text{ and } i\le q.
+p \le i\text{ and }\alpha\leq[i,i]\text{ and } i\le q
 \end{align*}
 \end{itemize}
 \vspace{\baselineskip}
@@ -605,20 +605,20 @@ p \le i\text{ and }\alpha\leq[i,i]\text{ and } i\le q.
 \begin{itemize}
 \item Used modular semantic framework in Isabelle/HOL to
 	\begin{itemize}
-	\item derive a minimal logic $\dH$ for verification of hybrid programs,
-	\item obtain refinement components via the laws of $\dR$,
+	\item derive a minimal logic $\dH$ for verification of hybrid programs
+	\item obtain refinement components via the laws of $\dR$
 	\end{itemize}
 \item Lenses provide
 	\begin{itemize}
-	\item a more algebraic program store,
-	\item better parsing: nicer syntax,
+	\item a more algebraic program store
+	\item better parsing: nicer syntax
 	\end{itemize}
 \item Future work:
 	\begin{itemize}
-	\item Explore total correctness,
-	\item Adversarial dynamics like in differential game logic,
-	\item Code generation for verified executable code,
-	\item Integrate with a CAS that supplies solutions and invariants, leaving the certification work to Isabelle.
+	\item Explore total correctness
+	\item Adversarial dynamics like in differential game logic
+	\item Code generation for verified executable code
+	\item Integrate with a CAS that supplies solutions and invariants, leaving the certification work to Isabelle
 	\end{itemize}
 \end{itemize}
 \vspace{\baselineskip}
