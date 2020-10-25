@@ -182,7 +182,7 @@
 
 \begin{frame}{Previous Work}
 \begin{itemize}
-\item Framework for verification of hybrid programs in a general purpose proof assistant:
+\item Modular and extensible semantic framework for verification of hybrid programs in a general purpose proof assistant:
 \begin{itemize}
 \item implemented in Isabelle/HOL
 \item benefits from huge, impressive libraries of topology, analysis, ODEs
@@ -338,7 +338,7 @@ p_1\le p_2\land \hoare{p_2}{\alpha}{q_2}\land q_2\le q_1\ \rightarrow\ &
 \hoare{r\seqcomp p}{\alpha}{p}\ \rightarrow\ & \hoare{p}{\WHILE{r}{\alpha}}{\neg r\seqcomp p}\\
 &\hoare{\lambda s.\ q\, (\lput_x\, s\, (e\, s))}{x:=e}{q}
 \end{align*}
-\item Adapted to regular programs
+\item Extended with $\dL$'s hybrid programs
 \begin{align*}
 &\hoare{p}{\sskip}{p}\\
 &\hoare{p}{\aabort}{q}\\
@@ -382,7 +382,7 @@ $\comcol{\text{orbit}:s\mapsto \{X\, t\mid t\in T\}}$
 	\end{itemize}
  \end{block}
 %\vspace{\baselineskip}
-\centering\comcol{easy to obtain if there is a unique solution $X:T\to S$ to the IVPs\\ associated to each $s$ and the vector field $f$}
+\centering\comcol{easy to obtain if there is a unique solution $X:T\to S$ to the IVPs\\ associated to each $s$ and the vector field $f$ (Picard-Lindel\"of's Theorem)}
 %\begin{block}{Verification Rule}
 %\begin{gather*}
 %\frac{\forall s\in S.\exists!X:T\to S.\ X\, 0=s\land(\forall t\in T.\ \comcol{X'\, t=f\, t\, (X\, t)})}{\hoare{\lambda s.\ s\in S\rightarrow\forall t\in T.\ \left(\forall \tau\in [0,t].\ G\, (X\, t)\right)\to q\, (X\, t)}{x' = f \ \&\ G}{q}}
