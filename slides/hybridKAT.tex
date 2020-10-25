@@ -139,6 +139,9 @@
 \vspace{-3.5ex}
 }
 
+% THE IMPORTANT THING IS WHY????
+% COMMUNICATE AT ADEQUATE LEVEL OF ABSTRACTION
+% not too detailed as if it were a class, not too abstract as if you do not know
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -170,7 +173,7 @@
 \mathsf{control}\ &=\ t:=0\seqcomp T_0:=T\seqcomp\dots \\
 \mathsf{therm}\ &=\ (\mathsf{control}\seqcomp \mathsf{dynamics})^* &&
                  \text{\textcolor{red}{hybrid program}}\\
-\{\mathsf{pre}\} &\, \mathsf{therm}\, \{\mathsf{pos}\} &&
+\mathsf{pre} &\leq\ \ffbox{\mathsf{therm}}{\mathsf{pos}} &&
                  \text{\textcolor{red}{correctness spec}}
 \end{align*}
 \end{frame}
@@ -179,13 +182,14 @@
 
 \begin{frame}{Previous Work}
 \begin{itemize}
-\item Isabelle/HOL verification components for hybrid programs that
+\item Framework for verification of hybrid programs in a general purpose proof assistant:
 \begin{itemize}
-\item benefit from huge, impressive libraries of topology, analysis, ODEs
+\item implemented in Isabelle/HOL
+\item benefits from huge, impressive libraries of topology, analysis, ODEs
 \item based on $\MKA$
-\item work with weakest liberal preconditions
-\item support various verification procedures for systems of ODEs
-\item are correct by construction
+\item works with weakest liberal preconditions
+\item supports various verification procedures for systems of ODEs
+\item correct by construction
 \end{itemize}
 \vspace{1em}
 %\item They support verification procedures for systems of ODEs:
@@ -203,17 +207,17 @@
 \end{itemize}
 \vspace{\baselineskip}
 \begin{center}
-\comcol{Do Hoare logic and refinement calculus suffice for hybrid program verification?}
+\comcol{Do these calculi suffice for hybrid program verification?}
 \end{center}
 \end{frame}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \begin{frame}{Main Contributions}
-Development of minimal proof systems for verification of hybrid systems:
+Development of minimalist proof systems for hybrid system verification:
 \begin{enumerate}
-\item rules of differential Hoare logic $\dH$ based on $\KAT$
-\item laws of differential refinement calculus $\dR$ based on $\rKAT$
+\item differential Hoare logic $\dH$ based on $\KAT$
+\item differential refinement calculus $\dR$ based on $\rKAT$
 \item integration of lenses as the store model
 \item invariant reasoning in the style of differential dynamic logic $\dL$
 \item tactics for automated verification condition generation
@@ -282,17 +286,15 @@ Programs are functions $S\to\Pow\, S$:
 (\alpha \seqcomp \beta)\, s = & (\alpha\circ_K \beta)\, s = \bigcup\{\beta\, s'\mid s'\in \alpha\, s\}\\
 0\, s = &\ \emptyset\\
 1\, s = &\ \{s\}\\
+\alpha^*\, s = &\ \bigcup_{n\geq 0}\alpha^n\, s\text{\color{black}\ where } \alpha^{0}\, s=1\, s\text{\color{black}\ and } \alpha^{n+1}=\alpha^n\circ_K\alpha\\
 (\neg p)\, s = &\  
 	\begin{cases}
-	\{s\}, & \text{ if } p\, s=\emptyset\\
-	\emptyset, & \text{ otherwise}
+	\{s\}, & \text{\color{black}\ if } p\, s=\emptyset\\
+	\emptyset, & \text{\color{black}\  otherwise}
 	\end{cases}\\
-\alpha^*\, s = &\ \bigcup_{n\geq 0}\alpha^n\, s
 \end{align*}
-where $\alpha^{0}\, s=1\, s$ and $\alpha^{n+1}=\alpha^n\circ_K\alpha$
-\vspace{\baselineskip}
 \begin{center}
-$\comcol{\hoare{p}{\alpha}{q}\leftrightarrow (\forall s_1.\ p\, s_1 \rightarrow (\forall s_2.\ s_2 \in \alpha\, s_1\rightarrow q\, s))}$
+$\comcol{\hoare{p}{\alpha}{q}\leftrightarrow (\forall s_1.\ p\, s_1 \rightarrow (\forall s_2.\ s_2 \in \alpha\, s_1\rightarrow q\, s_2))}$
 \end{center}
 \end{frame}
 
@@ -301,7 +303,7 @@ $\comcol{\hoare{p}{\alpha}{q}\leftrightarrow (\forall s_1.\ p\, s_1 \rightarrow 
 \begin{frame}{What about Assignments?}
 \begin{block}{Lenses}
 \begin{itemize}
-\item Variables are lenses $x = (A, S, \lget_x, \lput_x)$ where
+\item Variables are lenses $x = (A, S, \lget_x, \lput_x)$ denoted $x : A \Longrightarrow S$ where
 \begin{equation*}
 \mcol{\lget_x:S\to A}\text{ and }\mcol{\lput_x:S\to A\to S}%(denoted $x : A \Longrightarrow S$)
 \end{equation*}
@@ -425,7 +427,7 @@ Provide vector field and unique solution
 \isanewline
 \isacommand{abbreviation}\ {\isachardoublequoteopen}\mcol{f\ a\ c\ {\isasymequiv}\ {\isacharbrackleft}T\ {\isasymmapsto}\isactrlsub s\ {\isacharminus}\ {\isacharparenleft}a\ {\isacharasterisk}\ {\isacharparenleft}T\ {\isacharminus}\ c{\isacharparenright}{\isacharparenright}{\isacharcomma}\ T\isactrlsub {\isadigit{0}}\ {\isasymmapsto}\isactrlsub s\ {\isadigit{0}}{\isacharcomma}\ {\isasymtheta}\ {\isasymmapsto}\isactrlsub s\ {\isadigit{0}}{\isacharcomma}\ t\ {\isasymmapsto}\isactrlsub s\ {\isadigit{1}}{\isacharbrackright}}{\isachardoublequoteclose}\isanewline
 
-\isacommand{abbreviation}\ {\isachardoublequoteopen}\mcol{{\isasymphi}\ a\ c\ {\isasymtau}\ {\isasymequiv}\ {\isacharbrackleft}T\ {\isasymmapsto}\isactrlsub s\ {\isacharminus}\ exp{\isacharparenleft}{\isacharminus}a\ {\isacharasterisk}\ {\isasymtau}{\isacharparenright}\ {\isacharasterisk}\ {\isacharparenleft}c\ {\isacharminus}\ T{\isacharparenright}\ {\isacharplus}\ c{\isacharcomma}\isanewline
+\isacommand{abbreviation}\ {\isachardoublequoteopen}\mcol{{\isasymphi}\ a\ c\ {\isasymtau}\ {\isasymequiv}\ {\isacharbrackleft}T\ {\isasymmapsto}\isactrlsub s\ {\isacharminus}\ $\comcol{\mathbf{exp}}$\ {\isacharparenleft}{\isacharminus}a\ {\isacharasterisk}\ {\isasymtau}{\isacharparenright}\ {\isacharasterisk}\ {\isacharparenleft}c\ {\isacharminus}\ T{\isacharparenright}\ {\isacharplus}\ c{\isacharcomma}\isanewline
 \ \ \ \ T\isactrlsub {\isadigit{0}}\ {\isasymmapsto}\isactrlsub s\ T\isactrlsub {\isadigit{0}}{\isacharcomma}\ {\isasymtheta}\ {\isasymmapsto}\isactrlsub s\ {\isasymtheta}{\isacharcomma}\ t\ {\isasymmapsto}\isactrlsub s\ {\isasymtau}\ {\isacharplus}\ t{\isacharbrackright}}{\isachardoublequoteclose}\isanewline
 \end{isabellebody}
 \end{block}
@@ -543,6 +545,35 @@ p \le i\text{ and }\alpha\leq[i,i]\text{ and } i\le q
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+\begin{frame}{Conclusions}
+\begin{itemize}
+\item Used modular semantic framework in Isabelle/HOL to
+	\begin{itemize}
+	\item derive a minimalist logic $\dH$ for verification of hybrid programs
+	\item obtain refinement components via the laws of $\dR$
+	\end{itemize}
+\item Lenses provide
+	\begin{itemize}
+	\item a more algebraic program store
+	\item better parsing: nicer syntax
+	\end{itemize}
+\item Future work:
+	\begin{itemize}
+	\item Explore total correctness
+	\item Adversarial dynamics and other extensions of $\dL$
+	\item Extension of related libraries of formalised mathematics 
+	\item Code generation for verified executable code
+	\item Integrate with a CAS that supplies solutions and invariants, leaving the certification work to Isabelle
+	\end{itemize}
+\end{itemize}
+\vspace{\baselineskip}
+\begin{center}
+{\small \textcolor{blue}{\url{https://github.com/yonoteam/CPSVerification}}}
+\end{center}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \begin{frame}{Refinement of the Thermostat}
 \alt<2->{
 \begin{isabellebody}
@@ -601,78 +632,50 @@ p \le i\text{ and }\alpha\leq[i,i]\text{ and } i\le q
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\begin{frame}{Conclusions}
-\begin{itemize}
-\item Used modular semantic framework in Isabelle/HOL to
-	\begin{itemize}
-	\item derive a minimal logic $\dH$ for verification of hybrid programs
-	\item obtain refinement components via the laws of $\dR$
-	\end{itemize}
-\item Lenses provide
-	\begin{itemize}
-	\item a more algebraic program store
-	\item better parsing: nicer syntax
-	\end{itemize}
-\item Future work:
-	\begin{itemize}
-	\item Explore total correctness
-	\item Adversarial dynamics like in differential game logic
-	\item Code generation for verified executable code
-	\item Integrate with a CAS that supplies solutions and invariants, leaving the certification work to Isabelle
-	\end{itemize}
-\end{itemize}
+\begin{frame}{Verification Rules of $\dH$}
+\begin{block}{\mbox{}}
+\begin{gather*}
+\frac{}{\hoare{q}{1}{q}}\qquad
+\frac{}{\hoare{\lambda s.\ q\, (\lput_x\, s\, (e\, s))}{x:=e}{q}}\qquad
+\frac{\hoare{p}{\alpha}{r}\quad\hoare{r}{\beta}{q}}{\hoare{p}{\alpha;\beta}{q}}\\
+\mbox{}\\
+\mbox{}\\
+\frac{\hoare{r\land p}{\alpha}{q}\quad\hoare{\neg r\land p}{\beta}{q}}{\hoare{p}{\IF{r}{\alpha}{\beta}}{q}}\qquad
+\frac{\hoare{p\land r}{\alpha}{q}}{\hoare{p}{\WHILE{r}{\alpha}}{\neg r\land q}}\\
+\mbox{}\\
+\mbox{}\\
+\frac{p\to r_1\quad\hoare{r_1}{\alpha}{r_2}\quad r_2\to q}{\hoare{p}{\alpha}{q}}
+\mbox{}\\
+\mbox{}\\
+\comcol{\frac{\forall s\in S.\exists!X:T\to S.\ X\, 0=s\land(\forall t\in T.\ X'\, t=f\, t\, (X\, t))}{\hoare{\lambda s.\ s\in S\rightarrow\forall t\in T.\ \left(\forall \tau\in [0,t].\ G\, (X\, t)\right)\to q\, (X\, t)}{x' = f \ \&\ G}{q}}}
+\end{gather*}
+\end{block}
 \vspace{\baselineskip}
-\begin{center}
-{\small \textcolor{blue}{\url{https://github.com/yonoteam/CPSVerification}}}
-\end{center}
 \end{frame}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%\begin{frame}{Verification Rules of $\dH$}
-%\begin{block}{\mbox{}}
-%\begin{gather*}
-%\frac{}{\hoare{q}{1}{q}}\qquad
-%\frac{}{\hoare{\lambda s.\ q\, (\lput_x\, s\, (e\, s))}{x:=e}{q}}\qquad
-%\frac{\hoare{p}{\alpha}{r}\quad\hoare{r}{\beta}{q}}{\hoare{p}{\alpha;\beta}{q}}\\
-%\mbox{}\\
-%\mbox{}\\
-%\frac{\hoare{r\land p}{\alpha}{q}\quad\hoare{\neg r\land p}{\beta}{q}}{\hoare{p}{\IF{r}{\alpha}{\beta}}{q}}\qquad
-%\frac{\hoare{p\land r}{\alpha}{q}}{\hoare{p}{\WHILE{r}{\alpha}}{\neg r\land q}}\\
-%\mbox{}\\
-%\mbox{}\\
-%\frac{p\to r_1\quad\hoare{r_1}{\alpha}{r_2}\quad r_2\to q}{\hoare{p}{\alpha}{q}}
-%\mbox{}\\
-%\mbox{}\\
-%\comcol{\frac{\forall s\in S.\exists!X:T\to S.\ X\, 0=s\land(\forall t\in T.\ X'\, t=f\, t\, (X\, t))}{\hoare{\lambda s.\ s\in S\rightarrow\forall t\in T.\ \left(\forall \tau\in [0,t].\ G\, (X\, t)\right)\to q\, (X\, t)}{x' = f \ \&\ G}{q}}}
-%\end{gather*}
-%\end{block}
-%\vspace{\baselineskip}
-%\end{frame}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-%\begin{frame}{Extended verification Rules of $\dH$}
-%\begin{block}{\mbox{}}
-%\begin{gather*}
-%\frac{}{\hoare{q}{1}{q}}\qquad
-%\frac{}{\hoare{\lambda s.\ q\, (\lput_x\, s\, (e\, s))}{x:=e}{q}}\qquad
-%\frac{}{\hoare{p}{0}{q}}\qquad\\
-%\mbox{}\\
-%\mbox{}\\
-%\frac{\hoare{p}{\alpha}{q}\quad\hoare{p}{\beta}{q}}{\hoare{p}{\alpha+\beta}{q}}\qquad
-%\frac{\hoare{p}{\alpha}{r}\quad\hoare{r}{\beta}{q}}{\hoare{p}{\alpha;\beta}{q}}\\
-%\mbox{}\\
-%\mbox{}\\
-%\frac{p\to r_1\quad\hoare{r_1}{\alpha}{r_2}\quad r_2\to q}{\hoare{p}{\alpha}{q}}\qquad
-%\frac{\hoare{p}{\alpha}{p}}{\hoare{p}{\alpha^*}{p}}
-%\mbox{}\\
-%\mbox{}\\
-%\comcol{\frac{\forall s\in S.\exists!X:T\to S.\ X\, 0=s\land(\forall t\in T.\ X'\, t=f\, t\, (X\, t))}{\hoare{\lambda s.\ s\in S\rightarrow\forall t\in T.\ \left(\forall \tau\in [0,t].\ G\, (X\, t)\right)\to q\, (X\, t)}{x' = f \ \&\ G}{q}}}
-%\end{gather*}
-%\end{block}
-%\vspace{\baselineskip}
-%\end{frame}
+\begin{frame}{Extended verification Rules of $\dH$}
+\begin{block}{\mbox{}}
+\begin{gather*}
+\frac{}{\hoare{q}{1}{q}}\qquad
+\frac{}{\hoare{\lambda s.\ q\, (\lput_x\, s\, (e\, s))}{x:=e}{q}}\qquad
+\frac{}{\hoare{p}{0}{q}}\qquad\\
+\mbox{}\\
+\mbox{}\\
+\frac{\hoare{p}{\alpha}{q}\quad\hoare{p}{\beta}{q}}{\hoare{p}{\alpha+\beta}{q}}\qquad
+\frac{\hoare{p}{\alpha}{r}\quad\hoare{r}{\beta}{q}}{\hoare{p}{\alpha;\beta}{q}}\\
+\mbox{}\\
+\mbox{}\\
+\frac{p\to r_1\quad\hoare{r_1}{\alpha}{r_2}\quad r_2\to q}{\hoare{p}{\alpha}{q}}\qquad
+\frac{\hoare{p}{\alpha}{p}}{\hoare{p}{\alpha^*}{p}}
+\mbox{}\\
+\mbox{}\\
+\comcol{\frac{\forall s\in S.\exists!X:T\to S.\ X\, 0=s\land(\forall t\in T.\ X'\, t=f\, t\, (X\, t))}{\hoare{\lambda s.\ s\in S\rightarrow\forall t\in T.\ \left(\forall \tau\in [0,t].\ G\, (X\, t)\right)\to q\, (X\, t)}{x' = f \ \&\ G}{q}}}
+\end{gather*}
+\end{block}
+\vspace{\baselineskip}
+\end{frame}
 
 
 \end{document}
