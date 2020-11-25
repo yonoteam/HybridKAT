@@ -375,7 +375,7 @@ $\comcol{\text{orbit}:s\mapsto \{X\, t\mid t\in T\}}$
 \[\mcol{\Sols f\, T\, s = \left\{X:T\to S \mid (\forall t\in T.\  X'\, t = f\, t\, (X\, t)\land X\, 0 = s\right\}}\]
 	\item Guarded orbit
 \[\mcol{\mathsf{orbit}^X_G\, s = \{X\, t\mid t \in T\land (\forall \tau\in[0,t].\ G\, (X\, \tau))\}}\]
-	\item Semantics $S\to \Pow\, S$ for assignments are
+	\item Semantics $S\to \Pow\, S$ for evolution commands are
 \[\mcol{(x' = f \ \&\ G)\, s = \bigcup\{\mathsf{orbit}^X_G\, s\mid X\in\Sols f\, T\, s \}}\]	
 	\item The corresponding rule of inference is
 \[\comcol{\{\lambda\, s.\ \forall t\in T.\ \left(\forall \tau\in [0,t].\ G\, (X\, t)\right)\to Q\, (X\, t)\}\ (x'{=}f\, \&\, G)\ \{Q\}}\]
