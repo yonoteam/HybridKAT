@@ -173,7 +173,7 @@ lemma ndfun_kat_H: "H \<lceil>P\<rceil> X \<lceil>Q\<rceil> \<longleftrightarrow
 
 abbreviation HTriple ("\<^bold>{_\<^bold>} _ \<^bold>{_\<^bold>}") where "\<^bold>{P\<^bold>}X\<^bold>{Q\<^bold>} \<equiv> H \<lceil>P\<rceil> X \<lceil>Q\<rceil>"
 
-utp_lift_notation HTriple (0 2)
+utp_lift_notation HTriple (1)
 
 \<comment> \<open> Hoare triple for skip and a simp-rule \<close>
 
@@ -282,7 +282,7 @@ lemma assign_commute: "\<lbrakk> x \<bowtie> y; x \<sharp> f; y \<sharp> e \<rbr
 abbreviation cond_sugar :: "'a upred \<Rightarrow> 'a nd_fun \<Rightarrow> 'a nd_fun \<Rightarrow> 'a nd_fun" ("IF _ THEN _ ELSE _" [64,64] 63) 
   where "IF B THEN X ELSE Y \<equiv> ifthenelse \<lceil>B\<rceil> X Y"
 
-utp_lift_notation cond_sugar (0)
+utp_lift_notation cond_sugar (1 2)
 
 lemma H_cond: "\<^bold>{P \<and> B\<^bold>} X \<^bold>{Q\<^bold>} \<Longrightarrow> \<^bold>{P \<and> \<not> B\<^bold>} Y \<^bold>{Q\<^bold>} \<Longrightarrow> \<^bold>{P\<^bold>} IF B THEN X ELSE Y \<^bold>{Q\<^bold>}"
   by (rule H_cond, simp_all)
@@ -313,7 +313,7 @@ lemmas assign_simps = assigns_cond assigns_test assigns_comp
 abbreviation while_inv_sugar :: "'a upred \<Rightarrow> 'a upred \<Rightarrow> 'a nd_fun \<Rightarrow> 'a nd_fun" ("WHILE _ INV _ DO _" [64,64,64] 63) 
   where "WHILE B INV I DO X \<equiv> while_inv \<lceil>B\<rceil> \<lceil>I\<rceil> X"
 
-utp_lift_notation while_inv_sugar (0)
+utp_lift_notation while_inv_sugar (2)
 
 (*
 lemma sH_while_inv: "\<forall>s. P s \<longrightarrow> I s \<Longrightarrow> \<forall>s. I s \<and> \<not> B s \<longrightarrow> Q s \<Longrightarrow> Hoare \<lceil>\<lambda>s. I s \<and> B s\<rceil> X \<lceil>I\<rceil> 
@@ -330,7 +330,7 @@ lemma sH_while_inv: "`P \<Rightarrow> I` \<Longrightarrow> `I \<and> \<not> B \<
 abbreviation loopi_sugar :: "'a nd_fun \<Rightarrow> 'a upred \<Rightarrow> 'a nd_fun" ("LOOP _ INV _ " [64,64] 63)
   where "LOOP X INV I \<equiv> loopi X \<lceil>I\<rceil>"
 
-utp_lift_notation loopi_sugar (1)
+utp_lift_notation loopi_sugar (0)
 
 lemma H_loop: "\<^bold>{P\<^bold>} X \<^bold>{P\<^bold>} \<Longrightarrow> \<^bold>{P\<^bold>} LOOP X INV I  \<^bold>{P\<^bold>}"
   by (auto intro: H_loop)
@@ -345,7 +345,7 @@ subsection\<open> Verification of hybrid programs \<close>
 definition g_evol :: "(('a::ord) \<Rightarrow> 'b usubst) \<Rightarrow> 'b upred \<Rightarrow> 'a set \<Rightarrow> 'b nd_fun" ("EVOL")
   where "EVOL \<phi> G T = (\<lambda>s. g_orbit (\<lambda>t. \<lbrakk>\<phi> t\<rbrakk>\<^sub>e s) \<lbrakk>G\<rbrakk>\<^sub>e T)\<^sup>\<bullet>"
 
-utp_lift_notation g_evol (1)
+utp_lift_notation g_evol (0 2)
 
 lemma H_g_evol: 
   fixes \<phi> :: "('a::preorder) \<Rightarrow> 'b usubst"
@@ -379,7 +379,7 @@ definition g_ode ::"(('a::banach) \<Rightarrow> 'a) \<Rightarrow> 'a upred \<Rig
   real \<Rightarrow> 'a nd_fun" ("(1x\<acute>= _ & _ on _ _ @ _)") 
   where "(x\<acute>= f & G on T S @ t\<^sub>0) \<equiv> (\<lambda> s. g_orbital f \<lbrakk>G\<rbrakk>\<^sub>e T S t\<^sub>0 s)\<^sup>\<bullet>"
 
-utp_lift_notation g_ode (1)
+utp_lift_notation g_ode (0 2 3 4)
 
 lemma H_g_orbital: 
   "P = (\<^bold>\<forall> X\<in>(\<guillemotleft>ivp_sols (\<lambda> t. f) T S t\<^sub>0\<guillemotright> |> &\<^bold>v) \<bullet> (\<^bold>\<forall>t\<in>\<guillemotleft>T\<guillemotright> \<bullet> (\<^bold>\<forall> \<tau> \<in> \<guillemotleft>down T t\<guillemotright> \<bullet> G\<lbrakk>\<guillemotleft>X \<tau>\<guillemotright>/&\<^bold>v\<rbrakk>) \<Rightarrow> Q\<lbrakk>\<guillemotleft>X t\<guillemotright>/&\<^bold>v\<rbrakk>)) \<Longrightarrow> 
@@ -483,7 +483,7 @@ definition g_ode_inv :: "(('a::banach)\<Rightarrow>'a) \<Rightarrow> 'a upred \<
   real \<Rightarrow> 'a upred \<Rightarrow> 'a nd_fun" ("(1x\<acute>=_ & _ on _ _ @ _ DINV _ )") 
   where "(x\<acute>= f & G on T S @ t\<^sub>0 DINV I) = (x\<acute>= f & G on T S @ t\<^sub>0)"
 
-utp_lift_notation g_ode_inv (1 5)
+utp_lift_notation g_ode_inv (0 2 3 4)
 
 lemma sH_g_orbital_guard: 
   assumes "R = (G \<and> Q)"
@@ -511,7 +511,7 @@ subsection \<open> Refinement Components \<close>
 
 abbreviation RProgr ("\<^bold>[_,_\<^bold>]") where "\<^bold>[P,Q\<^bold>] \<equiv> Ref \<lceil>P\<rceil> \<lceil>Q\<rceil>"
 
-utp_lift_notation RProgr (0 1)
+utp_lift_notation RProgr 
 
 \<comment> \<open> Skip \<close>
 
@@ -713,6 +713,6 @@ utp_lift_notation g_global_ode (1)
 abbreviation g_global_ode_inv :: "(('a::banach)\<Rightarrow>'a) \<Rightarrow> 'a upred \<Rightarrow> 'a upred \<Rightarrow> 'a nd_fun" 
   ("(1x\<acute>=_ & _ DINV _)") where "(x\<acute>= f & G DINV I) \<equiv> (x\<acute>= f & G on UNIV UNIV @ 0 DINV I)"
 
-utp_lift_notation g_global_ode_inv (1 2)
+utp_lift_notation g_global_ode_inv (0)
 
 end

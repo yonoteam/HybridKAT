@@ -9,9 +9,8 @@ text \<open> We prove partial correctness specifications of some hybrid systems 
 refinement and verification components.\<close>
 
 theory KAT_rKAT_exuclid_Examples_ndfun
-  imports KAT_rKAT_rVCs_ndfun utp_hyprog_deriv
-
-begin
+  imports KAT_rKAT_rVCs_ndfun "UTP-dL.utp_hyprog_deriv"
+begin recall_syntax
 
 declare [[coercion Rep_uexpr]]
 
@@ -185,7 +184,7 @@ abbreviation pend_flow :: "real \<Rightarrow> (real^2) usubst" ("\<phi>")
 \<comment> \<open>Verified with annotated dynamics \<close>
 
 lemma pendulum_dyn: "\<^bold>{r\<^sup>2 = x\<^sup>2 + y\<^sup>2\<^bold>}(EVOL \<phi> G T)\<^bold>{r\<^sup>2 = x\<^sup>2 + y\<^sup>2\<^bold>}"
-  by (simp, pred_simp)
+  apply (simp, rel_auto) oops
 
 \<comment> \<open>Verified with invariants \<close>
 
@@ -273,6 +272,7 @@ lemma [bb_real_arith]:
     and pos: "g \<cdot> \<tau>\<^sup>2 / 2 + v \<cdot> \<tau> + (x::real) = 0"
   shows "2 \<cdot> g \<cdot> h + (- (g \<cdot> \<tau>) - v) \<cdot> (- (g \<cdot> \<tau>) - v) = 0"
     and "2 \<cdot> g \<cdot> h + (g \<cdot> \<tau> \<cdot> (g \<cdot> \<tau> + v) + v \<cdot> (g \<cdot> \<tau> + v)) = 0"
+  using assms
 proof-
   from pos have "g \<cdot> \<tau>\<^sup>2  + 2 \<cdot> v \<cdot> \<tau> + 2 \<cdot> x = 0" by auto
   then have "g\<^sup>2  \<cdot> \<tau>\<^sup>2  + 2 \<cdot> g \<cdot> v \<cdot> \<tau> + 2 \<cdot> g \<cdot> x = 0"
