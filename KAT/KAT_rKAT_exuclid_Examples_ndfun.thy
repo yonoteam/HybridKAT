@@ -189,18 +189,18 @@ lemma pendulum_dyn: "\<^bold>{r\<^sup>2 = x\<^sup>2 + y\<^sup>2\<^bold>}(EVOL \<
 \<comment> \<open>Verified with invariants \<close>
 
 lemma pendulum_inv: "\<^bold>{r\<^sup>2 = x\<^sup>2 + y\<^sup>2\<^bold>} (x\<acute>= f & G) \<^bold>{r\<^sup>2 = x\<^sup>2 + y\<^sup>2\<^bold>}"
-  by (pred_simp, auto intro!: diff_invariant_rules poly_derivatives)
+  by (pred_simp, auto simp: eucl_nth_def intro!: poly_derivatives diff_invariant_rules)
 
 \<comment> \<open>Verified by providing solutions \<close>
 
 lemma local_flow_pend: "local_flow f UNIV UNIV \<phi>"
   apply(unfold_locales, simp_all add: local_lipschitz_def lipschitz_on_def vec_eq_iff, clarsimp)
     apply(rule_tac x="1" in exI, clarsimp, rule_tac x=1 in exI, pred_simp)
-    apply(simp add: dist_norm norm_vec_def L2_set_def power2_commute UNIV_2, pred_simp)
-  by (force intro!: poly_derivatives, pred_simp)
+    apply(simp add: eucl_nth_def dist_norm norm_vec_def L2_set_def power2_commute UNIV_2, pred_simp)
+  by (auto simp: eucl_nth_def intro!: poly_derivatives, rel_auto' simp: eucl_nth_def)
 
 lemma pendulum_flow: "\<^bold>{r\<^sup>2 = x\<^sup>2 + y\<^sup>2\<^bold>} (x\<acute>= f & G) \<^bold>{r\<^sup>2 = x\<^sup>2 + y\<^sup>2\<^bold>}"
-  by (simp only: local_flow.sH_g_ode[OF local_flow_pend], pred_simp)
+  by (simp only: local_flow.sH_g_ode[OF local_flow_pend], rel_auto' simp: eucl_nth_def)
 
 no_notation fpend ("f")
         and pend_flow ("\<phi>")
@@ -250,7 +250,7 @@ lemma fball_invariant:
   defines dinv: "I \<equiv> \<^U>(2 \<cdot> \<guillemotleft>g\<guillemotright> \<cdot> x - 2 \<cdot> \<guillemotleft>g\<guillemotright> \<cdot> \<guillemotleft>h\<guillemotright> - (v \<cdot> v) = 0)"
   shows "diff_invariant I (f g) UNIV UNIV 0 G"
   unfolding dinv apply(pred_simp, rule diff_invariant_rules, simp, simp, clarify)
-  by (auto intro!: poly_derivatives)
+  by (auto simp: eucl_nth_def intro!: poly_derivatives)
 
 abbreviation "bb_dinv g h \<equiv> 
   (LOOP
