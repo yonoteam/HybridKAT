@@ -330,7 +330,7 @@ lemma local_flow_ball: "local_flow (f g) UNIV UNIV (\<phi> g)"
   apply(unfold_locales, simp_all add: local_lipschitz_def lipschitz_on_def vec_eq_iff, clarsimp)
   apply(rule_tac x="1/2" in exI, clarsimp, rule_tac x=1 in exI, pred_simp)
     apply(simp add: dist_norm norm_vec_def L2_set_def UNIV_2)
-  by (pred_simp, force intro!: poly_derivatives, pred_simp)
+  by (rel_auto' simp: eucl_nth_def, auto intro!: poly_derivatives)
 
 abbreviation "bb_sol g h \<equiv>
   (LOOP (
@@ -429,13 +429,13 @@ lemma local_lipschitz_therm_dyn:
   apply(clarsimp, rule_tac x=1 in exI, clarsimp, rule_tac x=a in exI)
   using assms apply(simp add: norm_vec_def L2_set_def, unfold UNIV_4, pred_simp)
   unfolding real_sqrt_abs[symmetric] apply (rule real_le_lsqrt)
-  by (simp_all add: norm_diff_therm_dyn)
+  by (simp_all add: norm_diff_therm_dyn )
 
 lemma local_flow_therm: "a > 0 \<Longrightarrow> local_flow (f a T\<^sub>u) UNIV UNIV (\<phi> a T\<^sub>u)"
   apply (unfold_locales, simp_all)
   using local_lipschitz_therm_dyn apply pred_simp
-   apply(pred_simp, force intro!: poly_derivatives)
-  using exhaust_4 by (rel_auto' simp: vec_eq_iff)
+   apply(pred_simp, force simp: eucl_nth_def intro!: poly_derivatives)
+  using exhaust_4 by (rel_auto' simp: vec_eq_iff eucl_nth_def)
 
 lemma therm_dyn_down:
   fixes T::real
@@ -502,14 +502,14 @@ lemma R_therm_down:
   shows "\<^bold>[\<theta> = 0 \<and> I T\<^sub>l T\<^sub>h \<and> t = 0 \<and> T\<^sub>0 = T, I T\<^sub>l T\<^sub>h\<^bold>] \<ge> 
   (x\<acute>= f a 0 & G T\<^sub>l T\<^sub>h a 0 on {0..\<tau>} UNIV @ 0)"
   apply(rule local_flow.R_g_ode_ivl[OF local_flow_therm])
-  using therm_dyn_down[OF assms(1,3), of _ T\<^sub>h] assms by rel_auto'
+  using therm_dyn_down[OF assms(1,3), of _ T\<^sub>h] assms by (rel_auto' simp: eucl_nth_def)
 
 lemma R_therm_up: 
   assumes "a > 0" and "0 \<le> \<tau>" and "0 < T\<^sub>l" and "T\<^sub>h < T\<^sub>u"
   shows "\<^bold>[\<not> \<theta> = 0 \<and> I T\<^sub>l T\<^sub>h \<and> t = 0 \<and> T\<^sub>0 = T, I T\<^sub>l T\<^sub>h\<^bold>] \<ge> 
   (x\<acute>= f a T\<^sub>u & G T\<^sub>l T\<^sub>h a T\<^sub>u on {0..\<tau>} UNIV @ 0)"
   apply(rule local_flow.R_g_ode_ivl[OF local_flow_therm])
-  using therm_dyn_up[OF assms(1) _ _ assms(4), of T\<^sub>l] assms by rel_auto'
+  using therm_dyn_up[OF assms(1) _ _ assms(4), of T\<^sub>l] assms by (rel_auto' simp: eucl_nth_def)
 
 lemma R_therm_time: "\<^bold>[I T\<^sub>l T\<^sub>h, I T\<^sub>l T\<^sub>h \<and> t = 0\<^bold>] \<ge> (t ::= 0)"
   by (rule R_assign_law, pred_simp)
