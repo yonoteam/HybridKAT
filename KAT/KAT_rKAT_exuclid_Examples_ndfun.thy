@@ -19,6 +19,7 @@ declare [[coercion Rep_uexpr]]
 no_notation dual ("\<partial>")
         and n_op ("n _" [90] 91)
         and vec_nth (infixl "$" 90)
+        and hoare_r ("\<^bold>{_\<^bold>}/ _/ \<^bold>{_\<^bold>}")
 
 notation vec_nth (infixl "\<exclamdown>" 90)
 
@@ -183,6 +184,8 @@ abbreviation pend_flow :: "real \<Rightarrow> (real^2) usubst" ("\<phi>")
 
 \<comment> \<open>Verified with annotated dynamics \<close>
 
+term utp_hoare.hoare_r
+
 lemma pendulum_dyn: "\<^bold>{r\<^sup>2 = x\<^sup>2 + y\<^sup>2\<^bold>}(EVOL \<phi> G T)\<^bold>{r\<^sup>2 = x\<^sup>2 + y\<^sup>2\<^bold>}"
   apply (simp, rel_auto) oops
 
@@ -260,8 +263,8 @@ abbreviation "bb_dinv g h \<equiv>
 
 lemma bouncing_ball_inv: "g < 0 \<Longrightarrow> h \<ge> 0 \<Longrightarrow> \<^bold>{x = h \<and> v = 0\<^bold>} bb_dinv g h \<^bold>{0 \<le> x \<and> x \<le> h\<^bold>}"
   apply(hyb_hoare "\<^U>(0 \<le> x \<and> 2 \<cdot> g \<cdot> x = 2 \<cdot> g \<cdot> h + v \<cdot> v)")
-  using fball_invariant apply (simp_all)
-  by (rel_auto' simp: bb_real_arith)
+  using fball_invariant apply (simp_all add: )
+  by (rel_auto' simp: bb_real_arith eucl_nth_def)
 
 
 \<comment> \<open>Verified with annotated dynamics \<close>
@@ -298,7 +301,7 @@ lemma [bb_real_arith]:
   2 \<cdot> g \<cdot> h + (g \<cdot> \<tau> \<cdot> (g \<cdot> \<tau> + v) + v \<cdot> (g \<cdot> \<tau> + v))" (is "?lhs = ?rhs")
 proof-
   have "?lhs = g\<^sup>2 \<cdot> \<tau>\<^sup>2 + 2 \<cdot> g \<cdot> v \<cdot> \<tau> + 2 \<cdot> g \<cdot> x" 
-      apply(subst Rat.sign_simps(18))+ 
+      apply(subst Groups.algebra_simps(18))+ 
       by(auto simp: semiring_normalization_rules(29))
     also have "... = g\<^sup>2 \<cdot> \<tau>\<^sup>2 + 2 \<cdot> g \<cdot> v \<cdot> \<tau> + 2 \<cdot> g \<cdot> h + v \<cdot> v" (is "... = ?middle")
       by(subst invar, simp)
@@ -322,7 +325,7 @@ lemma bouncing_ball_dyn:
   assumes "g < 0" and "h \<ge> 0"
   shows "\<^bold>{x = h \<and> v = 0\<^bold>} bb_evol g h T \<^bold>{0 \<le> x \<and> x \<le> h\<^bold>}"
   apply(hyb_hoare "\<^U>(0 \<le> x \<and> 2 \<cdot> g \<cdot> x = 2 \<cdot> g \<cdot> h + v \<cdot> v)")
-  using assms by (rel_auto' simp: bb_real_arith)
+  using assms by (rel_auto' simp: bb_real_arith eucl_nth_def)
 
 \<comment> \<open>Verified by providing solutions \<close>
 
@@ -343,7 +346,7 @@ lemma bouncing_ball_flow:
   shows "\<^bold>{x = h \<and> v = 0\<^bold>} bb_sol g h \<^bold>{0 \<le> x \<and> x \<le> h\<^bold>}"
   apply(hyb_hoare "\<^U>(0 \<le> x \<and> 2 \<cdot> g \<cdot> x = 2 \<cdot> g \<cdot> h + v \<cdot> v)")
       apply(subst local_flow.sH_g_ode[OF local_flow_ball])
-  using assms by (rel_auto' simp: bb_real_arith)
+  using assms by (rel_auto' simp: bb_real_arith eucl_nth_def)
 
 \<comment> \<open>Refined with annotated dynamics \<close>
 
@@ -355,7 +358,7 @@ lemma R_bouncing_ball_dyn:
   assumes "g < 0" and "h \<ge> 0"
   shows "\<^bold>[x = h \<and> v = 0, 0 \<le> x \<and> x \<le> h\<^bold>] \<ge> bb_evol g h T"
   apply(refinement; (rule R_bb_assign[OF assms])?)
-  using assms by (rel_auto' simp: bb_real_arith)
+  using assms by (rel_auto' simp: bb_real_arith eucl_nth_def)
 
 no_notation fball ("f")
         and ball_flow ("\<phi>")
@@ -408,18 +411,17 @@ abbreviation "therm T\<^sub>l T\<^sub>h a L \<tau> \<equiv> LOOP (ctrl T\<^sub>l
 
 \<comment> \<open>Verified by providing solutions \<close>
 
-lemma norm_diff_therm_dyn: "0 < (a::real) \<Longrightarrow> (a \<cdot> (s\<^sub>2\<exclamdown>0 - T\<^sub>u) - a \<cdot> (s\<^sub>1\<exclamdown>0 - T\<^sub>u))\<^sup>2
-       \<le> (a \<cdot> sqrt ((s\<^sub>1\<exclamdown>1 - s\<^sub>2\<exclamdown>1)\<^sup>2 + ((s\<^sub>1\<exclamdown>2 - s\<^sub>2\<exclamdown>2)\<^sup>2 + ((s\<^sub>1\<exclamdown>3 - s\<^sub>2\<exclamdown>3)\<^sup>2 + (s\<^sub>1\<exclamdown>0 - s\<^sub>2\<exclamdown>0)\<^sup>2))))\<^sup>2"
-proof(simp add: field_simps)
+lemma norm_diff_therm_dyn: "0 < a \<Longrightarrow> \<parallel>f a L s\<^sub>1 - f a L s\<^sub>2\<parallel> = \<bar>a\<bar> * \<bar>s\<^sub>1 \<exclamdown> 0 - s\<^sub>2 \<exclamdown> 0\<bar>"
+proof(rel_auto' simp: norm_vec_def L2_set_def eucl_nth_def, unfold UNIV_4, simp)
   assume a1: "0 < a"
-  have "(a \<cdot> s\<^sub>2\<exclamdown>0 - a \<cdot> s\<^sub>1\<exclamdown>0)\<^sup>2 = a\<^sup>2 \<cdot> (s\<^sub>2\<exclamdown>0 - s\<^sub>1\<exclamdown>0)\<^sup>2"
-    by (metis (mono_tags, hide_lams) Rings.ring_distribs(4) mult.left_commute 
-        semiring_normalization_rules(18) semiring_normalization_rules(29))
-  moreover have "(s\<^sub>2\<exclamdown>0 - s\<^sub>1\<exclamdown>0)\<^sup>2 \<le> (s\<^sub>1\<exclamdown>0 - s\<^sub>2\<exclamdown>0)\<^sup>2 + ((s\<^sub>1\<exclamdown>1 - s\<^sub>2\<exclamdown>1)\<^sup>2 + ((s\<^sub>1\<exclamdown>2 - s\<^sub>2\<exclamdown>2)\<^sup>2 + (s\<^sub>1\<exclamdown>3 - s\<^sub>2\<exclamdown>3)\<^sup>2))"
-    using zero_le_power2 by (simp add: power2_commute) 
-  thus "(a \<cdot> s\<^sub>2\<exclamdown>0 - a \<cdot> s\<^sub>1\<exclamdown>0)\<^sup>2 \<le> a\<^sup>2 \<cdot> (s\<^sub>1\<exclamdown>1 - s\<^sub>2\<exclamdown>1)\<^sup>2 + 
-  (a\<^sup>2 \<cdot> (s\<^sub>1\<exclamdown>0 - s\<^sub>2\<exclamdown>0)\<^sup>2 + (a\<^sup>2 \<cdot> (s\<^sub>1\<exclamdown>2 - s\<^sub>2\<exclamdown>2)\<^sup>2 + a\<^sup>2 \<cdot> (s\<^sub>1\<exclamdown>3 - s\<^sub>2\<exclamdown>3)\<^sup>2))"
-    using a1 by (simp add: Groups.algebra_simps(18)[symmetric] calculation)
+  have f2: "\<And>r ra. \<bar>(r::real) + - ra\<bar> = \<bar>ra + - r\<bar>"
+    by (metis abs_minus_commute minus_real_def)
+  have "\<And>r ra rb. (r::real) * ra + - (r * rb) = r * (ra + - rb)"
+    by (metis minus_real_def right_diff_distrib)
+  hence "\<bar>a * (s\<^sub>1 \<exclamdown> 0 + - L) + - (a * (s\<^sub>2 \<exclamdown> 0 + - L))\<bar> = a * \<bar>s\<^sub>1 \<exclamdown> 0 + - s\<^sub>2 \<exclamdown> 0\<bar>"
+    using a1 by (simp add: abs_mult)
+  thus "\<bar>a * (s\<^sub>2 \<exclamdown> 0 - L) - a * (s\<^sub>1 \<exclamdown> 0 - L)\<bar> = a * \<bar>s\<^sub>1 \<exclamdown> 0 - s\<^sub>2 \<exclamdown> 0\<bar>"
+    using f2 minus_real_def by presburger
 qed
 
 lemma local_lipschitz_therm_dyn:
@@ -427,9 +429,10 @@ lemma local_lipschitz_therm_dyn:
   shows "local_lipschitz UNIV UNIV (\<lambda>t::real. f a T\<^sub>u)"
   apply(unfold local_lipschitz_def lipschitz_on_def dist_norm)
   apply(clarsimp, rule_tac x=1 in exI, clarsimp, rule_tac x=a in exI)
-  using assms apply(simp add: norm_vec_def L2_set_def, unfold UNIV_4, pred_simp)
+  using norm_diff_therm_dyn assms 
+  apply(simp add: norm_vec_def L2_set_def, unfold UNIV_4, pred_simp)
   unfolding real_sqrt_abs[symmetric] apply (rule real_le_lsqrt)
-  by (simp_all add: norm_diff_therm_dyn )
+  by (simp_all add: norm_diff_therm_dyn)
 
 lemma local_flow_therm: "a > 0 \<Longrightarrow> local_flow (f a T\<^sub>u) UNIV UNIV (\<phi> a T\<^sub>u)"
   apply (unfold_locales, simp_all)
@@ -493,7 +496,7 @@ lemma thermostat_flow:
   shows "\<^bold>{I T\<^sub>l T\<^sub>h\<^bold>} therm T\<^sub>l T\<^sub>h a T\<^sub>u \<tau> \<^bold>{I T\<^sub>l T\<^sub>h\<^bold>}"
   apply(hyb_hoare "\<^U>(I T\<^sub>l T\<^sub>h \<and> t=0 \<and> T\<^sub>0 = T)")
               prefer 4 prefer 8 using local_flow_therm assms apply force+
-  using assms therm_dyn_up therm_dyn_down by rel_auto'
+  using assms therm_dyn_up therm_dyn_down by (rel_auto' simp: eucl_nth_def)
 
 \<comment> \<open>Refined by providing solutions \<close>
 
@@ -521,7 +524,7 @@ lemma R_thermostat_flow:
   assumes "a > 0" and "0 \<le> \<tau>" and "0 < T\<^sub>l" and "T\<^sub>h < T\<^sub>u"
   shows "\<^bold>[I T\<^sub>l T\<^sub>h, I T\<^sub>l T\<^sub>h\<^bold>] \<ge> therm T\<^sub>l T\<^sub>h a T\<^sub>u \<tau>"
   by (refinement; (rule R_therm_time)?, (rule R_therm_temp)?, (rule R_assign_law)?, 
-      (rule R_therm_up[OF assms])?, (rule R_therm_down[OF assms])?) rel_auto'
+      (rule R_therm_up[OF assms])?, (rule R_therm_down[OF assms])?) (rel_auto' simp: eucl_nth_def)
 
 no_notation ftherm ("f")
         and therm_flow ("\<phi>")
@@ -565,7 +568,7 @@ lemma local_flow_tank: "local_flow (f k) UNIV UNIV (\<phi> k)"
   apply(rule_tac x="1/2" in exI, clarsimp, rule_tac x=1 in exI)
     apply(simp add: dist_norm norm_vec_def L2_set_def, unfold UNIV_4, pred_simp)
    apply(pred_simp, force intro!: poly_derivatives)
-  using exhaust_4 by (rel_auto' simp: vec_eq_iff)
+  using exhaust_4 by (rel_auto' simp: vec_eq_iff eucl_nth_def)
 
 lemma tank_arith:
   fixes y::real
@@ -597,7 +600,7 @@ lemma tank_flow:
   shows "\<^bold>{I h\<^sub>l h\<^sub>h\<^bold>} tank_sol c\<^sub>i c\<^sub>o h\<^sub>l h\<^sub>h \<tau> \<^bold>{I h\<^sub>l h\<^sub>h\<^bold>}"
   apply(hyb_hoare "\<^U>(I h\<^sub>l h\<^sub>h \<and> t = 0 \<and> h\<^sub>0 = h)")
               prefer 4 prefer 8 using assms local_flow_tank apply force+
-  using assms tank_arith by rel_auto'
+  using assms tank_arith by (rel_auto' simp: eucl_nth_def)
 
 no_notation tank_dyn_sol ("dyn")
 
@@ -606,9 +609,9 @@ no_notation tank_dyn_sol ("dyn")
 lemma tank_diff_inv:
   "0 \<le> \<tau> \<Longrightarrow> diff_invariant (dI h\<^sub>l h\<^sub>h k) (f k) {0..\<tau>} UNIV 0 Guard"
   apply(pred_simp, intro diff_invariant_conj_rule)
-      apply(force intro!: poly_derivatives diff_invariant_rules)
-     apply(rule_tac \<nu>'="\<lambda>t. 0" and \<mu>'="\<lambda>t. 1" in diff_invariant_leq_rule, simp_all)
-    apply(rule_tac \<nu>'="\<lambda>t. 0" and \<mu>'="\<lambda>t. 0" in diff_invariant_leq_rule, simp_all)
+      apply(force intro!: poly_derivatives diff_invariant_rules simp: eucl_nth_def)
+     apply(rule_tac \<nu>'="\<lambda>t. 0" and \<mu>'="\<lambda>t. 1" in diff_invariant_leq_rule, simp_all add: eucl_nth_def)
+    apply(rule_tac \<nu>'="\<lambda>t. 0" and \<mu>'="\<lambda>t. 0" in diff_invariant_leq_rule, simp_all add: eucl_nth_def)
   by (auto intro!: poly_derivatives diff_invariant_rules)
 
 lemma tank_inv_arith1:
@@ -633,7 +636,7 @@ proof-
   thus "h\<^sub>l \<le> y\<^sub>0 - c\<^sub>o \<cdot> \<tau>"
     by (auto simp: mult.commute)
   show "y\<^sub>0 - c\<^sub>o \<cdot> \<tau> \<le> h\<^sub>h" 
-    using b assms(1,2) by (smt linordered_field_class.sign_simps(39) mult_less_cancel_right) 
+    using b assms(1,2) by (smt mult_nonneg_nonneg)
 qed
 
 abbreviation tank_dyn_dinv :: "real \<Rightarrow> real \<Rightarrow> real \<Rightarrow> real \<Rightarrow> real \<Rightarrow> (real^4) nd_fun" ("dyn")
@@ -648,7 +651,7 @@ lemma tank_inv:
   shows "\<^bold>{I h\<^sub>l h\<^sub>h\<^bold>} tank_dinv c\<^sub>i c\<^sub>o h\<^sub>l h\<^sub>h \<tau> \<^bold>{I h\<^sub>l h\<^sub>h\<^bold>}"
   apply(hyb_hoare "\<^U>(I h\<^sub>l h\<^sub>h \<and> t = 0 \<and> h\<^sub>0 = h)")
             prefer 4 prefer 7 using tank_diff_inv assms apply force+
-  using assms tank_inv_arith1 tank_inv_arith2 by rel_auto'
+  using assms tank_inv_arith1 tank_inv_arith2 by (rel_auto' simp: eucl_nth_def)
 
 \<comment> \<open>Refined with invariants \<close>
 
@@ -657,18 +660,18 @@ lemma R_tank_inv:
   shows "\<^bold>[I h\<^sub>l h\<^sub>h, I h\<^sub>l h\<^sub>h\<^bold>] \<ge> tank_dinv c\<^sub>i c\<^sub>o h\<^sub>l h\<^sub>h \<tau>"
 proof-
   have "\<^bold>[I h\<^sub>l h\<^sub>h, I h\<^sub>l h\<^sub>h\<^bold>] \<ge> LOOP ((t ::= 0);\<^bold>[I h\<^sub>l h\<^sub>h \<and> t = 0, I h\<^sub>l h\<^sub>h\<^bold>]) INV I h\<^sub>l h\<^sub>h" (is "_ \<ge> ?R")
-    by (refinement, rel_auto')
+    by (refinement, rel_auto' simp: eucl_nth_def)
   moreover have 
     "?R \<ge> LOOP ((t ::= 0);(h\<^sub>0 ::= h);\<^bold>[I h\<^sub>l h\<^sub>h \<and> t = 0 \<and> h\<^sub>0 = h, I h\<^sub>l h\<^sub>h\<^bold>]) INV I h\<^sub>l h\<^sub>h" (is "_ \<ge> ?R")
-    by (refinement, rel_auto')
+    by (refinement, rel_auto' simp: eucl_nth_def)
   moreover have 
     "?R \<ge> LOOP (ctrl h\<^sub>l h\<^sub>h;\<^bold>[I h\<^sub>l h\<^sub>h \<and> t = 0 \<and> h\<^sub>0 = h, I h\<^sub>l h\<^sub>h\<^bold>]) INV I h\<^sub>l h\<^sub>h" (is "_ \<ge> ?R")
-    by (simp only: mult.assoc, refinement; (force)?, (rule R_assign_law)?) rel_auto'
+    by (simp only: mult.assoc, refinement; (force)?, (rule R_assign_law)?) (rel_auto' simp: eucl_nth_def)
   moreover have 
     "?R \<ge> LOOP (ctrl h\<^sub>l h\<^sub>h; dyn c\<^sub>i c\<^sub>o h\<^sub>l h\<^sub>h \<tau>) INV I h\<^sub>l h\<^sub>h"
     apply(simp only: mult.assoc, refinement; (simp)?)
          prefer 4 using tank_diff_inv assms apply force+
-    using tank_inv_arith1 tank_inv_arith2 assms by rel_auto'
+    using tank_inv_arith1 tank_inv_arith2 assms by (rel_auto' simp: eucl_nth_def)
   ultimately show "\<^bold>[I h\<^sub>l h\<^sub>h, I h\<^sub>l h\<^sub>h\<^bold>] \<ge> tank_dinv c\<^sub>i c\<^sub>o h\<^sub>l h\<^sub>h \<tau>"
     by auto
 qed
