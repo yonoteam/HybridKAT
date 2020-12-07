@@ -531,7 +531,8 @@ proof-
   thus "h\<^sub>l \<le> y\<^sub>0 - c\<^sub>o \<cdot> \<tau>"
     by (auto simp: mult.commute)
   show "y\<^sub>0 - c\<^sub>o \<cdot> \<tau> \<le> h\<^sub>h" 
-    using b assms(1,2) by (smt linordered_field_class.sign_simps(39) mult_less_cancel_right) 
+    using b assms(1,2)
+    by (smt mult_sign_intros(1))  
 qed
 
 abbreviation tank_dyn_dinv :: "real \<Rightarrow> real \<Rightarrow> real \<Rightarrow> real \<Rightarrow> real \<Rightarrow> (real^4) nd_fun" ("dyn")

@@ -206,7 +206,7 @@ definition assign :: "'b \<Rightarrow> ('a^'b \<Rightarrow> 'a) \<Rightarrow> ('
 abbreviation assign ("(2_ ::= _)" [70, 65] 61) 
   where "assign x e \<equiv> assigns [&x \<mapsto>\<^sub>s e]"
 
-utp_lift_notation assign (1)
+utp_lift_notation assign (0)
 
 lemma H_assigns: "P = (\<sigma> \<dagger> Q) \<Longrightarrow> \<^bold>{P\<^bold>} \<^bold>\<langle>\<sigma>\<^bold>\<rangle> \<^bold>{Q\<^bold>}"
   unfolding ndfun_kat_H by (simp add: assigns_def, pred_auto)
@@ -708,7 +708,7 @@ qed
 abbreviation g_global_ode ::"(('a::banach)\<Rightarrow>'a) \<Rightarrow> 'a upred \<Rightarrow> 'a nd_fun" ("(1x\<acute>=_ & _)") 
   where "(x\<acute>= f & G) \<equiv> (x\<acute>= f & G on UNIV UNIV @ 0)"
 
-utp_lift_notation g_global_ode (1)
+utp_lift_notation g_global_ode (0)
 
 abbreviation g_global_ode_inv :: "(('a::banach)\<Rightarrow>'a) \<Rightarrow> 'a upred \<Rightarrow> 'a upred \<Rightarrow> 'a nd_fun" 
   ("(1x\<acute>=_ & _ DINV _)") where "(x\<acute>= f & G DINV I) \<equiv> (x\<acute>= f & G on UNIV UNIV @ 0 DINV I)"
