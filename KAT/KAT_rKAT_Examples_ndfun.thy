@@ -198,7 +198,7 @@ lemma [bb_real_arith]:
   2 \<cdot> g \<cdot> h + (g \<cdot> \<tau> \<cdot> (g \<cdot> \<tau> + v) + v \<cdot> (g \<cdot> \<tau> + v))" (is "?lhs = ?rhs")
 proof-
   have "?lhs = g\<^sup>2 \<cdot> \<tau>\<^sup>2 + 2 \<cdot> g \<cdot> v \<cdot> \<tau> + 2 \<cdot> g \<cdot> x" 
-      apply(subst Rat.sign_simps(18))+ 
+      apply(subst Groups.algebra_simps(18))+ 
       by(auto simp: semiring_normalization_rules(29))
     also have "... = g\<^sup>2 \<cdot> \<tau>\<^sup>2 + 2 \<cdot> g \<cdot> v \<cdot> \<tau> + 2 \<cdot> g \<cdot> h + v \<cdot> v" (is "... = ?middle")
       by(subst invar, simp)
